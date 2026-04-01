@@ -1,0 +1,94 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  lint-and-test:
+    name: Lint, Build & Test
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: pulsescore
+          POSTGRES_PASSWORD: pulsescore
+          POSTGRES_DB: pulsescore
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install root dependencies
+        run: npm ci
+
+      - name: Install API dependencies
+        run: npm ci
+        working-directory: apps/api
+
+      - name: Install Web dependencies
+        run: npm ci
+        working-directory: apps/web
+
+      - name: Generate Prisma client
+        run: npx prisma generate
+        working-directory: apps/api
+        env:
+          DATABASE_URL: postgresql://pulsescore:pulsescore@localhost:5432/pulsescore
+
+      - name: Run Prisma migrations
+        run: npx prisma migrate deploy
+        working-directory: apps/api
+        env:
+          DATABASE_URL: postgresql://pulsescore:pulsescore@localhost:5432/pulsescore
+
+      - name: Lint API
+        run: npm run lint
+        working-directory: apps/api
+
+      - name: Lint Web
+        run: npm run lint
+        working-directory: apps/web
+
+      - name: Build API
+        run: npm run build
+        working-directory: apps/api
+
+      - name: Build Web
+        run: npm run build
+        working-directory: apps/web
+
+      - name: Test API
+        run: npm run test
+        working-directory: apps/api
+        env:
+          DATABASE_URL: postgresql://pulsescore:pulsescore@localhost:5432/pulsescore
+          REDIS_URL: redis://localhost:6379
+          NODE_ENV: test

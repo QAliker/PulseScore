@@ -1,0 +1,45 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  username  String   @unique
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("users")
+}
+
+model Match {
+  id         String      @id @default(cuid())
+  externalId String?     @unique @map("external_id")
+  homeTeam   String      @map("home_team")
+  awayTeam   String      @map("away_team")
+  homeScore  Int         @default(0) @map("home_score")
+  awayScore  Int         @default(0) @map("away_score")
+  status     MatchStatus @default(SCHEDULED)
+  sport      String
+  league     String?
+  startTime  DateTime    @map("start_time")
+  endTime    DateTime?   @map("end_time")
+  createdAt  DateTime    @default(now()) @map("created_at")
+  updatedAt  DateTime    @updatedAt @map("updated_at")
+
+  @@index([status])
+  @@index([startTime])
+  @@map("matches")
+}
+
+enum MatchStatus {
+  SCHEDULED
+  LIVE
+  FINISHED
+  CANCELLED
+  POSTPONED
+}
