@@ -1,6 +1,7 @@
 import { defineConfig } from 'prisma/config';
 
 export default defineConfig({
-  // datasource URL is managed via PrismaPg adapter in PrismaService
-  // See: src/prisma/prisma.service.ts
+  // Used by the Prisma CLI (migrate deploy/dev, studio).
+  // At runtime, the NestJS PrismaService uses the PrismaPg adapter instead.
+  datasourceUrl: process.env.DATABASE_URL,
 });
