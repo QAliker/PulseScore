@@ -4,6 +4,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 model User {
@@ -26,14 +27,59 @@ model Match {
   status     MatchStatus @default(SCHEDULED)
   sport      String
   league     String?
+  leagueId   String?     @map("league_id")
+  leagueRel  League?     @relation(fields: [leagueId], references: [id])
   startTime  DateTime    @map("start_time")
   endTime    DateTime?   @map("end_time")
   createdAt  DateTime    @default(now()) @map("created_at")
   updatedAt  DateTime    @updatedAt @map("updated_at")
+  events     MatchEvent[]
 
   @@index([status])
   @@index([startTime])
   @@map("matches")
+}
+
+model League {
+  id         String   @id @default(cuid())
+  externalId String   @unique @map("external_id")
+  name       String
+  sport      String
+  country    String?
+  logo       String?
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+  matches    Match[]
+
+  @@map("leagues")
+}
+
+model Team {
+  id         String   @id @default(cuid())
+  externalId String   @unique @map("external_id")
+  name       String
+  shortName  String?  @map("short_name")
+  logo       String?
+  country    String?
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  @@map("teams")
+}
+
+model MatchEvent {
+  id        String         @id @default(cuid())
+  matchId   String         @map("match_id")
+  match     Match          @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  type      MatchEventType
+  minute    Int?
+  player    String?
+  team      String?
+  detail    String?
+  createdAt DateTime       @default(now()) @map("created_at")
+
+  @@index([matchId])
+  @@map("match_events")
 }
 
 enum MatchStatus {
@@ -42,4 +88,16 @@ enum MatchStatus {
   FINISHED
   CANCELLED
   POSTPONED
+}
+
+enum MatchEventType {
+  GOAL
+  OWN_GOAL
+  YELLOW_CARD
+  RED_CARD
+  SUBSTITUTION
+  HALFTIME
+  FULLTIME
+  PENALTY_GOAL
+  PENALTY_MISS
 }
