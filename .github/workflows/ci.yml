@@ -46,48 +46,33 @@ jobs:
           node-version: '22'
           cache: 'npm'
 
-      - name: Install root dependencies
+      - name: Install dependencies
         run: npm ci
-
-      - name: Install API dependencies
-        run: npm ci
-        working-directory: apps/api
-
-      - name: Install Web dependencies
-        run: npm ci
-        working-directory: apps/web
 
       - name: Generate Prisma client
-        run: npm run prisma:generate
-        working-directory: apps/api
+        run: npm run -w apps/api prisma:generate
         env:
           DATABASE_URL: postgresql://pulsescore:pulsescore@localhost:5432/pulsescore
 
       - name: Run Prisma migrations
-        run: npm run prisma:migrate:deploy
-        working-directory: apps/api
+        run: npm run -w apps/api prisma:migrate:deploy
         env:
           DATABASE_URL: postgresql://pulsescore:pulsescore@localhost:5432/pulsescore
 
       - name: Lint API
-        run: npm run lint
-        working-directory: apps/api
+        run: npm run -w apps/api lint
 
       - name: Lint Web
-        run: npm run lint
-        working-directory: apps/web
+        run: npm run -w apps/web lint
 
       - name: Build API
-        run: npm run build
-        working-directory: apps/api
+        run: npm run -w apps/api build
 
       - name: Build Web
-        run: npm run build
-        working-directory: apps/web
+        run: npm run -w apps/web build
 
       - name: Test API
-        run: npm run test
-        working-directory: apps/api
+        run: npm run -w apps/api test
         env:
           DATABASE_URL: postgresql://pulsescore:pulsescore@localhost:5432/pulsescore
           REDIS_URL: redis://localhost:6379
