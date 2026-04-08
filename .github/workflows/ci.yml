@@ -73,7 +73,7 @@ jobs:
 
       - name: Build Web
         working-directory: apps/web
-        run: ls && npm run build:webpack
+        run: npm run build:webpack
 
       - name: Test API
         run: npm run -w apps/api test
