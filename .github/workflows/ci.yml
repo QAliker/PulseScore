@@ -46,11 +46,11 @@ jobs:
           node-version: '22'
           cache: 'npm'
 
-      - name: Remove sub-workspace lockfiles
-        run: rm -f apps/api/package-lock.json apps/web/package-lock.json
+      - name: Clean sub-workspace artifacts
+        run: rm -rf apps/api/node_modules apps/api/package-lock.json apps/web/node_modules apps/web/package-lock.json
 
       - name: Install dependencies
-        run: npm ci
+        run: npm install
 
       - name: Generate Prisma client
         run: npm run -w apps/api prisma:generate
