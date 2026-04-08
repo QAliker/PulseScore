@@ -69,7 +69,7 @@ jobs:
         run: npm run -w apps/api build
 
       - name: Build Web
-        run: npm run -w apps/web build --webpack
+        run: npm run -w apps/web build:webpack
 
       - name: Test API
         run: npm run -w apps/api test
