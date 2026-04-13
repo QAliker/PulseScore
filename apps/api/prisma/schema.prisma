@@ -49,6 +49,7 @@ model League {
   createdAt  DateTime @default(now()) @map("created_at")
   updatedAt  DateTime @updatedAt @map("updated_at")
   matches    Match[]
+  standings  Standing[]
 
   @@map("leagues")
 }
@@ -62,8 +63,53 @@ model Team {
   country    String?
   createdAt  DateTime @default(now()) @map("created_at")
   updatedAt  DateTime @updatedAt @map("updated_at")
+  standings Standing[]
+  players   Player[]
 
   @@map("teams")
+}
+
+model Standing {
+  id           String   @id @default(cuid())
+  leagueId     String   @map("league_id")
+  league       League   @relation(fields: [leagueId], references: [id])
+  teamId       String   @map("team_id")
+  team         Team     @relation(fields: [teamId], references: [id])
+  position     Int
+  played       Int      @default(0)
+  won          Int      @default(0)
+  drawn        Int      @default(0)
+  lost         Int      @default(0)
+  goalsFor     Int      @default(0) @map("goals_for")
+  goalsAgainst Int      @default(0) @map("goals_against")
+  points       Int      @default(0)
+  season       String
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  @@unique([leagueId, teamId, season])
+  @@map("standings")
+}
+
+model Player {
+  id            String   @id @default(cuid())
+  externalId    String   @unique @map("external_id")
+  name          String
+  image         String?
+  number        Int?
+  position      String?
+  age           Int?
+  teamId        String?  @map("team_id")
+  team          Team?    @relation(fields: [teamId], references: [id])
+  goals         Int      @default(0)
+  assists       Int      @default(0)
+  yellowCards   Int      @default(0) @map("yellow_cards")
+  redCards      Int      @default(0) @map("red_cards")
+  matchesPlayed Int      @default(0) @map("matches_played")
+  rating        String?
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  @@map("players")
 }
 
 model MatchEvent {
