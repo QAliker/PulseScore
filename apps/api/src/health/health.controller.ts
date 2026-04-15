@@ -10,17 +10,19 @@ import { PrismaService } from '../prisma/prisma.service';
 import { RedisService } from '../redis/redis.service';
 
 @Injectable()
-export class DatabaseHealthIndicator extends HealthIndicatorService {
-  constructor(private readonly prisma: PrismaService) {
-    super();
-  }
+export class DatabaseHealthIndicator {
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly healthIndicatorService: HealthIndicatorService,
+  ) {}
 
   async isHealthy(key: string): Promise<HealthIndicatorResult> {
+    const indicator = this.healthIndicatorService.check(key);
     try {
       await this.prisma.$queryRaw`SELECT 1`;
-      return this.getStatus(key, true);
+      return indicator.up();
     } catch (error) {
-      return this.getStatus(key, false, {
+      return indicator.down({
         message: error instanceof Error ? error.message : 'Unknown error',
       });
     }
@@ -28,18 +30,20 @@ export class DatabaseHealthIndicator extends HealthIndicatorService {
 }
 
 @Injectable()
-export class RedisHealthIndicator extends HealthIndicatorService {
-  constructor(private readonly redisService: RedisService) {
-    super();
-  }
+export class RedisHealthIndicator {
+  constructor(
+    private readonly redisService: RedisService,
+    private readonly healthIndicatorService: HealthIndicatorService,
+  ) {}
 
   async isHealthy(key: string): Promise<HealthIndicatorResult> {
+    const indicator = this.healthIndicatorService.check(key);
     try {
       const pong = await this.redisService.ping();
       const isHealthy = pong === 'PONG';
-      return this.getStatus(key, isHealthy);
+      return isHealthy ? indicator.up() : indicator.down();
     } catch (error) {
-      return this.getStatus(key, false, {
+      return indicator.down({
         message: error instanceof Error ? error.message : 'Unknown error',
       });
     }

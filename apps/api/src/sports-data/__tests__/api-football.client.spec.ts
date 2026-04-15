@@ -28,11 +28,16 @@ describe('ApiFootballClient', () => {
         json: async () => mockResponse,
       } as Response);
 
-      const result = await client.get('get_events', { from: '2026-04-10', to: '2026-04-10' });
+      const result = await client.get('get_events', {
+        from: '2026-04-10',
+        to: '2026-04-10',
+      });
 
       expect(globalThis.fetch).toHaveBeenCalledTimes(1);
       const calledUrl = (globalThis.fetch as jest.Mock).mock.calls[0][0];
-      expect(calledUrl).toContain('https://apiv3.apifootball.com/?action=get_events');
+      expect(calledUrl).toContain(
+        'https://apiv3.apifootball.com/?action=get_events',
+      );
       expect(calledUrl).toContain('APIkey=test-api-key');
       expect(calledUrl).toContain('from=2026-04-10');
       expect(calledUrl).toContain('to=2026-04-10');
@@ -46,7 +51,9 @@ describe('ApiFootballClient', () => {
         statusText: 'Forbidden',
       } as Response);
 
-      await expect(client.get('get_events', {})).rejects.toThrow('APIFootball request failed: 403 Forbidden');
+      await expect(client.get('get_events', {})).rejects.toThrow(
+        'APIFootball request failed: 403 Forbidden',
+      );
     });
 
     it('should return API error response as data', async () => {

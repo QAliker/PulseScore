@@ -9,16 +9,35 @@ describe('FixturesService', () => {
   beforeEach(() => {
     mockClient = { get: jest.fn() };
     mockNormalizer = {
-      normalizeMatch: jest.fn((m: any) => ({ externalId: m.match_id, homeTeam: { name: m.match_hometeam_name }, awayTeam: { name: m.match_awayteam_name }, status: 'FINISHED', sport: 'Football' })),
+      normalizeMatch: jest.fn((m: any) => ({
+        externalId: m.match_id,
+        homeTeam: { name: m.match_hometeam_name },
+        awayTeam: { name: m.match_awayteam_name },
+        status: 'FINISHED',
+        sport: 'Football',
+      })),
     };
-    mockCache = { getCached: jest.fn().mockResolvedValue(null), setCached: jest.fn().mockResolvedValue(undefined) };
+    mockCache = {
+      getCached: jest.fn().mockResolvedValue(null),
+      setCached: jest.fn().mockResolvedValue(undefined),
+    };
     service = new FixturesService(mockClient, mockNormalizer, mockCache);
   });
 
   it('should fetch events from API when cache is empty', async () => {
-    mockClient.get.mockResolvedValue([{ match_id: '1', match_hometeam_name: 'Leeds', match_awayteam_name: 'Sheffield' }]);
+    mockClient.get.mockResolvedValue([
+      {
+        match_id: '1',
+        match_hometeam_name: 'Leeds',
+        match_awayteam_name: 'Sheffield',
+      },
+    ]);
     const result = await service.getFixtures('152', '2026-04-10', '2026-04-10');
-    expect(mockClient.get).toHaveBeenCalledWith('get_events', { league_id: '152', from: '2026-04-10', to: '2026-04-10' });
+    expect(mockClient.get).toHaveBeenCalledWith('get_events', {
+      league_id: '152',
+      from: '2026-04-10',
+      to: '2026-04-10',
+    });
     expect(result).toHaveLength(1);
   });
 
