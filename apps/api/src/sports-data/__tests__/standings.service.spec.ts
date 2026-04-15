@@ -18,21 +18,39 @@ describe('StandingsService', () => {
         points: parseInt(s.overall_league_PTS),
       })),
     };
-    mockCache = { getCached: jest.fn().mockResolvedValue(null), setCached: jest.fn().mockResolvedValue(undefined) };
+    mockCache = {
+      getCached: jest.fn().mockResolvedValue(null),
+      setCached: jest.fn().mockResolvedValue(undefined),
+    };
     mockPrisma = {
-      league: { findUnique: jest.fn().mockResolvedValue({ id: 'db-league-1' }) },
+      league: {
+        findUnique: jest.fn().mockResolvedValue({ id: 'db-league-1' }),
+      },
       team: { findUnique: jest.fn().mockResolvedValue({ id: 'db-team-1' }) },
       standing: { upsert: jest.fn().mockResolvedValue({}) },
     };
-    service = new StandingsService(mockClient, mockNormalizer, mockCache, mockPrisma);
+    service = new StandingsService(
+      mockClient,
+      mockNormalizer,
+      mockCache,
+      mockPrisma,
+    );
   });
 
   it('should fetch standings from API when cache is empty', async () => {
     mockClient.get.mockResolvedValue([
-      { league_id: '152', team_id: '2627', team_name: 'Leeds', overall_league_position: '1', overall_league_PTS: '83' },
+      {
+        league_id: '152',
+        team_id: '2627',
+        team_name: 'Leeds',
+        overall_league_position: '1',
+        overall_league_PTS: '83',
+      },
     ]);
     const result = await service.getStandings('152');
-    expect(mockClient.get).toHaveBeenCalledWith('get_standings', { league_id: '152' });
+    expect(mockClient.get).toHaveBeenCalledWith('get_standings', {
+      league_id: '152',
+    });
     expect(result).toHaveLength(1);
     expect(result[0].position).toBe(1);
   });

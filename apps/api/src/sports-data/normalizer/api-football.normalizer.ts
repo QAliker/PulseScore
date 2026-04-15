@@ -1,5 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import { AfMatch, AfStanding, AfPlayer } from '../interfaces/api-football.interfaces';
+import {
+  AfMatch,
+  AfStanding,
+  AfPlayer,
+} from '../interfaces/api-football.interfaces';
 import { MatchDto, GoalscorerDto, CardDto } from '../dto/match.dto';
 import { TeamDto } from '../dto/team.dto';
 import { LeagueDto } from '../dto/league.dto';
@@ -135,7 +139,9 @@ export class ApiFootballNormalizer {
     dto.externalId = raw.player_key;
     dto.name = raw.player_name;
     dto.image = raw.player_image || null;
-    dto.number = raw.player_number ? parseInt(raw.player_number, 10) || null : null;
+    dto.number = raw.player_number
+      ? parseInt(raw.player_number, 10) || null
+      : null;
     dto.position = raw.player_type || null;
     dto.age = raw.player_age ? parseInt(raw.player_age, 10) || null : null;
     dto.teamId = teamId;

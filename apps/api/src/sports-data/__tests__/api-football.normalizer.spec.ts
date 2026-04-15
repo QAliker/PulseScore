@@ -1,5 +1,9 @@
 import { ApiFootballNormalizer } from '../normalizer/api-football.normalizer';
-import { AfMatch, AfStanding, AfPlayer } from '../interfaces/api-football.interfaces';
+import {
+  AfMatch,
+  AfStanding,
+  AfPlayer,
+} from '../interfaces/api-football.interfaces';
 
 describe('ApiFootballNormalizer', () => {
   let normalizer: ApiFootballNormalizer;
@@ -116,7 +120,20 @@ describe('ApiFootballNormalizer', () => {
         },
       ],
       substitutions: { home: [], away: [] },
-      lineup: { home: { starting_lineups: [], substitutes: [], coach: [], missing_players: [] }, away: { starting_lineups: [], substitutes: [], coach: [], missing_players: [] } },
+      lineup: {
+        home: {
+          starting_lineups: [],
+          substitutes: [],
+          coach: [],
+          missing_players: [],
+        },
+        away: {
+          starting_lineups: [],
+          substitutes: [],
+          coach: [],
+          missing_players: [],
+        },
+      },
       statistics: [],
       statistics_1half: [],
     };
@@ -129,13 +146,17 @@ describe('ApiFootballNormalizer', () => {
     it('should set home team name and badge', () => {
       const dto = normalizer.normalizeMatch(mockMatch);
       expect(dto.homeTeam.name).toBe('Leeds United');
-      expect(dto.homeTeam.logo).toBe('https://apiv3.apifootball.com/badges/2627.png');
+      expect(dto.homeTeam.logo).toBe(
+        'https://apiv3.apifootball.com/badges/2627.png',
+      );
     });
 
     it('should set away team name and badge', () => {
       const dto = normalizer.normalizeMatch(mockMatch);
       expect(dto.awayTeam.name).toBe('Sheffield Wednesday');
-      expect(dto.awayTeam.logo).toBe('https://apiv3.apifootball.com/badges/2637.png');
+      expect(dto.awayTeam.logo).toBe(
+        'https://apiv3.apifootball.com/badges/2637.png',
+      );
     });
 
     it('should parse scores as numbers', () => {
@@ -145,7 +166,11 @@ describe('ApiFootballNormalizer', () => {
     });
 
     it('should return null score for empty string', () => {
-      const noScore = { ...mockMatch, match_hometeam_score: '', match_awayteam_score: '' };
+      const noScore = {
+        ...mockMatch,
+        match_hometeam_score: '',
+        match_awayteam_score: '',
+      };
       const dto = normalizer.normalizeMatch(noScore);
       expect(dto.homeScore).toBeNull();
       expect(dto.awayScore).toBeNull();
@@ -240,7 +265,9 @@ describe('ApiFootballNormalizer', () => {
 
     it('should set team badge', () => {
       const dto = normalizer.normalizeStanding(mockStanding);
-      expect(dto.teamBadge).toBe('https://apiv3.apifootball.com/badges/2627.png');
+      expect(dto.teamBadge).toBe(
+        'https://apiv3.apifootball.com/badges/2627.png',
+      );
     });
 
     it('should set promotion info', () => {

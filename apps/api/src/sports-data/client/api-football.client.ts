@@ -80,9 +80,14 @@ export class ApiFootballClient {
       this.startHeartbeat();
     });
 
-    this.ws.on('message', (raw: WebSocket.Data) => {
+    this.ws.on('message', (raw: WebSocket.RawData) => {
       try {
-        const data = JSON.parse(raw.toString()) as AfMatch[];
+        const text = Buffer.isBuffer(raw)
+          ? raw.toString('utf8')
+          : Array.isArray(raw)
+            ? Buffer.concat(raw).toString('utf8')
+            : Buffer.from(raw).toString('utf8');
+        const data = JSON.parse(text) as AfMatch[];
         this.livescoreCallback?.(data);
       } catch (err) {
         this.logger.warn(`Failed to parse WebSocket message: ${String(err)}`);

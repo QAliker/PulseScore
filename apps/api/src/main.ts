@@ -14,4 +14,4 @@ async function bootstrap(): Promise<void> {
   console.log(`PulseScore API running on port ${port}`);
 }
 
-bootstrap();
+void bootstrap();

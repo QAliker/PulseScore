@@ -35,7 +35,9 @@ export class LivescoreService implements OnModuleInit, OnModuleDestroy {
 
   onModuleInit(): void {
     this.logger.log('LivescoreService initialized — connecting WebSocket');
-    this.client.onLivescoreMessage((data) => this.handleLivescoreData(data));
+    this.client.onLivescoreMessage((data) => {
+      void this.handleLivescoreData(data);
+    });
     this.client.connectWebSocket();
   }
 
