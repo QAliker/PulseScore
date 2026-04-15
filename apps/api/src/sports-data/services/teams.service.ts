@@ -2,7 +2,10 @@ import { Injectable, Logger } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 import { ApiFootballClient } from '../client/api-football.client';
 import { ApiFootballNormalizer } from '../normalizer/api-football.normalizer';
-import { SportsDataCacheService, TTL_TEAMS } from '../sports-data-cache.service';
+import {
+  SportsDataCacheService,
+  TTL_TEAMS,
+} from '../sports-data-cache.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AfTeam } from '../interfaces/api-football.interfaces';
 
@@ -24,7 +27,9 @@ export class TeamsService {
     const cached = await this.cacheService.getCached<AfTeam[]>(cacheKey);
     if (cached) return cached;
 
-    const raw = await this.client.get<AfTeam[]>('get_teams', { league_id: leagueId });
+    const raw = await this.client.get<AfTeam[]>('get_teams', {
+      league_id: leagueId,
+    });
 
     if (!Array.isArray(raw)) return [];
 
@@ -37,11 +42,15 @@ export class TeamsService {
     for (const leagueId of LEAGUE_IDS) {
       try {
         this.logger.log(`Refreshing teams for league ${leagueId}`);
-        await this.cacheService.invalidate(SportsDataCacheService.teamsKey(leagueId));
+        await this.cacheService.invalidate(
+          SportsDataCacheService.teamsKey(leagueId),
+        );
         const teams = await this.getTeams(leagueId);
         await this.persistTeams(teams);
       } catch (err) {
-        this.logger.error(`Failed to refresh teams for league ${leagueId}: ${String(err)}`);
+        this.logger.error(
+          `Failed to refresh teams for league ${leagueId}: ${String(err)}`,
+        );
       }
     }
   }
@@ -100,7 +109,9 @@ export class TeamsService {
           });
         }
       } catch (err) {
-        this.logger.error(`Failed to persist team ${raw.team_key}: ${String(err)}`);
+        this.logger.error(
+          `Failed to persist team ${raw.team_key}: ${String(err)}`,
+        );
       }
     }
   }

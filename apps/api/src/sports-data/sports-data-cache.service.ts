@@ -1,14 +1,14 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { RedisService } from '../redis/redis.service';
 
-export const TTL_LIVE = 30;             // 30 seconds (WebSocket updates frequently)
-export const TTL_ODDS = 5 * 60;         // 5 minutes
-export const TTL_H2H = 60 * 60;         // 1 hour
+export const TTL_LIVE = 30; // 30 seconds (WebSocket updates frequently)
+export const TTL_ODDS = 5 * 60; // 5 minutes
+export const TTL_H2H = 60 * 60; // 1 hour
 export const TTL_LINEUPS = 3 * 60 * 60; // 3 hours (match duration)
 export const TTL_STATISTICS = 3 * 60 * 60;
 export const TTL_STANDINGS = 6 * 60 * 60; // 6 hours
 export const TTL_FIXTURES = 6 * 60 * 60;
-export const TTL_TEAMS = 24 * 60 * 60;  // 24 hours
+export const TTL_TEAMS = 24 * 60 * 60; // 24 hours
 
 @Injectable()
 export class SportsDataCacheService {
@@ -23,7 +23,9 @@ export class SportsDataCacheService {
     try {
       return JSON.parse(raw) as T;
     } catch (err) {
-      this.logger.warn(`Failed to parse cached value for key "${key}": ${String(err)}`);
+      this.logger.warn(
+        `Failed to parse cached value for key "${key}": ${String(err)}`,
+      );
       return null;
     }
   }
@@ -43,7 +45,9 @@ export class SportsDataCacheService {
     const keys = await client.keys(pattern);
     if (keys.length > 0) {
       await client.del(...keys);
-      this.logger.log(`Invalidated ${keys.length} key(s) matching pattern "${pattern}"`);
+      this.logger.log(
+        `Invalidated ${keys.length} key(s) matching pattern "${pattern}"`,
+      );
     }
   }
 

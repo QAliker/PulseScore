@@ -26,9 +26,15 @@ export class H2hService {
     });
 
     const dto = new H2hDto();
-    dto.headToHead = (raw.firstTeam_VS_secondTeam ?? []).map((m) => this.normalizer.normalizeMatch(m));
-    dto.firstTeamResults = (raw.firstTeam_lastResults ?? []).map((m) => this.normalizer.normalizeMatch(m));
-    dto.secondTeamResults = (raw.secondTeam_lastResults ?? []).map((m) => this.normalizer.normalizeMatch(m));
+    dto.headToHead = (raw.firstTeam_VS_secondTeam ?? []).map((m) =>
+      this.normalizer.normalizeMatch(m),
+    );
+    dto.firstTeamResults = (raw.firstTeam_lastResults ?? []).map((m) =>
+      this.normalizer.normalizeMatch(m),
+    );
+    dto.secondTeamResults = (raw.secondTeam_lastResults ?? []).map((m) =>
+      this.normalizer.normalizeMatch(m),
+    );
 
     await this.cacheService.setCached(cacheKey, dto, TTL_H2H);
     return dto;

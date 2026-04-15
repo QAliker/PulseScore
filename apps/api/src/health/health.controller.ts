@@ -2,15 +2,15 @@ import { Controller, Get } from '@nestjs/common';
 import {
   HealthCheck,
   HealthCheckService,
-  HealthIndicator,
   HealthIndicatorResult,
+  HealthIndicatorService,
 } from '@nestjs/terminus';
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { RedisService } from '../redis/redis.service';
 
 @Injectable()
-export class DatabaseHealthIndicator extends HealthIndicator {
+export class DatabaseHealthIndicator extends HealthIndicatorService {
   constructor(private readonly prisma: PrismaService) {
     super();
   }
@@ -28,7 +28,7 @@ export class DatabaseHealthIndicator extends HealthIndicator {
 }
 
 @Injectable()
-export class RedisHealthIndicator extends HealthIndicator {
+export class RedisHealthIndicator extends HealthIndicatorService {
   constructor(private readonly redisService: RedisService) {
     super();
   }

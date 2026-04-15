@@ -1,4 +1,9 @@
-import { Injectable, Logger, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  OnModuleInit,
+  OnModuleDestroy,
+} from '@nestjs/common';
 import { ApiFootballClient } from '../client/api-football.client';
 import { ApiFootballNormalizer } from '../normalizer/api-football.normalizer';
 import { SportsDataCacheService, TTL_LIVE } from '../sports-data-cache.service';
@@ -40,7 +45,9 @@ export class LivescoreService implements OnModuleInit, OnModuleDestroy {
 
   private async handleLivescoreData(rawMatches: AfMatch[]): Promise<void> {
     try {
-      const freshMatches = rawMatches.map((m) => this.normalizer.normalizeMatch(m));
+      const freshMatches = rawMatches.map((m) =>
+        this.normalizer.normalizeMatch(m),
+      );
 
       await this.cacheService.setCached(
         SportsDataCacheService.livescoresKey(),
@@ -55,9 +62,9 @@ export class LivescoreService implements OnModuleInit, OnModuleDestroy {
         for (const change of changes) {
           this.logger.log(
             `${change.homeTeam} vs ${change.awayTeam}: ` +
-            `${change.previousScore.home ?? '?'}-${change.previousScore.away ?? '?'} → ` +
-            `${change.newScore.home ?? '?'}-${change.newScore.away ?? '?'}` +
-            (change.statusChanged ? ` [status changed]` : ''),
+              `${change.previousScore.home ?? '?'}-${change.previousScore.away ?? '?'} → ` +
+              `${change.newScore.home ?? '?'}-${change.newScore.away ?? '?'}` +
+              (change.statusChanged ? ` [status changed]` : ''),
           );
         }
 
@@ -85,7 +92,9 @@ export class LivescoreService implements OnModuleInit, OnModuleDestroy {
       const prev = previousMap.get(match.externalId);
       if (!prev) continue;
 
-      const scoreChanged = match.homeScore !== prev.homeScore || match.awayScore !== prev.awayScore;
+      const scoreChanged =
+        match.homeScore !== prev.homeScore ||
+        match.awayScore !== prev.awayScore;
       const statusChanged = match.status !== prev.status;
 
       if (scoreChanged || statusChanged) {
@@ -127,7 +136,9 @@ export class LivescoreService implements OnModuleInit, OnModuleDestroy {
           },
         });
       } catch (err) {
-        this.logger.error(`Failed to upsert match ${match.externalId}: ${String(err)}`);
+        this.logger.error(
+          `Failed to upsert match ${match.externalId}: ${String(err)}`,
+        );
       }
     }
   }
@@ -149,9 +160,11 @@ export class LivescoreService implements OnModuleInit, OnModuleDestroy {
         const isHome = !!g.homeScorer;
         events.push({
           matchId: dbMatch.id,
-          type: g.info?.toLowerCase().includes('own goal') ? 'OWN_GOAL' as const
-            : g.info?.toLowerCase().includes('penalty') ? 'PENALTY_GOAL' as const
-            : 'GOAL' as const,
+          type: g.info?.toLowerCase().includes('own goal')
+            ? ('OWN_GOAL' as const)
+            : g.info?.toLowerCase().includes('penalty')
+              ? ('PENALTY_GOAL' as const)
+              : ('GOAL' as const),
           minute: parseInt(g.time, 10) || null,
           player: isHome ? g.homeScorer : g.awayScorer,
           team: isHome ? match.homeTeam.name : match.awayTeam.name,
@@ -163,7 +176,9 @@ export class LivescoreService implements OnModuleInit, OnModuleDestroy {
         const isHome = !!c.homeFault;
         events.push({
           matchId: dbMatch.id,
-          type: c.card.toLowerCase().includes('red') ? 'RED_CARD' as const : 'YELLOW_CARD' as const,
+          type: c.card.toLowerCase().includes('red')
+            ? ('RED_CARD' as const)
+            : ('YELLOW_CARD' as const),
           minute: parseInt(c.time, 10) || null,
           player: isHome ? c.homeFault : c.awayFault,
           team: isHome ? match.homeTeam.name : match.awayTeam.name,
@@ -175,7 +190,9 @@ export class LivescoreService implements OnModuleInit, OnModuleDestroy {
         await this.prismaService.matchEvent.createMany({ data: events });
       }
     } catch (err) {
-      this.logger.error(`Failed to upsert events for match ${match.externalId}: ${String(err)}`);
+      this.logger.error(
+        `Failed to upsert events for match ${match.externalId}: ${String(err)}`,
+      );
     }
   }
 }
