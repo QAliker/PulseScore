@@ -2,7 +2,10 @@ import { Injectable, Logger } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 import { ApiFootballClient } from '../client/api-football.client';
 import { ApiFootballNormalizer } from '../normalizer/api-football.normalizer';
-import { SportsDataCacheService, TTL_FIXTURES } from '../sports-data-cache.service';
+import {
+  SportsDataCacheService,
+  TTL_FIXTURES,
+} from '../sports-data-cache.service';
 import { AfMatch } from '../interfaces/api-football.interfaces';
 import { MatchDto } from '../dto/match.dto';
 
@@ -18,7 +21,11 @@ export class FixturesService {
     private readonly cacheService: SportsDataCacheService,
   ) {}
 
-  async getFixtures(leagueId: string, from: string, to: string): Promise<MatchDto[]> {
+  async getFixtures(
+    leagueId: string,
+    from: string,
+    to: string,
+  ): Promise<MatchDto[]> {
     const cacheKey = SportsDataCacheService.fixturesKey(leagueId, from, to);
     const cached = await this.cacheService.getCached<MatchDto[]>(cacheKey);
     if (cached) return cached;
@@ -39,7 +46,9 @@ export class FixturesService {
   @Cron('0 */6 * * *')
   async refreshFixtures(): Promise<void> {
     const today = new Date().toISOString().slice(0, 10);
-    const nextWeek = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+    const nextWeek = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
+      .toISOString()
+      .slice(0, 10);
 
     for (const leagueId of LEAGUE_IDS) {
       try {
@@ -49,7 +58,9 @@ export class FixturesService {
         );
         await this.getFixtures(leagueId, today, nextWeek);
       } catch (err) {
-        this.logger.error(`Failed to refresh fixtures for league ${leagueId}: ${String(err)}`);
+        this.logger.error(
+          `Failed to refresh fixtures for league ${leagueId}: ${String(err)}`,
+        );
       }
     }
   }

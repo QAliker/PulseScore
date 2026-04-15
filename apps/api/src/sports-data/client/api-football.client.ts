@@ -21,7 +21,8 @@ export class ApiFootballClient {
 
   constructor(private readonly configService: ConfigService) {
     this.apiKey = this.configService.get<string>('APIFOOTBALL_API_KEY') ?? '';
-    this.timezone = this.configService.get<string>('APIFOOTBALL_TIMEZONE') ?? 'Europe/Paris';
+    this.timezone =
+      this.configService.get<string>('APIFOOTBALL_TIMEZONE') ?? 'Europe/Paris';
   }
 
   private async throttle(): Promise<void> {
@@ -34,7 +35,10 @@ export class ApiFootballClient {
     this.lastRequestAt = Date.now();
   }
 
-  async get<T = unknown>(action: string, params: Record<string, string>): Promise<T> {
+  async get<T = unknown>(
+    action: string,
+    params: Record<string, string>,
+  ): Promise<T> {
     await this.throttle();
 
     const query = new URLSearchParams({
@@ -52,7 +56,9 @@ export class ApiFootballClient {
     });
 
     if (!response.ok) {
-      throw new Error(`APIFootball request failed: ${response.status} ${response.statusText}`);
+      throw new Error(
+        `APIFootball request failed: ${response.status} ${response.statusText}`,
+      );
     }
 
     return response.json() as Promise<T>;
@@ -114,7 +120,9 @@ export class ApiFootballClient {
       1000 * Math.pow(2, this.reconnectAttempts - 1),
       this.maxReconnectDelay,
     );
-    this.logger.log(`Reconnecting in ${delay}ms (attempt ${this.reconnectAttempts})`);
+    this.logger.log(
+      `Reconnecting in ${delay}ms (attempt ${this.reconnectAttempts})`,
+    );
     this.reconnectTimer = setTimeout(() => {
       this.connectWebSocket();
     }, delay);

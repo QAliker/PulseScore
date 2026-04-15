@@ -2,7 +2,10 @@ import { Injectable, Logger } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 import { ApiFootballClient } from '../client/api-football.client';
 import { ApiFootballNormalizer } from '../normalizer/api-football.normalizer';
-import { SportsDataCacheService, TTL_STANDINGS } from '../sports-data-cache.service';
+import {
+  SportsDataCacheService,
+  TTL_STANDINGS,
+} from '../sports-data-cache.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AfStanding } from '../interfaces/api-football.interfaces';
 import { StandingDto } from '../dto/standing.dto';
@@ -25,7 +28,9 @@ export class StandingsService {
     const cached = await this.cacheService.getCached<StandingDto[]>(cacheKey);
     if (cached) return cached;
 
-    const raw = await this.client.get<AfStanding[]>('get_standings', { league_id: leagueId });
+    const raw = await this.client.get<AfStanding[]>('get_standings', {
+      league_id: leagueId,
+    });
 
     if (!Array.isArray(raw)) return [];
 
@@ -39,16 +44,23 @@ export class StandingsService {
     for (const leagueId of LEAGUE_IDS) {
       try {
         this.logger.log(`Refreshing standings for league ${leagueId}`);
-        await this.cacheService.invalidate(SportsDataCacheService.standingsKey(leagueId));
+        await this.cacheService.invalidate(
+          SportsDataCacheService.standingsKey(leagueId),
+        );
         const standings = await this.getStandings(leagueId);
         await this.persistStandings(leagueId, standings);
       } catch (err) {
-        this.logger.error(`Failed to refresh standings for league ${leagueId}: ${String(err)}`);
+        this.logger.error(
+          `Failed to refresh standings for league ${leagueId}: ${String(err)}`,
+        );
       }
     }
   }
 
-  private async persistStandings(leagueId: string, standings: StandingDto[]): Promise<void> {
+  private async persistStandings(
+    leagueId: string,
+    standings: StandingDto[],
+  ): Promise<void> {
     const league = await this.prismaService.league.findUnique({
       where: { externalId: leagueId },
     });

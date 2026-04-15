@@ -18,7 +18,9 @@ export class OddsService {
     const cached = await this.cacheService.getCached<OddsDto[]>(cacheKey);
     if (cached) return cached;
 
-    const raw = await this.client.get<AfOdds[]>('get_odds', { match_id: matchId });
+    const raw = await this.client.get<AfOdds[]>('get_odds', {
+      match_id: matchId,
+    });
 
     if (!Array.isArray(raw)) return [];
 
