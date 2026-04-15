@@ -1,26 +1,264 @@
-@import "tailwindcss";
+@import 'tailwindcss';
+@import 'tw-animate-css';
+@import 'shadcn/tailwind.css';
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+@custom-variant dark (&:is(.dark *));
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-archivo);
+  --font-display: var(--font-big-shoulders);
+  --font-mono: ui-monospace, 'SFMono-Regular', Menlo, monospace;
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --color-pitch: var(--pitch);
+  --color-pitch-foreground: var(--pitch-foreground);
+  --color-live: var(--live);
+  --color-live-foreground: var(--live-foreground);
+  --color-positive: var(--positive);
+  --color-home: var(--home);
+  --color-away: var(--away);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+
+  /* 4pt semantic spacing */
+  --space-xs: 0.25rem;
+  --space-sm: 0.5rem;
+  --space-md: 0.75rem;
+  --space-lg: 1rem;
+  --space-xl: 1.5rem;
+  --space-2xl: 2rem;
+  --space-3xl: 3rem;
+  --space-4xl: 4rem;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+/* ==========================================================================
+   PulseScore palette — brand hue 295 (purple), live hue 145 (pitch-green).
+   Neutrals tinted +0.008 chroma toward 295 for cohesion.
+   ========================================================================== */
+:root {
+  --radius: 0.5rem;
+
+  --background: oklch(0.985 0.004 295);
+  --foreground: oklch(0.18 0.02 295);
+
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.18 0.02 295);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.18 0.02 295);
+
+  --primary: oklch(0.48 0.21 295);
+  --primary-foreground: oklch(0.985 0.004 295);
+
+  --secondary: oklch(0.955 0.008 295);
+  --secondary-foreground: oklch(0.28 0.04 295);
+
+  --muted: oklch(0.955 0.008 295);
+  --muted-foreground: oklch(0.5 0.02 295);
+
+  --accent: oklch(0.94 0.02 295);
+  --accent-foreground: oklch(0.28 0.08 295);
+
+  --destructive: oklch(0.58 0.22 28);
+
+  --border: oklch(0.905 0.008 295);
+  --input: oklch(0.9 0.01 295);
+  --ring: oklch(0.48 0.21 295);
+
+  /* Sport-specific */
+  --pitch: oklch(0.56 0.16 145);
+  --pitch-foreground: oklch(0.99 0.01 145);
+  --live: oklch(0.62 0.2 145);
+  --live-foreground: oklch(0.99 0 0);
+  --positive: oklch(0.56 0.16 145);
+  --home: oklch(0.48 0.21 295);
+  --away: oklch(0.56 0.16 145);
+
+  /* Sidebar */
+  --sidebar: oklch(0.975 0.006 295);
+  --sidebar-foreground: oklch(0.22 0.03 295);
+  --sidebar-primary: oklch(0.48 0.21 295);
+  --sidebar-primary-foreground: oklch(0.99 0 0);
+  --sidebar-accent: oklch(0.93 0.02 295);
+  --sidebar-accent-foreground: oklch(0.28 0.08 295);
+  --sidebar-border: oklch(0.9 0.008 295);
+  --sidebar-ring: oklch(0.48 0.21 295);
+}
+
+.dark {
+  --background: oklch(0.14 0.018 295);
+  --foreground: oklch(0.965 0.008 295);
+
+  --card: oklch(0.185 0.02 295);
+  --card-foreground: oklch(0.965 0.008 295);
+  --popover: oklch(0.2 0.025 295);
+  --popover-foreground: oklch(0.965 0.008 295);
+
+  --primary: oklch(0.72 0.17 295);
+  --primary-foreground: oklch(0.14 0.018 295);
+
+  --secondary: oklch(0.24 0.025 295);
+  --secondary-foreground: oklch(0.92 0.01 295);
+
+  --muted: oklch(0.24 0.025 295);
+  --muted-foreground: oklch(0.68 0.015 295);
+
+  --accent: oklch(0.28 0.04 295);
+  --accent-foreground: oklch(0.92 0.02 295);
+
+  --destructive: oklch(0.68 0.2 22);
+
+  --border: oklch(0.3 0.025 295 / 70%);
+  --input: oklch(0.3 0.03 295 / 80%);
+  --ring: oklch(0.72 0.17 295);
+
+  --pitch: oklch(0.45 0.14 145);
+  --pitch-foreground: oklch(0.98 0.01 145);
+  --live: oklch(0.72 0.2 145);
+  --live-foreground: oklch(0.14 0.02 145);
+  --positive: oklch(0.72 0.2 145);
+  --home: oklch(0.78 0.15 295);
+  --away: oklch(0.78 0.15 145);
+
+  --sidebar: oklch(0.17 0.022 295);
+  --sidebar-foreground: oklch(0.93 0.01 295);
+  --sidebar-primary: oklch(0.72 0.17 295);
+  --sidebar-primary-foreground: oklch(0.14 0.02 295);
+  --sidebar-accent: oklch(0.25 0.035 295);
+  --sidebar-accent-foreground: oklch(0.93 0.02 295);
+  --sidebar-border: oklch(0.28 0.025 295 / 70%);
+  --sidebar-ring: oklch(0.72 0.17 295);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/40;
+  }
+  html {
+    @apply font-sans;
+    font-feature-settings: 'ss01', 'cv11';
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+  }
+  body {
+    @apply bg-background text-foreground;
+    line-height: 1.5;
+  }
+  :where(h1, h2, h3, h4, .font-display) {
+    font-family: var(--font-display), var(--font-archivo), sans-serif;
+    letter-spacing: -0.01em;
+    line-height: 1.05;
+  }
+  .dark body {
+    line-height: 1.55;
+  }
+  .tabular {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: 'tnum' 1, 'lnum' 1;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* ==========================================================================
+   Pitch-grass texture — reserved for league headers + featured hero only.
+   Thin alternating stripes mimicking a mown pitch. Subtle in both themes.
+   ========================================================================== */
+.pitch-grass {
+  background-color: var(--pitch);
+  background-image:
+    repeating-linear-gradient(
+      90deg,
+      color-mix(in oklch, var(--pitch) 100%, transparent) 0 28px,
+      color-mix(in oklch, var(--pitch) 88%, black) 28px 56px
+    ),
+    radial-gradient(
+      120% 80% at 50% 0%,
+      color-mix(in oklch, var(--pitch) 70%, transparent) 0%,
+      color-mix(in oklch, var(--pitch) 100%, transparent) 65%
+    );
+  background-blend-mode: soft-light, normal;
+}
+
+.dark .pitch-grass {
+  background-image:
+    repeating-linear-gradient(
+      90deg,
+      color-mix(in oklch, var(--pitch) 100%, transparent) 0 28px,
+      color-mix(in oklch, var(--pitch) 80%, black) 28px 56px
+    ),
+    radial-gradient(
+      120% 80% at 50% 0%,
+      color-mix(in oklch, var(--pitch) 60%, transparent) 0%,
+      color-mix(in oklch, var(--pitch) 100%, transparent) 70%
+    );
+}
+
+/* ==========================================================================
+   Live indicator pulse — used on header dot + MatchCard minute.
+   Respects prefers-reduced-motion.
+   ========================================================================== */
+@keyframes live-pulse {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.55;
+    transform: scale(0.88);
+  }
+}
+
+.live-dot {
+  animation: live-pulse 1.6s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+}
+
+@keyframes score-flash {
+  0% {
+    background-color: transparent;
+  }
+  15% {
+    background-color: color-mix(in oklch, var(--live) 28%, transparent);
+  }
+  100% {
+    background-color: transparent;
+  }
+}
+
+.score-flash-home,
+.score-flash-away {
+  animation: score-flash 900ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .live-dot,
+  .score-flash-home,
+  .score-flash-away {
+    animation: none;
+  }
 }
