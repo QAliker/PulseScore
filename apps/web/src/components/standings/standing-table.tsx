@@ -16,7 +16,7 @@ export function StandingTable({ standings }: Props) {
       <table className="w-full text-sm">
         <thead>
           <tr className="border-b border-border/60 text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-            <th className="py-2 pr-3 text-left w-8">#</th>
+            <th className="py-2 pr-3 text-left w-8 pl-3">#</th>
             <th className="py-2 text-left">Team</th>
             <th className="py-2 px-2 text-center">P</th>
             <th className="py-2 px-2 text-center">W</th>
@@ -29,16 +29,24 @@ export function StandingTable({ standings }: Props) {
           </tr>
         </thead>
         <tbody className="divide-y divide-border/40">
-          {standings.map((row) => (
+          {standings.map((row) => {
+            const isPromotion = row.promotion?.toLowerCase().includes('promotion');
+            const isRelegation = row.promotion?.toLowerCase().includes('relegation');
+            return (
             <tr
               key={row.teamId}
               className={cn(
                 'group transition-colors hover:bg-accent/40',
-                row.promotion?.toLowerCase().includes('promotion') && 'bg-emerald-500/5',
-                row.promotion?.toLowerCase().includes('relegation') && 'bg-red-500/5',
+                isPromotion && 'bg-emerald-500/10 dark:bg-emerald-500/20',
+                isRelegation && 'bg-red-500/10 dark:bg-red-500/20',
               )}
             >
-              <td className="py-2.5 pr-3 tabular text-muted-foreground">{row.position}</td>
+              <td className={cn(
+                'py-2.5 pr-3 pl-2 tabular text-muted-foreground border-l-[3px]',
+                isPromotion && 'border-emerald-500',
+                isRelegation && 'border-red-500',
+                !isPromotion && !isRelegation && 'border-transparent',
+              )}>{row.position}</td>
               <td className="py-2.5">
                 <Link
                   href={`/teams/${row.teamId}`}
@@ -67,7 +75,8 @@ export function StandingTable({ standings }: Props) {
               </td>
               <td className="py-2.5 pl-2 text-center tabular font-bold">{row.points}</td>
             </tr>
-          ))}
+            );
+          })}
         </tbody>
       </table>
     </div>

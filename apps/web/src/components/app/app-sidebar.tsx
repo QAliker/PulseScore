@@ -1,14 +1,37 @@
 import Link from 'next/link';
-import { Star, Trophy, Calendar } from 'lucide-react';
+import Image from 'next/image';
+import { Trophy, Calendar } from 'lucide-react';
 import { LEAGUES } from '@/lib/leagues';
+import { apiFetch } from '@/lib/api';
+import type { ApiMatch } from '@/lib/api-types';
 
-export function AppSidebar() {
+async function fetchLeagueLogos(): Promise<Record<number, string | null>> {
+  const results = await Promise.allSettled(
+    LEAGUES.map((l) =>
+      apiFetch<ApiMatch[]>(`/leagues/${l.apiFootballId}/fixtures`, {
+        next: { revalidate: 3600 },
+      }),
+    ),
+  );
+
+  return Object.fromEntries(
+    LEAGUES.map((l, i) => {
+      const r = results[i];
+      const logo =
+        r.status === 'fulfilled' ? (r.value[0]?.league?.logo ?? null) : null;
+      return [l.apiFootballId, logo];
+    }),
+  );
+}
+
+export async function AppSidebar() {
+  const logos = await fetchLeagueLogos();
+
   return (
     <aside className="hidden border-r border-border/60 bg-sidebar/60 lg:block">
       <nav className="sticky top-14 flex flex-col gap-6 px-3 py-6">
         <SidebarSection label="Quick">
           <SidebarLink href="/" icon={<Trophy className="size-4" />} label="All matches" active />
-          <SidebarLink href="/favorites" icon={<Star className="size-4" />} label="Favorites" badge="0" />
           <SidebarLink
             href="/schedule"
             icon={<Calendar className="size-4" />}
@@ -17,20 +40,31 @@ export function AppSidebar() {
         </SidebarSection>
 
         <SidebarSection label="Football">
-          {LEAGUES.map((l) => (
-            <SidebarLink
-              key={l.slug}
-              href={`/leagues/${l.slug}`}
-              icon={<span className="text-[1.05rem] leading-none">{l.flag}</span>}
-              label={l.name}
-              sublabel={l.country}
-            />
-          ))}
+          {LEAGUES.map((l) => {
+            const logo = logos[l.apiFootballId];
+            const icon = logo ? (
+              <Image
+                src={logo}
+                alt={l.name}
+                width={20}
+                height={20}
+                className="size-5 object-contain"
+                unoptimized
+              />
+            ) : (
+              <span className="text-[1.05rem] leading-none">{l.flag}</span>
+            );
+            return (
+              <SidebarLink
+                key={l.slug}
+                href={`/leagues/${l.slug}`}
+                icon={icon}
+                label={l.name}
+                sublabel={l.country}
+              />
+            );
+          })}
         </SidebarSection>
-
-        <p className="px-3 pt-4 text-[0.68rem] uppercase tracking-[0.14em] text-muted-foreground">
-          Free tier · 2 leagues
-        </p>
       </nav>
     </aside>
   );
