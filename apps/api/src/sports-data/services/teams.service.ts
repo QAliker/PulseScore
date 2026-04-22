@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 import { ApiFootballClient } from '../client/api-football.client';
 import { ApiFootballNormalizer } from '../normalizer/api-football.normalizer';
@@ -9,10 +9,10 @@ import {
 import { PrismaService } from '../../prisma/prisma.service';
 import { AfTeam } from '../interfaces/api-football.interfaces';
 
-const LEAGUE_IDS = ['152', '168']; // Championship, Ligue 2
+const LEAGUE_IDS = ['153', '164']; // Championship, Ligue 2
 
 @Injectable()
-export class TeamsService {
+export class TeamsService implements OnModuleInit {
   private readonly logger = new Logger(TeamsService.name);
 
   constructor(
@@ -21,6 +21,14 @@ export class TeamsService {
     private readonly cacheService: SportsDataCacheService,
     private readonly prismaService: PrismaService,
   ) {}
+
+  async onModuleInit(): Promise<void> {
+    const count = await this.prismaService.team.count();
+    if (count === 0) {
+      this.logger.log('DB empty — seeding teams on startup');
+      void this.refreshTeamsAndPlayers();
+    }
+  }
 
   async getTeams(leagueId: string): Promise<AfTeam[]> {
     const cacheKey = SportsDataCacheService.teamsKey(leagueId);

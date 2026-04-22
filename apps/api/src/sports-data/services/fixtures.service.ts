@@ -9,7 +9,7 @@ import {
 import { AfMatch } from '../interfaces/api-football.interfaces';
 import { MatchDto } from '../dto/match.dto';
 
-const LEAGUE_IDS = ['152', '168']; // Championship, Ligue 2
+const LEAGUE_IDS = ['153', '164']; // Championship, Ligue 2
 
 @Injectable()
 export class FixturesService {
