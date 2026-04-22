@@ -10,7 +10,7 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { AfStanding } from '../interfaces/api-football.interfaces';
 import { StandingDto } from '../dto/standing.dto';
 
-const LEAGUE_IDS = ['152', '168']; // Championship, Ligue 2
+const LEAGUE_IDS = ['153', '164']; // Championship, Ligue 2
 
 @Injectable()
 export class StandingsService {
