@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useMemo } from 'react';
 import type { Match } from '@/lib/types';
 import type { FlashEntry } from '@/hooks/use-live-scores';
@@ -40,12 +41,13 @@ export function LeagueFeed({
         <span className="text-xl leading-none" aria-hidden>
           {league.flag}
         </span>
-        <h2
+        <Link
+          href={`/standings/${league.apiFootballId}`}
           id={`league-${leagueSlug}`}
-          className="font-display text-lg font-extrabold tracking-tight"
+          className="font-display text-lg font-extrabold tracking-tight hover:underline"
         >
           {league.name}
-        </h2>
+        </Link>
         <span className="text-[0.7rem] uppercase tracking-[0.14em] text-muted-foreground">
           {league.season}
         </span>
