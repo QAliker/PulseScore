@@ -37,6 +37,17 @@ export class TeamsService {
     return raw;
   }
 
+  async getTeamByExternalId(teamId: string): Promise<{
+    id: string;
+    externalId: string;
+    name: string;
+    logo: string | null;
+    shortName: string | null;
+    country: string | null;
+  } | null> {
+    return this.prismaService.team.findUnique({ where: { externalId: teamId } });
+  }
+
   @Cron('0 3 * * *') // Once per day at 3 AM
   async refreshTeamsAndPlayers(): Promise<void> {
     for (const leagueId of LEAGUE_IDS) {

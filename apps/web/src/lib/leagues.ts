@@ -14,7 +14,7 @@ export const LEAGUES: League[] = [
     name: 'Championship',
     country: 'England',
     flag: '🏴󠁧󠁢󠁥󠁮󠁧󠁿',
-    apiFootballId: 40,
+    apiFootballId: 152,
     season: '2025/26',
   },
   {
@@ -22,7 +22,7 @@ export const LEAGUES: League[] = [
     name: 'Ligue 2',
     country: 'France',
     flag: '🇫🇷',
-    apiFootballId: 62,
+    apiFootballId: 168,
     season: '2025/26',
   },
 ];

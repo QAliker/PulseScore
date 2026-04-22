@@ -10,9 +10,15 @@ import { StandingsService } from './services/standings.service';
 import { TeamsService } from './services/teams.service';
 import { OddsService } from './services/odds.service';
 import { H2hService } from './services/h2h.service';
+import { PlayersService } from './services/players.service';
+import { LeaguesController } from './controllers/leagues.controller';
+import { TeamsController } from './controllers/teams.controller';
+import { PlayersController } from './controllers/players.controller';
+import { H2hController } from './controllers/h2h.controller';
 
 @Module({
   imports: [ScheduleModule.forRoot(), PrismaModule],
+  controllers: [LeaguesController, TeamsController, PlayersController, H2hController],
   providers: [
     ApiFootballClient,
     ApiFootballNormalizer,
@@ -23,6 +29,7 @@ import { H2hService } from './services/h2h.service';
     TeamsService,
     OddsService,
     H2hService,
+    PlayersService,
   ],
   exports: [
     LivescoreService,
@@ -31,6 +38,7 @@ import { H2hService } from './services/h2h.service';
     TeamsService,
     OddsService,
     H2hService,
+    PlayersService,
     SportsDataCacheService,
   ],
 })

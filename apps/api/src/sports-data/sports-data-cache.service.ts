@@ -85,4 +85,20 @@ export class SportsDataCacheService {
   static statisticsKey(matchId: string): string {
     return `sports:statistics:${matchId}`;
   }
+
+  static teamResultsKey(teamId: string): string {
+    return `sports:team:results:${teamId}`;
+  }
+
+  static teamFixturesKey(teamId: string): string {
+    return `sports:team:fixtures:${teamId}`;
+  }
+
+  static leagueResultsKey(leagueId: string): string {
+    return `sports:league:results:${leagueId}`;
+  }
+
+  static leagueFixturesKey(leagueId: string): string {
+    return `sports:league:fixtures:${leagueId}`;
+  }
 }
