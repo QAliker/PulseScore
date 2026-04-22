@@ -30,6 +30,8 @@ services:
       context: ./apps/api
     ports:
       - "3001:3001"
+    env_file:
+      - .env
     environment:
       DATABASE_URL: postgresql://pulsescore:pulsescore@postgres:5432/pulsescore
       REDIS_URL: redis://redis:6379
@@ -46,6 +48,7 @@ services:
     ports:
       - "3000:3000"
     environment:
+      API_URL: http://api:3001
       NEXT_PUBLIC_API_URL: http://localhost:3001
       NEXT_PUBLIC_APP_TZ: Europe/Paris
       WATCHPACK_POLLING: "true"
