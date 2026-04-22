@@ -58,4 +58,91 @@ export type StatusChangeEvent = {
   updatedAt: string;
 };
 
-export type MatchEvent = ScoreChangeEvent | MinuteTickEvent | StatusChangeEvent;
+// ─── Match Detail ─────────────────────────────────────────────────────────────
+
+export type LineupPlayer = {
+  id: string;
+  name: string;
+  number: number;
+  positionRow: number; // 0=GK 1=DEF 2=MID 3=FWD
+  positionCol: number; // 0-based column within row
+  positionLabel: string; // "GK" | "RB" | "CB" | "LB" | "CM" | "RM" | "LM" | "ST"
+};
+
+export type TeamLineup = {
+  formation: string; // "4-4-2"
+  starting: LineupPlayer[];
+  bench: LineupPlayer[];
+  coach: string;
+};
+
+export type MatchLineups = {
+  home: TeamLineup;
+  away: TeamLineup;
+};
+
+export type MatchEventType = 'goal' | 'owngoal' | 'yellow' | 'red' | 'yellowred' | 'sub';
+
+export type MatchEventEntry = {
+  id: string;
+  minute: number;
+  stoppage?: number;
+  type: MatchEventType;
+  team: 'home' | 'away';
+  playerName: string;
+  detail?: string; // assist name for goal; player-out name for sub
+};
+
+export type H2HMatch = {
+  id: string;
+  date: string; // "YYYY-MM-DD"
+  homeTeamName: string;
+  awayTeamName: string;
+  homeTeamId: string;
+  awayTeamId: string;
+  homeScore: number;
+  awayScore: number;
+};
+
+export type H2HStats = {
+  matches: H2HMatch[];
+  homeWins: number;
+  draws: number;
+  awayWins: number;
+};
+
+export type MatchDetail = {
+  matchId: string;
+  lineups: MatchLineups;
+  events: MatchEventEntry[];
+  h2h: H2HStats;
+};
+
+// ─── New socket event types ───────────────────────────────────────────────────
+
+export type CardEvent = {
+  type: 'card';
+  matchId: string;
+  team: 'home' | 'away';
+  playerName: string;
+  cardType: 'yellow' | 'red';
+  minute: number;
+  updatedAt: string;
+};
+
+export type SubstitutionEvent = {
+  type: 'sub';
+  matchId: string;
+  team: 'home' | 'away';
+  playerInName: string;
+  playerOutName: string;
+  minute: number;
+  updatedAt: string;
+};
+
+export type MatchEvent =
+  | ScoreChangeEvent
+  | MinuteTickEvent
+  | StatusChangeEvent
+  | CardEvent
+  | SubstitutionEvent;

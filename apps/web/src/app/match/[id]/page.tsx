@@ -1,11 +1,15 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { ArrowLeft } from 'lucide-react';
-import { getInitialFixtures } from '@/lib/mock-data';
+import { getInitialFixtures, getMatchDetail } from '@/lib/mock-data';
 import { getLeagueBySlug } from '@/lib/leagues';
 import { formatDate, formatKickoff, formatMinute } from '@/lib/format';
 import { TeamCrest } from '@/components/feed/team-crest';
 import { MatchMinute } from '@/components/feed/match-minute';
+import { SectionNav } from '@/components/match/section-nav';
+import { PitchFormation } from '@/components/match/pitch-formation';
+import { LiveEventsSection } from '@/components/match/live-events-section';
+import { H2HSection } from '@/components/match/h2h-section';
 
 export const dynamic = 'force-dynamic';
 
@@ -19,6 +23,7 @@ export default async function MatchDetailPage({
   if (!match) notFound();
 
   const league = getLeagueBySlug(match.leagueSlug);
+  const detail = getMatchDetail(id, match);
 
   return (
     <div className="mx-auto flex max-w-[900px] flex-col gap-6 px-4 py-6 lg:px-8 lg:py-8">
@@ -86,10 +91,37 @@ export default async function MatchDetailPage({
         />
       </section>
 
-      <p className="text-xs text-muted-foreground">
-        Lineups, events timeline, and head-to-head stats land with Feature 5.
-      </p>
+      <SectionNav />
+
+      <section id="lineups" className="scroll-mt-28 flex flex-col gap-3">
+        <SectionHeading>Lineups</SectionHeading>
+        <div className="rounded-xl border border-border/60 bg-card p-4 sm:p-6">
+          <PitchFormation lineups={detail.lineups} match={match} />
+        </div>
+      </section>
+
+      <section id="events" className="scroll-mt-28 flex flex-col gap-3">
+        <SectionHeading>Timeline</SectionHeading>
+        <div className="rounded-xl border border-border/60 bg-card p-4 sm:p-6">
+          <LiveEventsSection initialEvents={detail.events} match={match} />
+        </div>
+      </section>
+
+      <section id="h2h" className="scroll-mt-28 flex flex-col gap-3">
+        <SectionHeading>Head to Head</SectionHeading>
+        <div className="rounded-xl border border-border/60 bg-card p-4 sm:p-6">
+          <H2HSection h2h={detail.h2h} match={match} />
+        </div>
+      </section>
     </div>
+  );
+}
+
+function SectionHeading({ children }: { children: React.ReactNode }) {
+  return (
+    <h2 className="text-[0.72rem] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+      {children}
+    </h2>
   );
 }
 
