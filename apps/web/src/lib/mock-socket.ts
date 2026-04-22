@@ -10,6 +10,8 @@ export class MockSocket {
   private statusListeners = new Set<StatusListener>();
   private tickTimer: ReturnType<typeof setInterval> | null = null;
   private goalTimer: ReturnType<typeof setInterval> | null = null;
+  private cardTimer: ReturnType<typeof setInterval> | null = null;
+  private subTimer: ReturnType<typeof setInterval> | null = null;
   private connectTimer: ReturnType<typeof setTimeout> | null = null;
   private matches: Match[] = [];
 
@@ -21,18 +23,20 @@ export class MockSocket {
     this.emitStatus('connecting');
     this.connectTimer = setTimeout(() => {
       this.emitStatus('live');
-      // Minute ticks every 8s = accelerated match clock.
       this.tickTimer = setInterval(() => this.tickMinute(), 8000);
-      // Random goal every 12–22s across live matches.
       this.goalTimer = setInterval(() => this.maybeScore(), 12000);
+      this.cardTimer = setInterval(() => this.maybeCard(), 25000);
+      this.subTimer = setInterval(() => this.maybeSub(), 45000);
     }, 400);
   }
 
   disconnect() {
     if (this.tickTimer) clearInterval(this.tickTimer);
     if (this.goalTimer) clearInterval(this.goalTimer);
+    if (this.cardTimer) clearInterval(this.cardTimer);
+    if (this.subTimer) clearInterval(this.subTimer);
     if (this.connectTimer) clearTimeout(this.connectTimer);
-    this.tickTimer = this.goalTimer = this.connectTimer = null;
+    this.tickTimer = this.goalTimer = this.cardTimer = this.subTimer = this.connectTimer = null;
     this.emitStatus('offline');
   }
 
@@ -45,6 +49,8 @@ export class MockSocket {
       this.emitStatus('live');
       this.tickTimer = setInterval(() => this.tickMinute(), 8000);
       this.goalTimer = setInterval(() => this.maybeScore(), 12000);
+      this.cardTimer = setInterval(() => this.maybeCard(), 25000);
+      this.subTimer = setInterval(() => this.maybeSub(), 45000);
     }, durationMs);
   }
 
@@ -100,6 +106,49 @@ export class MockSocket {
       scorer,
       minute: m.minute ?? 0,
       updatedAt: now,
+    });
+  }
+
+  private readonly playerPool = [
+    'L. Cooper', 'E. Ampadu', 'G. Kamara', 'P. Struijk', 'B. Aaronson',
+    'G. Rutter', 'J. Piroe', 'D. James', 'W. Gnonto', 'M. Joseph',
+  ];
+
+  private maybeCard() {
+    const live = this.matches.filter((m) => m.status === 'live');
+    if (!live.length || Math.random() > 0.55) return;
+    const m = live[Math.floor(Math.random() * live.length)];
+    const team: 'home' | 'away' = Math.random() > 0.5 ? 'home' : 'away';
+    const playerName = this.playerPool[Math.floor(Math.random() * this.playerPool.length)];
+    const cardType: 'yellow' | 'red' = Math.random() > 0.85 ? 'red' : 'yellow';
+    this.emit({
+      type: 'card',
+      matchId: m.id,
+      team,
+      playerName,
+      cardType,
+      minute: m.minute ?? 45,
+      updatedAt: new Date().toISOString(),
+    });
+  }
+
+  private maybeSub() {
+    const live = this.matches.filter((m) => m.status === 'live' && (m.minute ?? 0) >= 55);
+    if (!live.length || Math.random() > 0.65) return;
+    const m = live[Math.floor(Math.random() * live.length)];
+    const team: 'home' | 'away' = Math.random() > 0.5 ? 'home' : 'away';
+    const pool = [...this.playerPool];
+    const idxA = Math.floor(Math.random() * pool.length);
+    const playerInName = pool.splice(idxA, 1)[0];
+    const playerOutName = pool[Math.floor(Math.random() * pool.length)];
+    this.emit({
+      type: 'sub',
+      matchId: m.id,
+      team,
+      playerInName,
+      playerOutName,
+      minute: m.minute ?? 60,
+      updatedAt: new Date().toISOString(),
     });
   }
 }

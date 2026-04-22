@@ -41,7 +41,8 @@ export function useLiveScores(initial: Match[]): UseLiveScoresResult {
           if (e.type === 'tick') {
             return { ...m, minute: e.minute, stoppage: e.stoppage, updatedAt: e.updatedAt };
           }
-          return { ...m, status: e.status, updatedAt: e.updatedAt };
+          if (e.type === 'status') return { ...m, status: e.status, updatedAt: e.updatedAt };
+          return m;
         }),
       );
       if (e.type === 'score') {
