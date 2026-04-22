@@ -50,55 +50,82 @@ type Props = {
   matches: ApiMatch[];
   teamId?: string;
   emptyMessage?: string;
+  groupByRound?: boolean;
 };
 
-export function MatchHistory({ matches, teamId, emptyMessage = 'No matches found.' }: Props) {
+function MatchRow({ m, teamId }: { m: ApiMatch; teamId?: string }) {
+  return (
+    <Link
+      key={m.id}
+      href={`/match/${m.id}`}
+      className="flex items-center justify-between gap-3 px-1 py-3 text-sm transition-colors hover:bg-accent/40"
+    >
+      <span className="w-24 shrink-0 text-[0.68rem] text-muted-foreground">
+        {formatDate(m.startTime)}
+      </span>
+
+      <div className="flex min-w-0 flex-1 items-center gap-2">
+        {m.homeTeam.logo && (
+          <img src={m.homeTeam.logo} alt="" className="size-4 object-contain" loading="lazy" />
+        )}
+        <span className={cn('truncate font-medium', m.homeTeam.externalId === teamId && 'font-bold')}>
+          {m.homeTeam.name}
+        </span>
+        <span className="shrink-0 text-muted-foreground">vs</span>
+        <span className={cn('truncate font-medium', m.awayTeam.externalId === teamId && 'font-bold')}>
+          {m.awayTeam.name}
+        </span>
+        {m.awayTeam.logo && (
+          <img src={m.awayTeam.logo} alt="" className="size-4 object-contain" loading="lazy" />
+        )}
+      </div>
+
+      <div className="shrink-0">
+        <ResultPill match={m} teamId={teamId} />
+      </div>
+    </Link>
+  );
+}
+
+export function MatchHistory({ matches, teamId, emptyMessage = 'No matches found.', groupByRound = false }: Props) {
   if (!matches.length) {
     return <p className="py-8 text-center text-sm text-muted-foreground">{emptyMessage}</p>;
   }
 
+  const hasRounds = groupByRound && matches.some((m) => m.round != null);
+
+  if (!hasRounds) {
+    return (
+      <div className="divide-y divide-border/40">
+        {matches.map((m) => <MatchRow key={m.id} m={m} teamId={teamId} />)}
+      </div>
+    );
+  }
+
+  const groups = new Map<string, ApiMatch[]>();
+  for (const m of matches) {
+    const key = m.round != null ? `Journée ${m.round}` : 'Autres';
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key)!.push(m);
+  }
+
+  const entries = Array.from(groups.entries());
+
   return (
-    <div className="divide-y divide-border/40">
-      {matches.map((m) => (
-        <Link
-          key={m.id}
-          href={`/match/${m.id}`}
-          className="flex items-center justify-between gap-3 px-1 py-3 text-sm transition-colors hover:bg-accent/40"
-        >
-          <span className="w-24 shrink-0 text-[0.68rem] text-muted-foreground">
-            {formatDate(m.startTime)}
-          </span>
-
-          <div className="flex min-w-0 flex-1 items-center gap-2">
-            {m.homeTeam.logo && (
-              <img src={m.homeTeam.logo} alt="" className="size-4 object-contain" loading="lazy" />
-            )}
-            <span
-              className={cn(
-                'truncate font-medium',
-                m.homeTeam.externalId === teamId && 'font-bold',
-              )}
-            >
-              {m.homeTeam.name}
+    <div className="flex flex-col">
+      {entries.map(([label, group], i) => (
+        <section key={label}>
+          {i > 0 && <div className="border-t border-border/60 my-1" />}
+          <div className="flex items-center gap-3 px-1 py-2">
+            <span className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground whitespace-nowrap">
+              {label}
             </span>
-            <span className="shrink-0 text-muted-foreground">vs</span>
-            <span
-              className={cn(
-                'truncate font-medium',
-                m.awayTeam.externalId === teamId && 'font-bold',
-              )}
-            >
-              {m.awayTeam.name}
-            </span>
-            {m.awayTeam.logo && (
-              <img src={m.awayTeam.logo} alt="" className="size-4 object-contain" loading="lazy" />
-            )}
+            <div className="h-px flex-1 bg-border/40" />
           </div>
-
-          <div className="shrink-0">
-            <ResultPill match={m} teamId={teamId} />
+          <div className="divide-y divide-border/40">
+            {group.map((m) => <MatchRow key={m.id} m={m} teamId={teamId} />)}
           </div>
-        </Link>
+        </section>
       ))}
     </div>
   );
