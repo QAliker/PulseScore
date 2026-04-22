@@ -4,6 +4,7 @@ import {
   OnModuleInit,
   OnModuleDestroy,
 } from '@nestjs/common';
+import { Subject, Observable } from 'rxjs';
 import { ApiFootballClient } from '../client/api-football.client';
 import { ApiFootballNormalizer } from '../normalizer/api-football.normalizer';
 import { SportsDataCacheService, TTL_LIVE } from '../sports-data-cache.service';
@@ -25,6 +26,19 @@ export interface ScoreChangeEvent {
 export class LivescoreService implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(LivescoreService.name);
   private previousMatches: MatchDto[] = [];
+  private readonly matchSubject = new Subject<MatchDto[]>();
+
+  get liveMatches$(): Observable<MatchDto[]> {
+    return this.matchSubject.asObservable();
+  }
+
+  async getCurrent(): Promise<MatchDto[]> {
+    return (
+      (await this.cacheService.getCached<MatchDto[]>(
+        SportsDataCacheService.livescoresKey(),
+      )) ?? []
+    );
+  }
 
   constructor(
     private readonly client: ApiFootballClient,
@@ -56,6 +70,7 @@ export class LivescoreService implements OnModuleInit, OnModuleDestroy {
         freshMatches,
         TTL_LIVE,
       );
+      this.matchSubject.next(freshMatches);
 
       const changes = this.detectChanges(freshMatches, this.previousMatches);
 

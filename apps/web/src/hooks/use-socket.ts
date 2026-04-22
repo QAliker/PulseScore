@@ -1,51 +1,65 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
-import { MockSocket } from '@/lib/mock-socket';
-import type { Match, MatchEvent, SocketStatus } from '@/lib/types';
+import { useEffect, useRef, useState, useCallback } from 'react';
+import type { Match, SocketStatus } from '@/lib/types';
+import type { ApiMatch } from '@/lib/api-types';
+import { apiMatchesToMatches } from '@/lib/api-match-map';
 
-type UseSocketOptions = {
-  initialMatches: Match[];
-  enabled?: boolean;
-};
+const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
 
-type UseSocketResult = {
+type Listener = (matches: Match[]) => void;
+
+export type UseSocketResult = {
   status: SocketStatus;
-  subscribe: (listener: (e: MatchEvent) => void) => () => void;
-  simulateDrop: () => void;
+  subscribe: (listener: Listener) => () => void;
 };
 
-/**
- * WebSocket client abstraction. Currently wraps MockSocket for local dev.
- * Swap the inner implementation for socket.io-client when Feature 3 backend lands —
- * the hook's public shape is stable.
- */
-export function useSocket({ initialMatches, enabled = true }: UseSocketOptions): UseSocketResult {
+export function useSocket(enabled = true): UseSocketResult {
   const [status, setStatus] = useState<SocketStatus>('connecting');
-  const socketRef = useRef<MockSocket | null>(null);
-  // Freeze initial matches into the ticker the first time the hook runs.
-  const initial = useMemo(() => initialMatches, []); // eslint-disable-line react-hooks/exhaustive-deps
+  const listenersRef = useRef<Set<Listener>>(new Set());
+  const esRef = useRef<EventSource | null>(null);
+
+  const subscribe = useCallback((listener: Listener) => {
+    listenersRef.current.add(listener);
+    return () => {
+      listenersRef.current.delete(listener);
+    };
+  }, []);
 
   useEffect(() => {
     if (!enabled) return;
-    const sock = new MockSocket(initial);
-    socketRef.current = sock;
-    const offStatus = sock.onStatus(setStatus);
-    sock.connect();
-    return () => {
-      offStatus();
-      sock.disconnect();
-      socketRef.current = null;
-    };
-  }, [enabled, initial]);
 
-  return {
-    status,
-    subscribe: (listener) => {
-      const sock = socketRef.current;
-      if (!sock) return () => {};
-      return sock.on(listener);
-    },
-    simulateDrop: () => socketRef.current?.simulateDrop(),
-  };
+    function connect() {
+      const es = new EventSource(`${API_URL}/livescore/stream`);
+      esRef.current = es;
+
+      es.onopen = () => setStatus('live');
+
+      es.onmessage = (event: MessageEvent<string>) => {
+        try {
+          const raw = JSON.parse(event.data) as ApiMatch[];
+          const matches = apiMatchesToMatches(raw);
+          listenersRef.current.forEach((l) => l(matches));
+        } catch {
+          // malformed frame — ignore
+        }
+      };
+
+      es.onerror = () => {
+        setStatus('reconnecting');
+        es.close();
+        esRef.current = null;
+        setTimeout(connect, 3000);
+      };
+    }
+
+    connect();
+
+    return () => {
+      esRef.current?.close();
+      esRef.current = null;
+    };
+  }, [enabled]);
+
+  return { status, subscribe };
 }

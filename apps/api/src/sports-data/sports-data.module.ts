@@ -15,10 +15,11 @@ import { LeaguesController } from './controllers/leagues.controller';
 import { TeamsController } from './controllers/teams.controller';
 import { PlayersController } from './controllers/players.controller';
 import { H2hController } from './controllers/h2h.controller';
+import { LivescoreController } from './controllers/livescore.controller';
 
 @Module({
   imports: [ScheduleModule.forRoot(), PrismaModule],
-  controllers: [LeaguesController, TeamsController, PlayersController, H2hController],
+  controllers: [LivescoreController, LeaguesController, TeamsController, PlayersController, H2hController],
   providers: [
     ApiFootballClient,
     ApiFootballNormalizer,

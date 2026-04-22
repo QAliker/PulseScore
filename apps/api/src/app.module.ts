@@ -9,7 +9,7 @@ import { SportsDataModule } from './sports-data/sports-data.module';
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      envFilePath: '.env',
+      envFilePath: '../../.env',
     }),
     PrismaModule,
     RedisModule,
