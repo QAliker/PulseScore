@@ -36,18 +36,6 @@ export function LiveFeed({ initial }: { initial: Match[] }) {
 
       {featured && <FeaturedMatch match={featured} flashSide={featuredFlash} />}
 
-      <div className="flex flex-col gap-8">
-        {LEAGUES.map((l) => (
-          <LeagueFeed
-            key={l.slug}
-            leagueSlug={l.slug}
-            matches={matchesByLeague[l.slug] ?? []}
-            flashes={flashes}
-            favorites={favSet}
-            onToggleFavorite={handleToggleFavorite}
-          />
-        ))}
-      </div>
     </div>
   );
 }

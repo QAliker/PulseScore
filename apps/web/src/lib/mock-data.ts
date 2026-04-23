@@ -95,6 +95,9 @@ function buildFixtures(
         draw: +(2.9 + rand() * 1.4).toFixed(2),
         away: +(1.8 + rand() * 2.5).toFixed(2),
       },
+      goalscorers: [],
+      cards: [],
+      substitutions: [],
       updatedAt: now.toISOString(),
     });
   }

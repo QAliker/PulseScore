@@ -8,6 +8,7 @@ import { LEAGUES } from '@/lib/leagues';
 import type { ApiStanding, ApiMatch } from '@/lib/api-types';
 import { StandingTable } from '@/components/standings/standing-table';
 import { MatchHistory } from '@/components/matches/match-history';
+import { RoundSelector } from '@/components/feed/round-selector';
 
 export const dynamic = 'force-dynamic';
 
@@ -28,9 +29,10 @@ export default async function LeagueSlugPage({
   searchParams,
 }: {
   params: Promise<{ slug: string }>;
-  searchParams: Promise<{ tab?: string }>;
+  searchParams: Promise<{ tab?: string; round?: string }>;
 }) {
-  const [{ slug }, { tab: rawTab }] = await Promise.all([params, searchParams]);
+  const [{ slug }, { tab: rawTab, round: roundParam }] = await Promise.all([params, searchParams]);
+  const roundFilter = roundParam ? parseInt(roundParam, 10) : null;
 
   const league = LEAGUES.find((l) => l.slug === slug);
   if (!league) notFound();
@@ -52,13 +54,20 @@ export default async function LeagueSlugPage({
 
   const standings = standingsResult.status === 'fulfilled' ? standingsResult.value : [];
   const fixtureMatches = fixturesResult.status === 'fulfilled' ? fixturesResult.value : [];
-  const matches =
+  const rawMatches =
     tab === 'fixtures'
       ? fixtureMatches
       : matchesResult.status === 'fulfilled'
         ? matchesResult.value
         : [];
   const logo = fixtureMatches[0]?.league?.logo ?? null;
+
+  const allRounds = Array.from(
+    new Set(rawMatches.map((m) => m.round).filter((r): r is number => r != null)),
+  ).sort((a, b) => (tab === 'results' ? b - a : a - b));
+
+  const matches =
+    roundFilter != null ? rawMatches.filter((m) => m.round === roundFilter) : rawMatches;
 
   const tabs: { id: Tab; label: string }[] = [
     { id: 'standings', label: 'Classement' },
@@ -126,15 +135,23 @@ export default async function LeagueSlugPage({
           )
         )}
         {(tab === 'results' || tab === 'fixtures') && (
-          <MatchHistory
-            matches={matches}
-            groupByRound={true}
-            emptyMessage={
-              tab === 'results'
-                ? 'Aucun résultat — clé API requise.'
-                : 'Aucun match à venir — clé API requise.'
-            }
-          />
+          <div className="flex flex-col gap-4">
+            <RoundSelector
+              rounds={allRounds}
+              currentRound={roundFilter}
+              extraParams={{ tab }}
+              basePath={`/leagues/${slug}`}
+            />
+            <MatchHistory
+              matches={matches}
+              groupByRound={roundFilter == null}
+              emptyMessage={
+                tab === 'results'
+                  ? 'Aucun résultat — clé API requise.'
+                  : 'Aucun match à venir — clé API requise.'
+              }
+            />
+          </div>
         )}
       </div>
     </div>

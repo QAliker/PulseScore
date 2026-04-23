@@ -1,16 +1,34 @@
+import Image from 'next/image';
 import { cn } from '@/lib/utils';
 
-// Simple two-letter monogram crest. Will swap to real club badges once assets land.
 export function TeamCrest({
   shortName,
+  logo,
   size = 'md',
   side,
 }: {
   shortName: string;
+  logo?: string;
   size?: 'sm' | 'md' | 'lg';
   side: 'home' | 'away';
 }) {
-  const letters = shortName.slice(0, 3);
+  const dim = size === 'sm' ? 16 : size === 'md' ? 24 : 40;
+  const cls = size === 'sm' ? 'size-6' : size === 'md' ? 'size-8' : 'size-12';
+
+  if (logo) {
+    return (
+      <Image
+        src={logo}
+        alt={shortName}
+        width={dim * 2}
+        height={dim * 2}
+        className={cn(cls, 'object-contain')}
+        unoptimized
+        aria-hidden
+      />
+    );
+  }
+
   return (
     <span
       aria-hidden
@@ -24,7 +42,7 @@ export function TeamCrest({
         size === 'lg' && 'size-12 text-base',
       )}
     >
-      {letters}
+      {shortName.slice(0, 3)}
     </span>
   );
 }

@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { useMemo } from 'react';
 import type { Match } from '@/lib/types';
 import type { FlashEntry } from '@/hooks/use-live-scores';
@@ -21,6 +22,7 @@ export function LeagueFeed({
   onToggleFavorite: (id: string) => void;
 }) {
   const league = getLeagueBySlug(leagueSlug);
+  const leagueLogo = matches[0]?.leagueLogo;
   const liveCount = useMemo(
     () => matches.filter((m) => m.status === 'live').length,
     [matches],
@@ -38,9 +40,11 @@ export function LeagueFeed({
   return (
     <section aria-labelledby={`league-${leagueSlug}`} className="flex flex-col">
       <header className="sticky top-14 z-10 flex items-center gap-3 border-b border-border/70 bg-background/90 px-3 py-3 backdrop-blur supports-[backdrop-filter]:bg-background/70">
-        <span className="text-xl leading-none" aria-hidden>
-          {league.flag}
-        </span>
+        {leagueLogo ? (
+          <Image src={leagueLogo} alt="" width={28} height={28} className="size-7 object-contain" unoptimized />
+        ) : (
+          <span className="text-xl leading-none" aria-hidden>{league.flag}</span>
+        )}
         <Link
           href={`/standings/${league.apiFootballId}`}
           id={`league-${leagueSlug}`}
