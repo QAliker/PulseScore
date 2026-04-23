@@ -3,8 +3,19 @@ import {
   AfMatch,
   AfStanding,
   AfPlayer,
+  AfLineup,
+  AfLineupPlayer,
 } from '../interfaces/api-football.interfaces';
-import { MatchDto, GoalscorerDto, CardDto, SubstitutionDto } from '../dto/match.dto';
+import {
+  MatchDto,
+  GoalscorerDto,
+  CardDto,
+  SubstitutionDto,
+  LineupPlayerDto,
+  TeamLineupDto,
+  MatchLineupsDto,
+  StatisticDto,
+} from '../dto/match.dto';
 import { TeamDto } from '../dto/team.dto';
 import { LeagueDto } from '../dto/league.dto';
 import { StandingDto } from '../dto/standing.dto';
@@ -129,7 +140,117 @@ export class ApiFootballNormalizer {
     }
     dto.substitutions = subs;
 
+    // Lineups
+    if (raw.lineup?.home?.starting_lineups?.length || raw.lineup?.away?.starting_lineups?.length) {
+      const lineups = new MatchLineupsDto();
+      lineups.home = this.normalizeTeamLineup(raw.lineup.home, raw.match_hometeam_system);
+      lineups.away = this.normalizeTeamLineup(raw.lineup.away, raw.match_awayteam_system);
+      dto.lineups = lineups;
+    } else {
+      dto.lineups = null;
+    }
+
+    // Statistics
+    dto.statistics = (raw.statistics ?? []).map((s) => {
+      const stat = new StatisticDto();
+      stat.type = s.type;
+      stat.home = s.home;
+      stat.away = s.away;
+      return stat;
+    });
+
     return dto;
+  }
+
+  private normalizeTeamLineup(lineup: AfLineup, formation: string): TeamLineupDto {
+    const dto = new TeamLineupDto();
+    dto.formation = formation || '';
+
+    const formationRows = (formation || '')
+      .split('-')
+      .map((n) => parseInt(n))
+      .filter((n) => !isNaN(n) && n > 0);
+
+    const starters = [...(lineup?.starting_lineups ?? [])].sort(
+      (a, b) => (parseInt(a.lineup_position) || 99) - (parseInt(b.lineup_position) || 99),
+    );
+
+    dto.starting = [];
+    let idx = 0;
+
+    if (starters[idx]) {
+      dto.starting.push(this.makeLineupPlayer(starters[idx], idx, 0, 0, 'GK'));
+      idx++;
+    }
+
+    for (let row = 0; row < formationRows.length; row++) {
+      const count = formationRows[row];
+      const isFirst = row === 0;
+      const isLast = row === formationRows.length - 1;
+      for (let col = 0; col < count && idx < starters.length; col++) {
+        const label = isFirst
+          ? this.defLabel(col, count)
+          : isLast
+            ? this.fwdLabel(col, count)
+            : this.midLabel(col, count);
+        dto.starting.push(this.makeLineupPlayer(starters[idx], idx, row + 1, col, label));
+        idx++;
+      }
+    }
+
+    dto.bench = (lineup?.substitutes ?? []).map((p, i) => {
+      const player = new LineupPlayerDto();
+      player.id = p.player_key || `b${i}`;
+      player.name = p.lineup_player || '';
+      player.number = parseInt(p.lineup_number) || 12 + i;
+      player.positionRow = 0;
+      player.positionCol = i;
+      player.positionLabel = 'SUB';
+      return player;
+    });
+
+    dto.coach = lineup?.coach?.[0]?.lineup_player || '';
+    return dto;
+  }
+
+  private makeLineupPlayer(p: AfLineupPlayer, idx: number, row: number, col: number, label: string): LineupPlayerDto {
+    const player = new LineupPlayerDto();
+    player.id = p.player_key || `s${idx}`;
+    player.name = p.lineup_player || '';
+    player.number = parseInt(p.lineup_number) || idx + 1;
+    player.positionRow = row;
+    player.positionCol = col;
+    player.positionLabel = label;
+    return player;
+  }
+
+  private defLabel(col: number, count: number): string {
+    const labels: Record<number, string[]> = {
+      3: ['LCB', 'CB', 'RCB'],
+      4: ['RB', 'CB', 'CB', 'LB'],
+      5: ['RB', 'CB', 'CB', 'CB', 'LB'],
+    };
+    return labels[count]?.[col] ?? 'DEF';
+  }
+
+  private midLabel(col: number, count: number): string {
+    const labels: Record<number, string[]> = {
+      2: ['CM', 'CM'],
+      3: ['CM', 'CM', 'CM'],
+      4: ['RM', 'CM', 'CM', 'LM'],
+      5: ['RM', 'CM', 'CM', 'CM', 'LM'],
+    };
+    return labels[count]?.[col] ?? 'MID';
+  }
+
+  private fwdLabel(col: number, count: number): string {
+    const labels: Record<number, string[]> = {
+      1: ['ST'],
+      2: ['ST', 'ST'],
+      3: ['LW', 'ST', 'RW'],
+      4: ['LW', 'ST', 'ST', 'RW'],
+    };
+    return labels[count]?.[col] ?? 'FWD';
   }
 
   normalizeStanding(raw: AfStanding): StandingDto {

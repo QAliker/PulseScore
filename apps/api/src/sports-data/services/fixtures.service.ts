@@ -118,6 +118,20 @@ export class FixturesService {
     return results;
   }
 
+  async getMatchById(matchId: string): Promise<MatchDto | null> {
+    const cacheKey = `sports:match:${matchId}`;
+    const cached = await this.cacheService.getCached<MatchDto>(cacheKey);
+    if (cached) return cached;
+
+    const raw = await this.client.get<AfMatch[]>('get_events', { match_id: matchId });
+    if (!Array.isArray(raw) || raw.length === 0) return null;
+
+    const match = this.normalizer.normalizeMatch(raw[0]);
+    const ttl = match.status === 'LIVE' ? 30 : match.status === 'FINISHED' ? 3600 : 300;
+    await this.cacheService.setCached(cacheKey, match, ttl);
+    return match;
+  }
+
   async getLeagueFixtures(leagueId: string): Promise<MatchDto[]> {
     const cacheKey = SportsDataCacheService.leagueFixturesKey(leagueId);
     const cached = await this.cacheService.getCached<MatchDto[]>(cacheKey);

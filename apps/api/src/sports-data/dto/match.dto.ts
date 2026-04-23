@@ -1,6 +1,33 @@
 import { TeamDto } from './team.dto';
 import { LeagueDto } from './league.dto';
 
+export class LineupPlayerDto {
+  id: string;
+  name: string;
+  number: number;
+  positionRow: number;
+  positionCol: number;
+  positionLabel: string;
+}
+
+export class TeamLineupDto {
+  formation: string;
+  starting: LineupPlayerDto[];
+  bench: LineupPlayerDto[];
+  coach: string;
+}
+
+export class MatchLineupsDto {
+  home: TeamLineupDto;
+  away: TeamLineupDto;
+}
+
+export class StatisticDto {
+  type: string;
+  home: string;
+  away: string;
+}
+
 export class MatchDto {
   id: string;
   externalId: string;
@@ -18,6 +45,8 @@ export class MatchDto {
   goalscorers: GoalscorerDto[];
   cards: CardDto[];
   substitutions: SubstitutionDto[];
+  lineups: MatchLineupsDto | null;
+  statistics: StatisticDto[];
 }
 
 export class GoalscorerDto {

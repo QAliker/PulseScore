@@ -76,6 +76,33 @@ export type ApiSubstitution = {
   playerIn: string | null;
 };
 
+export type ApiLineupPlayer = {
+  id: string;
+  name: string;
+  number: number;
+  positionRow: number;
+  positionCol: number;
+  positionLabel: string;
+};
+
+export type ApiTeamLineup = {
+  formation: string;
+  starting: ApiLineupPlayer[];
+  bench: ApiLineupPlayer[];
+  coach: string;
+};
+
+export type ApiMatchLineups = {
+  home: ApiTeamLineup;
+  away: ApiTeamLineup;
+};
+
+export type ApiStatistic = {
+  type: string;
+  home: string;
+  away: string;
+};
+
 export type ApiMatch = {
   id: string;
   externalId: string;
@@ -93,6 +120,8 @@ export type ApiMatch = {
   goalscorers: ApiGoalscorer[];
   cards: ApiCard[];
   substitutions: ApiSubstitution[];
+  lineups: ApiMatchLineups | null;
+  statistics: ApiStatistic[];
 };
 
 export type ApiH2h = {
