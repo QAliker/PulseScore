@@ -1,5 +1,5 @@
 import { LEAGUES } from './leagues';
-import type { Match, MatchStatus } from './types';
+import type { Match, MatchStatus, Goalscorer, MatchCardEvent, Substitution } from './types';
 import type { ApiMatch } from './api-types';
 
 function leagueSlug(externalId: string | null | undefined): string {
@@ -43,6 +43,11 @@ export function apiMatchToMatch(m: ApiMatch): Match {
   return {
     id: m.externalId,
     leagueSlug: leagueSlug(m.league?.externalId),
+    leagueLogo: m.league?.logo ?? undefined,
+    leagueName: m.league?.name ?? undefined,
+    leagueCountry: m.league?.country ?? undefined,
+    venue: m.venue ?? undefined,
+    round: m.round ?? undefined,
     kickoff: m.startTime,
     status: mapStatus(m.status, m.progress),
     minute,
@@ -62,6 +67,25 @@ export function apiMatchToMatch(m: ApiMatch): Match {
     homeScore: m.homeScore ?? 0,
     awayScore: m.awayScore ?? 0,
     odds: null,
+    goalscorers: m.goalscorers.map((g): Goalscorer => ({
+      time: g.time,
+      homeScorer: g.homeScorer,
+      awayScorer: g.awayScorer,
+      score: g.score,
+      info: g.info,
+    })),
+    cards: m.cards.map((c): MatchCardEvent => ({
+      time: c.time,
+      homeFault: c.homeFault,
+      awayFault: c.awayFault,
+      card: c.card,
+      info: c.info,
+    })),
+    substitutions: (m.substitutions ?? []).map((s): Substitution => ({
+      time: s.time,
+      team: s.team,
+      playerIn: s.playerIn,
+    })),
     updatedAt: new Date().toISOString(),
   };
 }
