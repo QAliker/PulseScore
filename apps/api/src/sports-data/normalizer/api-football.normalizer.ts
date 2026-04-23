@@ -4,7 +4,7 @@ import {
   AfStanding,
   AfPlayer,
 } from '../interfaces/api-football.interfaces';
-import { MatchDto, GoalscorerDto, CardDto } from '../dto/match.dto';
+import { MatchDto, GoalscorerDto, CardDto, SubstitutionDto } from '../dto/match.dto';
 import { TeamDto } from '../dto/team.dto';
 import { LeagueDto } from '../dto/league.dto';
 import { StandingDto } from '../dto/standing.dto';
@@ -111,6 +111,23 @@ export class ApiFootballNormalizer {
       card.info = c.info || null;
       return card;
     });
+
+    const subs: SubstitutionDto[] = [];
+    for (const s of raw.substitutions?.home ?? []) {
+      const sub = new SubstitutionDto();
+      sub.time = s.time;
+      sub.team = 'home';
+      sub.playerIn = s.substitution || null;
+      subs.push(sub);
+    }
+    for (const s of raw.substitutions?.away ?? []) {
+      const sub = new SubstitutionDto();
+      sub.time = s.time;
+      sub.team = 'away';
+      sub.playerIn = s.substitution || null;
+      subs.push(sub);
+    }
+    dto.substitutions = subs;
 
     return dto;
   }

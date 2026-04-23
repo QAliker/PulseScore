@@ -17,6 +17,7 @@ export class MatchDto {
   round: number | null;
   goalscorers: GoalscorerDto[];
   cards: CardDto[];
+  substitutions: SubstitutionDto[];
 }
 
 export class GoalscorerDto {
@@ -33,4 +34,10 @@ export class CardDto {
   awayFault: string | null;
   card: string;
   info: string | null;
+}
+
+export class SubstitutionDto {
+  time: string;
+  team: 'home' | 'away';
+  playerIn: string | null;
 }
