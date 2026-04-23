@@ -1,9 +1,11 @@
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
+import { redirect } from 'next/navigation';
 import type { Metadata } from 'next';
 import { apiFetch } from '@/lib/api';
 import { LEAGUES } from '@/lib/leagues';
 import type { ApiMatch } from '@/lib/api-types';
+import { getLatestRound } from '@/lib/rounds';
 import { MatchHistory } from '@/components/matches/match-history';
 import { RoundSelector } from '@/components/feed/round-selector';
 
@@ -13,9 +15,9 @@ export const metadata: Metadata = { title: 'Results' };
 export default async function ResultsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ league?: string; round?: string }>;
+  searchParams: Promise<{ league?: string; round?: string; all?: string }>;
 }) {
-  const { league: leagueFilter, round: roundParam } = await searchParams;
+  const { league: leagueFilter, round: roundParam, all: showAll } = await searchParams;
   const roundFilter = roundParam ? parseInt(roundParam, 10) : null;
 
   const activeLeague = leagueFilter
@@ -43,6 +45,18 @@ export default async function ResultsPage({
       ),
     ),
   ).sort((a, b) => b - a);
+
+  // Auto-redirect to latest finished round when no explicit round/all param.
+  if (!roundParam && !showAll) {
+    const allMatches = results.flatMap((g) => g.matches);
+    const defaultRound = getLatestRound(allMatches);
+    if (defaultRound != null) {
+      const params = new URLSearchParams();
+      params.set('round', String(defaultRound));
+      if (leagueFilter) params.set('league', leagueFilter);
+      redirect(`/results?${params.toString()}`);
+    }
+  }
 
   // Filter matches by selected round.
   const filteredResults = results.map(({ league, matches }) => ({
@@ -85,6 +99,7 @@ export default async function ResultsPage({
         <RoundSelector
           rounds={allRounds}
           currentRound={roundFilter}
+          showAll={!!showAll}
           extraParams={leagueFilter ? { league: leagueFilter } : undefined}
           basePath="/results"
         />

@@ -3,18 +3,23 @@ import Link from 'next/link';
 interface Props {
   rounds: number[];
   currentRound: number | null;
+  showAll?: boolean;
   extraParams?: Record<string, string>;
   basePath: string;
 }
 
-function href(basePath: string, round: number | null, extraParams?: Record<string, string>) {
+function href(basePath: string, round: number | null, extraParams?: Record<string, string>, all?: boolean) {
   const p = new URLSearchParams(extraParams);
-  if (round != null) p.set('round', String(round));
+  if (all) {
+    p.set('all', '1');
+  } else if (round != null) {
+    p.set('round', String(round));
+  }
   const qs = p.toString();
   return qs ? `${basePath}?${qs}` : basePath;
 }
 
-export function RoundSelector({ rounds, currentRound, extraParams, basePath }: Props) {
+export function RoundSelector({ rounds, currentRound, showAll = false, extraParams, basePath }: Props) {
   if (rounds.length === 0) return null;
 
   const pillBase =
@@ -28,8 +33,8 @@ export function RoundSelector({ rounds, currentRound, extraParams, basePath }: P
         Journée
       </span>
       <Link
-        href={href(basePath, null, extraParams)}
-        className={`${pillBase} ${currentRound == null ? active : idle}`}
+        href={href(basePath, null, extraParams, true)}
+        className={`${pillBase} ${showAll ? active : idle}`}
       >
         Tout
       </Link>
