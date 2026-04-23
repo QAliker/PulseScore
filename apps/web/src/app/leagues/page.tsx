@@ -18,15 +18,12 @@ export default async function LeaguesPage() {
   );
 
   const leagueData = LEAGUES.map((league, i) => {
-    const standingsResult = results[i * 2];
-    const fixturesResult = results[i * 2 + 1];
+    const sr = results[i * 2] as PromiseSettledResult<ApiStanding[]>;
+    const fr = results[i * 2 + 1] as PromiseSettledResult<ApiMatch[]>;
     return {
       league,
-      standings: standingsResult.status === 'fulfilled' ? standingsResult.value : [],
-      logo:
-        fixturesResult.status === 'fulfilled'
-          ? (fixturesResult.value[0]?.league?.logo ?? null)
-          : null,
+      standings: sr.status === 'fulfilled' ? sr.value : [],
+      logo: fr.status === 'fulfilled' ? (fr.value[0]?.league?.logo ?? null) : null,
     };
   });
 

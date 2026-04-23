@@ -39,13 +39,10 @@ export default async function HomePage() {
     matches: rest[i].status === 'fulfilled' ? rest[i].value.slice(0, 5) : [],
   }));
 
-  const resultGroups = LEAGUES.map((league, i) => ({
-    league,
-    matches:
-      rest[LEAGUES.length + i].status === 'fulfilled'
-        ? rest[LEAGUES.length + i].value.slice(0, 5)
-        : [],
-  }));
+  const resultGroups = LEAGUES.map((league, i) => {
+    const r = rest[LEAGUES.length + i];
+    return { league, matches: r.status === 'fulfilled' ? r.value.slice(0, 5) : [] };
+  });
 
   const hasFixtures = fixtureGroups.some((g) => g.matches.length > 0);
   const hasResults = resultGroups.some((g) => g.matches.length > 0);

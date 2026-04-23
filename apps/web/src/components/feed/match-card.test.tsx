@@ -17,6 +17,9 @@ function makeMatch(over: Partial<Match> = {}): Match {
     homeScore: 2,
     awayScore: 1,
     odds: { home: 2.1, draw: 3.3, away: 3.4 },
+    goalscorers: [],
+    cards: [],
+    substitutions: [],
     updatedAt: new Date().toISOString(),
     ...over,
   };

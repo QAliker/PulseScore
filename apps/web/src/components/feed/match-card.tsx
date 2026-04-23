@@ -75,7 +75,7 @@ export function MatchCard({
         >
           {match.home.name}
         </span>
-        <TeamCrest shortName={match.home.shortName} side="home" />
+        <TeamCrest shortName={match.home.shortName} logo={match.home.logo} side="home" />
       </Link>
 
       {/* Score — the single most-important element */}
@@ -104,7 +104,7 @@ export function MatchCard({
         href={`/teams/${match.away.id}`}
         className="flex min-w-0 items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm"
       >
-        <TeamCrest shortName={match.away.shortName} side="away" />
+        <TeamCrest shortName={match.away.shortName} logo={match.away.logo} side="away" />
         <span
           className={cn(
             'truncate text-sm font-semibold',
