@@ -1,5 +1,27 @@
 export type MatchStatus = 'scheduled' | 'live' | 'halftime' | 'finished' | 'postponed';
 
+export type Goalscorer = {
+  time: string;
+  homeScorer: string | null;
+  awayScorer: string | null;
+  score: string;
+  info: string | null;
+};
+
+export type MatchCardEvent = {
+  time: string;
+  homeFault: string | null;
+  awayFault: string | null;
+  card: string;
+  info: string | null;
+};
+
+export type Substitution = {
+  time: string;
+  team: 'home' | 'away';
+  playerIn: string | null;
+};
+
 export type Team = {
   id: string;
   name: string;
@@ -17,6 +39,11 @@ export type Odds = {
 export type Match = {
   id: string;
   leagueSlug: string;
+  leagueLogo?: string;
+  leagueName?: string;
+  leagueCountry?: string;
+  venue?: string;
+  round?: number | null;
   kickoff: string; // ISO
   status: MatchStatus;
   minute: number | null; // null when not live
@@ -26,6 +53,9 @@ export type Match = {
   homeScore: number;
   awayScore: number;
   odds: Odds | null;
+  goalscorers: Goalscorer[];
+  cards: MatchCardEvent[];
+  substitutions: Substitution[];
   updatedAt: string; // ISO
 };
 

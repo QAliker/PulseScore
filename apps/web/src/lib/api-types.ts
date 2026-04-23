@@ -70,6 +70,12 @@ export type ApiCard = {
   info: string | null;
 };
 
+export type ApiSubstitution = {
+  time: string;
+  team: 'home' | 'away';
+  playerIn: string | null;
+};
+
 export type ApiMatch = {
   id: string;
   externalId: string;
@@ -86,6 +92,7 @@ export type ApiMatch = {
   round: number | null;
   goalscorers: ApiGoalscorer[];
   cards: ApiCard[];
+  substitutions: ApiSubstitution[];
 };
 
 export type ApiH2h = {
