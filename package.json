@@ -7,14 +7,16 @@
   "scripts": {
     "dev": "concurrently \"npm run dev --workspace=apps/api\" \"npm run dev --workspace=apps/web\"",
     "build": "npm run build --workspace=apps/api && npm run build --workspace=apps/web",
-    "build:webpack" : "npm run build --workspace=apps/api && npm run build --workspace=apps/web --webpack",
+    "build:webpack": "npm run build --workspace=apps/api && npm run build --workspace=apps/web --webpack",
     "lint": "npm run lint --workspace=apps/api && npm run lint --workspace=apps/web",
     "test": "npm run test --workspace=apps/api",
     "prisma:generate": "npm run prisma:generate --workspace=apps/api",
     "prisma:migrate:dev": "npm run prisma:migrate:dev --workspace=apps/api",
-    "prisma:migrate:deploy": "npm run prisma:migrate:deploy --workspace=apps/api"
+    "prisma:migrate:deploy": "npm run prisma:migrate:deploy --workspace=apps/api",
+    "prepare": "node -e \"if(process.env.CI) process.exit(0)\" && husky || true"
   },
   "devDependencies": {
-    "concurrently": "^8.2.2"
+    "concurrently": "^8.2.2",
+    "husky": "^9.1.7"
   }
 }
