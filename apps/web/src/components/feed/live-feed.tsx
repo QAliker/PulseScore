@@ -1,18 +1,16 @@
 'use client';
 
-import { useCallback, useMemo } from 'react';
+import { useMemo } from 'react';
 import type { Match } from '@/lib/types';
 import { useLiveScores } from '@/hooks/use-live-scores';
 import { useFavorites } from '@/hooks/use-favorites';
 import { useGoalNotifications } from '@/hooks/use-goal-notifications';
-import { LEAGUES } from '@/lib/leagues';
 import { FeaturedMatch } from './featured-match';
-import { LeagueFeed } from './league-feed';
 import { FeedError } from './feed-states';
 
 export function LiveFeed({ initial }: { initial: Match[] }) {
-  const { matchesByLeague, all, status, flashes } = useLiveScores(initial);
-  const { favorites, toggle } = useFavorites();
+  const { all, status, flashes } = useLiveScores(initial);
+  useFavorites();
   useGoalNotifications(flashes, all);
 
   // Featured = biggest live game (most goals), else next scheduled.
@@ -21,12 +19,7 @@ export function LiveFeed({ initial }: { initial: Match[] }) {
     ? flashes.find((f) => f.matchId === featured.id)?.scorer ?? null
     : null;
 
-  const handleToggleFavorite = useCallback(
-    (id: string) => toggle(id),
-    [toggle],
-  );
 
-  const favSet = useMemo(() => new Set(favorites), [favorites]);
 
   return (
     <div className="flex flex-col gap-6">

@@ -52,7 +52,7 @@ function buildEvents(match: Match): MatchEventEntry[] {
   match.substitutions.forEach((s, i) => {
     const minute = parseInt(s.time) || 0;
     if (s.playerIn) {
-      events.push({ id: `s-${s.team}-${i}`, minute, type: 'sub', team: s.team, playerName: s.playerIn });
+      events.push({ id: `s-${s.team}-${i}`, minute, type: 'sub', team: s.team, playerName: s.playerIn, detail: s.playerOut ?? undefined });
     }
   });
 
@@ -72,12 +72,12 @@ export default async function MatchDetailPage({
   const match = apiMatchToMatch(apiMatch);
   const league = getLeagueBySlug(match.leagueSlug);
   const detail = getMatchDetail(id, match);
-  const lineups = convertApiLineups(apiMatch.lineups) ?? detail.lineups;
+  const lineups = convertApiLineups(apiMatch.lineups);
   const events = buildEvents(match);
   const statistics = apiMatch.statistics ?? [];
 
   return (
-    <div className="mx-auto flex max-w-[900px] flex-col gap-6 px-4 py-6 lg:px-8 lg:py-8">
+    <div className="mx-auto flex max-w-225 flex-col gap-6 px-4 py-6 lg:px-8 lg:py-8">
       <Link
         href="/"
         className="inline-flex w-fit items-center gap-1.5 rounded-md px-2 py-1 text-sm font-medium text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
@@ -87,7 +87,7 @@ export default async function MatchDetailPage({
       </Link>
 
       <section className="relative overflow-hidden rounded-2xl pitch-grass">
-        <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-black/55 via-black/15 to-transparent" aria-hidden />
+        <div className="absolute inset-x-0 bottom-0 h-2/3 bg-linear-to-t from-black/55 via-black/15 to-transparent" aria-hidden />
         <div className="relative flex flex-col gap-6 p-6 text-pitch-foreground sm:p-10">
           <header className="flex items-center justify-between text-[0.72rem] font-semibold uppercase tracking-[0.18em] opacity-90">
             <span>{league ? `${league.flag} ${league.name}` : ''}</span>
@@ -96,7 +96,7 @@ export default async function MatchDetailPage({
 
           <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-6">
             <div className="flex flex-col items-center gap-3 text-center">
-              <TeamCrest shortName={match.home.shortName} side="home" size="lg" />
+              <TeamCrest shortName={match.home.shortName} logo={match.home.logo} side="home" size="lg" />
               <span className="font-display text-xl font-extrabold tracking-tight sm:text-2xl">
                 {match.home.name}
               </span>
@@ -120,7 +120,7 @@ export default async function MatchDetailPage({
             </div>
 
             <div className="flex flex-col items-center gap-3 text-center">
-              <TeamCrest shortName={match.away.shortName} side="away" size="lg" />
+              <TeamCrest shortName={match.away.shortName} logo={match.away.logo} side="away" size="lg" />
               <span className="font-display text-xl font-extrabold tracking-tight sm:text-2xl">
                 {match.away.name}
               </span>

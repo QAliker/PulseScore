@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import type { ApiStanding } from '@/lib/api-types';
+import Image from 'next/image';
 
 type Props = { standings: ApiStanding[] };
 
@@ -53,7 +54,7 @@ export function StandingTable({ standings }: Props) {
                   className="flex items-center gap-2 font-medium hover:underline"
                 >
                   {row.teamBadge && (
-                    <img
+                    <Image
                       src={row.teamBadge}
                       alt=""
                       className="size-5 object-contain"

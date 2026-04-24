@@ -69,4 +69,5 @@ export class SubstitutionDto {
   time: string;
   team: 'home' | 'away';
   playerIn: string | null;
+  playerOut: string | null;
 }

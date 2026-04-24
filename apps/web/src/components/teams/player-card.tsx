@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import type { ApiPlayer } from '@/lib/api-types';
+import Image from 'next/image';
 
 const POSITION_COLOR: Record<string, string> = {
   Goalkeeper: 'bg-amber-500/15 text-amber-600 dark:text-amber-400',
@@ -21,7 +22,7 @@ export function PlayerCard({ player }: Props) {
     >
       <div className="relative size-10 shrink-0 overflow-hidden rounded-full bg-muted">
         {player.image ? (
-          <img src={player.image} alt={player.name} className="size-full object-cover" loading="lazy" />
+          <Image src={player.image} alt={player.name} className="size-full object-cover" loading="lazy"/>
         ) : (
           <span className="flex size-full items-center justify-center text-xs font-bold text-muted-foreground">
             {player.number ?? '?'}

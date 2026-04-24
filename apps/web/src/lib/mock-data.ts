@@ -3,7 +3,6 @@ import type {
   Team,
   LineupPlayer,
   TeamLineup,
-  MatchLineups,
   MatchEventEntry,
   MatchEventType,
   H2HMatch,

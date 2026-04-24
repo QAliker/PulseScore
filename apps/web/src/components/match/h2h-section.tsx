@@ -1,3 +1,4 @@
+/* eslint-disable jsx-a11y/role-has-required-aria-props */
 import { cn } from '@/lib/utils';
 import type { H2HStats, Match } from '@/lib/types';
 
@@ -112,7 +113,7 @@ export function H2HSection({ h2h, match }: Props) {
       </div>
 
       <p className="text-[0.65rem] text-muted-foreground">
-        Result shown from {match.home.name}'s perspective.
+        Result shown from {match.home.name}&apos;s perspective.
       </p>
     </div>
   );

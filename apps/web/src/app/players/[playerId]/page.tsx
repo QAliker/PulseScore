@@ -4,6 +4,7 @@ import { ArrowLeft } from 'lucide-react';
 import type { Metadata } from 'next';
 import { apiFetch } from '@/lib/api';
 import type { ApiPlayerDetail } from '@/lib/api-types';
+import Image from 'next/image';
 
 export const dynamic = 'force-dynamic';
 
@@ -50,7 +51,7 @@ export default async function PlayerPage({
       : 'bg-muted text-muted-foreground';
 
   return (
-    <div className="mx-auto flex max-w-[600px] flex-col gap-6 px-4 py-6 lg:px-8 lg:py-8">
+    <div className="mx-auto flex max-w-150 flex-col gap-6 px-4 py-6 lg:px-8 lg:py-8">
       <Link
         href={player.teamId ? `/teams/${player.teamId}` : '/'}
         className="inline-flex w-fit items-center gap-1.5 rounded-md px-2 py-1 text-sm font-medium text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
@@ -63,7 +64,7 @@ export default async function PlayerPage({
         <div className="flex items-center gap-5">
           <div className="relative size-20 shrink-0 overflow-hidden rounded-full bg-muted sm:size-24">
             {player.image ? (
-              <img
+              <Image
                 src={player.image}
                 alt={player.name}
                 className="size-full object-cover"

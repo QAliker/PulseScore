@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import type { ApiMatch } from '@/lib/api-types';
+import Image from 'next/image';
 
 function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString('en-GB', {
@@ -66,7 +67,7 @@ function MatchRow({ m, teamId }: { m: ApiMatch; teamId?: string }) {
 
       <div className="flex min-w-0 flex-1 items-center gap-2">
         {m.homeTeam.logo && (
-          <img src={m.homeTeam.logo} alt="" className="size-4 object-contain" loading="lazy" />
+          <Image src={m.homeTeam.logo} alt="" className="size-4 object-contain" loading="lazy" />
         )}
         <span className={cn('truncate font-medium', m.homeTeam.externalId === teamId && 'font-bold')}>
           {m.homeTeam.name}
@@ -76,7 +77,7 @@ function MatchRow({ m, teamId }: { m: ApiMatch; teamId?: string }) {
           {m.awayTeam.name}
         </span>
         {m.awayTeam.logo && (
-          <img src={m.awayTeam.logo} alt="" className="size-4 object-contain" loading="lazy" />
+          <Image src={m.awayTeam.logo} alt="" className="size-4 object-contain" loading="lazy" />
         )}
       </div>
 
