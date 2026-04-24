@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation';
 import { ArrowLeft } from 'lucide-react';
 import type { Metadata } from 'next';
 import { apiFetch } from '@/lib/api';
-import { LEAGUES, getLeagueBySlug } from '@/lib/leagues';
+import { LEAGUES } from '@/lib/leagues';
 import type { ApiStanding } from '@/lib/api-types';
 import { StandingTable } from '@/components/standings/standing-table';
 
@@ -36,7 +36,7 @@ export default async function StandingsPage({
   }
 
   return (
-    <div className="mx-auto flex max-w-[900px] flex-col gap-6 px-4 py-6 lg:px-8 lg:py-8">
+    <div className="mx-auto flex max-w-225 flex-col gap-6 px-4 py-6 lg:px-8 lg:py-8">
       <Link
         href="/"
         className="inline-flex w-fit items-center gap-1.5 rounded-md px-2 py-1 text-sm font-medium text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"

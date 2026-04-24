@@ -124,27 +124,43 @@ export class ApiFootballNormalizer {
     });
 
     const subs: SubstitutionDto[] = [];
-    for (const s of raw.substitutions?.home ?? []) {
+    const parseSub = (
+      raw: { time: string; substitution: string; substitution_out?: string },
+      team: 'home' | 'away',
+    ): SubstitutionDto => {
       const sub = new SubstitutionDto();
-      sub.time = s.time;
-      sub.team = 'home';
-      sub.playerIn = s.substitution || null;
-      subs.push(sub);
-    }
-    for (const s of raw.substitutions?.away ?? []) {
-      const sub = new SubstitutionDto();
-      sub.time = s.time;
-      sub.team = 'away';
-      sub.playerIn = s.substitution || null;
-      subs.push(sub);
-    }
+      sub.time = raw.time;
+      sub.team = team;
+      const parts = (raw.substitution || '').split(' | ');
+      if (parts.length === 2) {
+        sub.playerIn = parts[0].trim() || null;
+        sub.playerOut = raw.substitution_out || parts[1].trim() || null;
+      } else {
+        sub.playerIn = raw.substitution || null;
+        sub.playerOut = raw.substitution_out || null;
+      }
+      return sub;
+    };
+    for (const s of raw.substitutions?.home ?? [])
+      subs.push(parseSub(s, 'home'));
+    for (const s of raw.substitutions?.away ?? [])
+      subs.push(parseSub(s, 'away'));
     dto.substitutions = subs;
 
     // Lineups
-    if (raw.lineup?.home?.starting_lineups?.length || raw.lineup?.away?.starting_lineups?.length) {
+    if (
+      raw.lineup?.home?.starting_lineups?.length ||
+      raw.lineup?.away?.starting_lineups?.length
+    ) {
       const lineups = new MatchLineupsDto();
-      lineups.home = this.normalizeTeamLineup(raw.lineup.home, raw.match_hometeam_system);
-      lineups.away = this.normalizeTeamLineup(raw.lineup.away, raw.match_awayteam_system);
+      lineups.home = this.normalizeTeamLineup(
+        raw.lineup.home,
+        raw.match_hometeam_system,
+      );
+      lineups.away = this.normalizeTeamLineup(
+        raw.lineup.away,
+        raw.match_awayteam_system,
+      );
       dto.lineups = lineups;
     } else {
       dto.lineups = null;
@@ -162,7 +178,10 @@ export class ApiFootballNormalizer {
     return dto;
   }
 
-  private normalizeTeamLineup(lineup: AfLineup, formation: string): TeamLineupDto {
+  private normalizeTeamLineup(
+    lineup: AfLineup,
+    formation: string,
+  ): TeamLineupDto {
     const dto = new TeamLineupDto();
     dto.formation = formation || '';
 
@@ -172,7 +191,9 @@ export class ApiFootballNormalizer {
       .filter((n) => !isNaN(n) && n > 0);
 
     const starters = [...(lineup?.starting_lineups ?? [])].sort(
-      (a, b) => (parseInt(a.lineup_position) || 99) - (parseInt(b.lineup_position) || 99),
+      (a, b) =>
+        (parseInt(a.lineup_position) || 99) -
+        (parseInt(b.lineup_position) || 99),
     );
 
     dto.starting = [];
@@ -193,7 +214,9 @@ export class ApiFootballNormalizer {
           : isLast
             ? this.fwdLabel(col, count)
             : this.midLabel(col, count);
-        dto.starting.push(this.makeLineupPlayer(starters[idx], idx, row + 1, col, label));
+        dto.starting.push(
+          this.makeLineupPlayer(starters[idx], idx, row + 1, col, label),
+        );
         idx++;
       }
     }
@@ -213,7 +236,13 @@ export class ApiFootballNormalizer {
     return dto;
   }
 
-  private makeLineupPlayer(p: AfLineupPlayer, idx: number, row: number, col: number, label: string): LineupPlayerDto {
+  private makeLineupPlayer(
+    p: AfLineupPlayer,
+    idx: number,
+    row: number,
+    col: number,
+    label: string,
+  ): LineupPlayerDto {
     const player = new LineupPlayerDto();
     player.id = p.player_key || `s${idx}`;
     player.name = p.lineup_player || '';

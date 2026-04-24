@@ -76,6 +76,7 @@ export interface AfCard {
 export interface AfSubstitution {
   time: string;
   substitution: string;
+  substitution_out?: string;
   substitution_player_id: string;
 }
 

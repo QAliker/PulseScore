@@ -85,6 +85,7 @@ export function apiMatchToMatch(m: ApiMatch): Match {
       time: s.time,
       team: s.team,
       playerIn: s.playerIn,
+      playerOut: s.playerOut,
     })),
     updatedAt: new Date().toISOString(),
   };

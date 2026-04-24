@@ -1,4 +1,10 @@
-import { Controller, Get, NotFoundException, Param, Query } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  NotFoundException,
+  Param,
+  Query,
+} from '@nestjs/common';
 import { TeamsService } from '../services/teams.service';
 import { PlayersService } from '../services/players.service';
 import { FixturesService } from '../services/fixtures.service';
@@ -31,7 +37,11 @@ export class TeamsController {
     @Query('limit') limit = '10',
     @Query('offset') offset = '0',
   ): Promise<MatchDto[]> {
-    return this.fixturesService.getTeamResults(teamId, parseInt(limit, 10), parseInt(offset, 10));
+    return this.fixturesService.getTeamResults(
+      teamId,
+      parseInt(limit, 10),
+      parseInt(offset, 10),
+    );
   }
 
   @Get(':teamId/fixtures')

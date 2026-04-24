@@ -24,7 +24,9 @@ export class PlayersService {
 
   async getByExternalId(
     externalId: string,
-  ): Promise<(PlayerDto & { teamName: string | null; teamLogo: string | null }) | null> {
+  ): Promise<
+    (PlayerDto & { teamName: string | null; teamLogo: string | null }) | null
+  > {
     const p = await this.prisma.player.findUnique({
       where: { externalId },
       include: { team: true },

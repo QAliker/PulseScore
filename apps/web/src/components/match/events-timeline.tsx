@@ -41,7 +41,8 @@ function EventRow({ event, homeTeamName, awayTeamName }: {
   homeTeamName: string;
   awayTeamName: string;
 }) {
-  const { symbol, label } = eventIcon(event.type);
+  const isSub = event.type === 'sub';
+  const { symbol, label } = isSub ? { symbol: '', label: 'Substitution' } : eventIcon(event.type);
   const color = eventColor(event.type);
   const isHome = event.team === 'home';
 
@@ -50,17 +51,31 @@ function EventRow({ event, homeTeamName, awayTeamName }: {
       className="grid grid-cols-[1fr_auto_1fr] items-start gap-2"
       aria-label={`${label}: ${event.playerName}, ${event.minute} minutes, ${isHome ? homeTeamName : awayTeamName}`}
     >
-      {/* Home side (left) */}
+      {/* Home side (left, right-aligned) */}
       <div className={cn('flex flex-col items-end gap-0.5', !isHome && 'invisible')}>
-        <div className="flex items-center gap-1.5">
-          <span className="text-sm font-semibold">{event.playerName}</span>
-          <span className={cn('text-base leading-none', color)} aria-hidden>{symbol}</span>
-        </div>
-        {event.type === 'goal' && event.detail && (
-          <span className="text-[0.68rem] text-muted-foreground">↳ {event.detail}</span>
-        )}
-        {event.type === 'sub' && event.detail && (
-          <span className="text-[0.68rem] text-muted-foreground">↓ {event.detail}</span>
+        {isSub ? (
+          <>
+            <div className="flex items-center gap-1">
+              <span className="text-sm font-semibold text-emerald-500">{event.playerName}</span>
+              <span className="text-sm leading-none text-emerald-500" aria-hidden>↑</span>
+            </div>
+            {event.detail && (
+              <div className="flex items-center gap-1">
+                <span className="text-sm font-semibold text-rose-500">{event.detail}</span>
+                <span className="text-sm leading-none text-rose-500" aria-hidden>↓</span>
+              </div>
+            )}
+          </>
+        ) : (
+          <>
+            <div className="flex items-center gap-1.5">
+              <span className={cn('text-sm font-semibold', color)}>{event.playerName}</span>
+              <span className={cn('text-base leading-none', color)} aria-hidden>{symbol}</span>
+            </div>
+            {event.type === 'goal' && event.detail && (
+              <span className="text-[0.68rem] text-muted-foreground">↳ {event.detail}</span>
+            )}
+          </>
         )}
       </div>
 
@@ -69,17 +84,31 @@ function EventRow({ event, homeTeamName, awayTeamName }: {
         <MinuteLabel minute={event.minute} stoppage={event.stoppage} />
       </div>
 
-      {/* Away side (right) */}
+      {/* Away side (right, left-aligned) */}
       <div className={cn('flex flex-col items-start gap-0.5', isHome && 'invisible')}>
-        <div className="flex items-center gap-1.5">
-          <span className={cn('text-base leading-none', color)} aria-hidden>{symbol}</span>
-          <span className="text-sm font-semibold">{event.playerName}</span>
-        </div>
-        {event.type === 'goal' && event.detail && (
-          <span className="text-[0.68rem] text-muted-foreground">{event.detail} ↲</span>
-        )}
-        {event.type === 'sub' && event.detail && (
-          <span className="text-[0.68rem] text-muted-foreground">{event.detail} ↓</span>
+        {isSub ? (
+          <>
+            <div className="flex items-center gap-1">
+              <span className="text-sm leading-none text-emerald-500" aria-hidden>↑</span>
+              <span className="text-sm font-semibold text-emerald-500">{event.playerName}</span>
+            </div>
+            {event.detail && (
+              <div className="flex items-center gap-1">
+                <span className="text-sm leading-none text-rose-500" aria-hidden>↓</span>
+                <span className="text-sm font-semibold text-rose-500">{event.detail}</span>
+              </div>
+            )}
+          </>
+        ) : (
+          <>
+            <div className="flex items-center gap-1.5">
+              <span className={cn('text-base leading-none', color)} aria-hidden>{symbol}</span>
+              <span className={cn('text-sm font-semibold', color)}>{event.playerName}</span>
+            </div>
+            {event.type === 'goal' && event.detail && (
+              <span className="text-[0.68rem] text-muted-foreground">{event.detail} ↲</span>
+            )}
+          </>
         )}
       </div>
     </div>
@@ -91,7 +120,7 @@ export function EventsTimeline({ events, match }: Props) {
     return (
       <div className="flex flex-col items-center gap-3 py-12 text-muted-foreground">
         <div className="text-3xl opacity-40">⏱</div>
-        <p className="text-sm">Match hasn't started yet. Events will appear here live.</p>
+        <p className="text-sm">Match hasn&apos;t started yet. Events will appear here live.</p>
       </div>
     );
   }

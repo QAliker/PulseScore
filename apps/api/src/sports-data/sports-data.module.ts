@@ -20,7 +20,14 @@ import { MatchesController } from './controllers/matches.controller';
 
 @Module({
   imports: [ScheduleModule.forRoot(), PrismaModule],
-  controllers: [LivescoreController, LeaguesController, TeamsController, PlayersController, H2hController, MatchesController],
+  controllers: [
+    LivescoreController,
+    LeaguesController,
+    TeamsController,
+    PlayersController,
+    H2hController,
+    MatchesController,
+  ],
   providers: [
     ApiFootballClient,
     ApiFootballNormalizer,

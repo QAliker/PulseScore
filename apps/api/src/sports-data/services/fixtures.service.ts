@@ -43,13 +43,19 @@ export class FixturesService {
     return fixtures;
   }
 
-  async getTeamResults(teamId: string, limit = 10, offset = 0): Promise<MatchDto[]> {
+  async getTeamResults(
+    teamId: string,
+    limit = 10,
+    offset = 0,
+  ): Promise<MatchDto[]> {
     const cacheKey = SportsDataCacheService.teamResultsKey(teamId);
     const cached = await this.cacheService.getCached<MatchDto[]>(cacheKey);
     if (cached) return cached.slice(offset, offset + limit);
 
     const today = new Date().toISOString().slice(0, 10);
-    const ninetyDaysAgo = new Date(Date.now() - 90 * 86400000).toISOString().slice(0, 10);
+    const ninetyDaysAgo = new Date(Date.now() - 90 * 86400000)
+      .toISOString()
+      .slice(0, 10);
 
     const raw = await this.client.get<AfMatch[]>('get_events', {
       team_id: teamId,
@@ -62,7 +68,10 @@ export class FixturesService {
     const results = raw
       .map((m) => this.normalizer.normalizeMatch(m))
       .filter((m) => m.status === 'FINISHED')
-      .sort((a, b) => new Date(b.startTime).getTime() - new Date(a.startTime).getTime());
+      .sort(
+        (a, b) =>
+          new Date(b.startTime).getTime() - new Date(a.startTime).getTime(),
+      );
 
     await this.cacheService.setCached(cacheKey, results, TTL_FIXTURES);
     return results.slice(offset, offset + limit);
@@ -74,7 +83,9 @@ export class FixturesService {
     if (cached) return cached;
 
     const today = new Date().toISOString().slice(0, 10);
-    const thirtyDaysAhead = new Date(Date.now() + 30 * 86400000).toISOString().slice(0, 10);
+    const thirtyDaysAhead = new Date(Date.now() + 30 * 86400000)
+      .toISOString()
+      .slice(0, 10);
 
     const raw = await this.client.get<AfMatch[]>('get_events', {
       team_id: teamId,
@@ -87,7 +98,10 @@ export class FixturesService {
     const fixtures = raw
       .map((m) => this.normalizer.normalizeMatch(m))
       .filter((m) => m.status === 'SCHEDULED')
-      .sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
+      .sort(
+        (a, b) =>
+          new Date(a.startTime).getTime() - new Date(b.startTime).getTime(),
+      );
 
     await this.cacheService.setCached(cacheKey, fixtures, TTL_FIXTURES);
     return fixtures;
@@ -99,7 +113,9 @@ export class FixturesService {
     if (cached) return cached;
 
     const today = new Date().toISOString().slice(0, 10);
-    const thirtyDaysAgo = new Date(Date.now() - 30 * 86400000).toISOString().slice(0, 10);
+    const thirtyDaysAgo = new Date(Date.now() - 30 * 86400000)
+      .toISOString()
+      .slice(0, 10);
 
     const raw = await this.client.get<AfMatch[]>('get_events', {
       league_id: leagueId,
@@ -112,7 +128,10 @@ export class FixturesService {
     const results = raw
       .map((m) => this.normalizer.normalizeMatch(m))
       .filter((m) => m.status === 'FINISHED')
-      .sort((a, b) => new Date(b.startTime).getTime() - new Date(a.startTime).getTime());
+      .sort(
+        (a, b) =>
+          new Date(b.startTime).getTime() - new Date(a.startTime).getTime(),
+      );
 
     await this.cacheService.setCached(cacheKey, results, TTL_FIXTURES);
     return results;
@@ -123,11 +142,14 @@ export class FixturesService {
     const cached = await this.cacheService.getCached<MatchDto>(cacheKey);
     if (cached) return cached;
 
-    const raw = await this.client.get<AfMatch[]>('get_events', { match_id: matchId });
+    const raw = await this.client.get<AfMatch[]>('get_events', {
+      match_id: matchId,
+    });
     if (!Array.isArray(raw) || raw.length === 0) return null;
 
     const match = this.normalizer.normalizeMatch(raw[0]);
-    const ttl = match.status === 'LIVE' ? 30 : match.status === 'FINISHED' ? 3600 : 300;
+    const ttl =
+      match.status === 'LIVE' ? 30 : match.status === 'FINISHED' ? 3600 : 300;
     await this.cacheService.setCached(cacheKey, match, ttl);
     return match;
   }
@@ -138,7 +160,9 @@ export class FixturesService {
     if (cached) return cached;
 
     const today = new Date().toISOString().slice(0, 10);
-    const thirtyDaysAhead = new Date(Date.now() + 30 * 86400000).toISOString().slice(0, 10);
+    const thirtyDaysAhead = new Date(Date.now() + 30 * 86400000)
+      .toISOString()
+      .slice(0, 10);
 
     const raw = await this.client.get<AfMatch[]>('get_events', {
       league_id: leagueId,
@@ -151,7 +175,10 @@ export class FixturesService {
     const fixtures = raw
       .map((m) => this.normalizer.normalizeMatch(m))
       .filter((m) => m.status === 'SCHEDULED')
-      .sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
+      .sort(
+        (a, b) =>
+          new Date(a.startTime).getTime() - new Date(b.startTime).getTime(),
+      );
 
     await this.cacheService.setCached(cacheKey, fixtures, TTL_FIXTURES);
     return fixtures;

@@ -1,4 +1,5 @@
 import type { ApiTeam } from '@/lib/api-types';
+import Image from 'next/image';
 
 type Props = { team: ApiTeam };
 
@@ -6,7 +7,7 @@ export function TeamHeader({ team }: Props) {
   return (
     <div className="flex items-center gap-4">
       {team.logo && (
-        <img
+        <Image
           src={team.logo}
           alt={team.name}
           className="size-16 object-contain sm:size-20"

@@ -53,7 +53,9 @@ export class TeamsService implements OnModuleInit {
     shortName: string | null;
     country: string | null;
   } | null> {
-    return this.prismaService.team.findUnique({ where: { externalId: teamId } });
+    return this.prismaService.team.findUnique({
+      where: { externalId: teamId },
+    });
   }
 
   @Cron('0 3 * * *') // Once per day at 3 AM

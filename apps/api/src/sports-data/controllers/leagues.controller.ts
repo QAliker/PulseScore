@@ -12,7 +12,9 @@ export class LeaguesController {
   ) {}
 
   @Get(':leagueId/standings')
-  async getStandings(@Param('leagueId') leagueId: string): Promise<StandingDto[]> {
+  async getStandings(
+    @Param('leagueId') leagueId: string,
+  ): Promise<StandingDto[]> {
     return this.standingsService.getStandings(leagueId);
   }
 

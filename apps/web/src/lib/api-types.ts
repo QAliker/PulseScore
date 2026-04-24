@@ -74,6 +74,7 @@ export type ApiSubstitution = {
   time: string;
   team: 'home' | 'away';
   playerIn: string | null;
+  playerOut: string | null;
 };
 
 export type ApiLineupPlayer = {

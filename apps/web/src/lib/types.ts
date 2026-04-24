@@ -20,6 +20,7 @@ export type Substitution = {
   time: string;
   team: 'home' | 'away';
   playerIn: string | null;
+  playerOut: string | null;
 };
 
 export type Team = {

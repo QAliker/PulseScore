@@ -199,19 +199,22 @@ function CardEntry({ card, side }: { card: MatchCardEvent; side: 'home' | 'away'
 
 function SubEntry({ sub, side }: { sub: Substitution; side: 'home' | 'away' }) {
   if (!sub.playerIn) return null;
+  const isHome = side === 'home';
   return (
-    <p
-      className={cn(
-        'text-[0.67rem] leading-snug opacity-60',
-        side === 'home' ? 'text-right' : 'text-left',
+    <div className={cn('flex flex-col gap-0.5 text-[0.67rem] leading-snug', isHome ? 'items-end' : 'items-start')}>
+      <span className={cn('flex items-center gap-1', isHome && 'flex-row-reverse')}>
+        <span className="tabular font-semibold opacity-50">{sub.time}&apos;</span>
+        <span className="text-emerald-400" aria-hidden>↑</span>
+        <span className="font-medium text-emerald-400">{sub.playerIn}</span>
+      </span>
+      {sub.playerOut && (
+        <span className={cn('flex items-center gap-1', isHome && 'flex-row-reverse')}>
+          <span className="w-[2.2ch]" aria-hidden />
+          <span className="text-rose-400" aria-hidden>↓</span>
+          <span className="font-medium text-rose-400">{sub.playerOut}</span>
+        </span>
       )}
-    >
-      <span className="tabular font-semibold opacity-70">{sub.time}&apos;</span>
-      {' '}
-      <span className="opacity-60">&#x2191;</span>
-      {' '}
-      <span className="font-medium">{sub.playerIn}</span>
-    </p>
+    </div>
   );
 }
 
