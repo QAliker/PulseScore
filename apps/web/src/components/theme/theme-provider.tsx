@@ -8,13 +8,9 @@ type ThemeCtx = { theme: Theme; toggle: () => void; setTheme: (t: Theme) => void
 const Ctx = createContext<ThemeCtx | null>(null);
 const STORAGE_KEY = 'pulse-theme';
 
-function readInitial(): Theme {
-  if (typeof document === 'undefined') return 'light';
-  return document.documentElement.classList.contains('dark') ? 'dark' : 'light';
-}
-
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setThemeState] = useState<Theme>(readInitial);
+  // Always init 'light' to match server HTML; useEffect syncs to actual DOM after hydration.
+  const [theme, setThemeState] = useState<Theme>('light');
 
   const apply = useCallback((next: Theme) => {
     const root = document.documentElement;
@@ -36,6 +32,10 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const toggle = useCallback(() => {
     setTheme(theme === 'dark' ? 'light' : 'dark');
   }, [theme, setTheme]);
+
+  useEffect(() => {
+    setThemeState(document.documentElement.classList.contains('dark') ? 'dark' : 'light');
+  }, []);
 
   useEffect(() => {
     const mq = window.matchMedia('(prefers-color-scheme: dark)');
