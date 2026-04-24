@@ -30,7 +30,7 @@ export function StandingTable({ standings }: Props) {
           </tr>
         </thead>
         <tbody className="divide-y divide-border/40">
-          {standings.map((row) => {
+          {standings.map((row, index) => {
             const isPromotion = row.promotion?.toLowerCase().includes('promotion');
             const isRelegation = row.promotion?.toLowerCase().includes('relegation');
             return (
@@ -58,7 +58,8 @@ export function StandingTable({ standings }: Props) {
                       src={row.teamBadge}
                       alt=""
                       className="size-5 object-contain"
-                      loading="lazy"
+                      loading={index === 0 ? 'eager' : 'lazy'}
+                      width={40} height={40}
                     />
                   )}
                   {row.teamName}

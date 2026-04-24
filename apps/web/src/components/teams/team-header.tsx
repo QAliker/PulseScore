@@ -12,6 +12,7 @@ export function TeamHeader({ team }: Props) {
           alt={team.name}
           className="size-16 object-contain sm:size-20"
           loading="lazy"
+          width={10} height={10}
         />
       )}
       <div className="flex flex-col gap-0.5">

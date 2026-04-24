@@ -22,7 +22,7 @@ export function PlayerCard({ player }: Props) {
     >
       <div className="relative size-10 shrink-0 overflow-hidden rounded-full bg-muted">
         {player.image ? (
-          <Image src={player.image} alt={player.name} className="size-full object-cover" loading="lazy"/>
+          <Image src={player.image} alt={player.name} className="size-full object-cover" loading="lazy" width={30} height={30}/>
         ) : (
           <span className="flex size-full items-center justify-center text-xs font-bold text-muted-foreground">
             {player.number ?? '?'}

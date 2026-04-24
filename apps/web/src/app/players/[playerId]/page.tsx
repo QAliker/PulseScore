@@ -69,6 +69,7 @@ export default async function PlayerPage({
                 alt={player.name}
                 className="size-full object-cover"
                 loading="lazy"
+                width={20} height={20}
               />
             ) : (
               <span className="flex size-full items-center justify-center text-2xl font-black text-muted-foreground">

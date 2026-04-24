@@ -67,7 +67,7 @@ function MatchRow({ m, teamId }: { m: ApiMatch; teamId?: string }) {
 
       <div className="flex min-w-0 flex-1 items-center gap-2">
         {m.homeTeam.logo && (
-          <Image src={m.homeTeam.logo} alt="" className="size-4 object-contain" loading="lazy" />
+          <Image src={m.homeTeam.logo} alt="" className="size-4 object-contain" loading="lazy" width={32} height={32} />
         )}
         <span className={cn('truncate font-medium', m.homeTeam.externalId === teamId && 'font-bold')}>
           {m.homeTeam.name}
@@ -77,7 +77,7 @@ function MatchRow({ m, teamId }: { m: ApiMatch; teamId?: string }) {
           {m.awayTeam.name}
         </span>
         {m.awayTeam.logo && (
-          <Image src={m.awayTeam.logo} alt="" className="size-4 object-contain" loading="lazy" />
+          <Image src={m.awayTeam.logo} alt="" className="size-4 object-contain" loading="lazy" width={32} height={32} />
         )}
       </div>
 
