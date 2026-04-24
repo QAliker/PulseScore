@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useCallback, useContext, useEffect, useState } from 'react';
+import { createContext, useCallback, useContext, useEffect, useSyncExternalStore } from 'react';
 
 type Theme = 'light' | 'dark';
 type ThemeCtx = { theme: Theme; toggle: () => void; setTheme: (t: Theme) => void };
@@ -8,9 +8,19 @@ type ThemeCtx = { theme: Theme; toggle: () => void; setTheme: (t: Theme) => void
 const Ctx = createContext<ThemeCtx | null>(null);
 const STORAGE_KEY = 'pulse-theme';
 
+function subscribe(cb: () => void) {
+  const observer = new MutationObserver(cb);
+  observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+  return () => observer.disconnect();
+}
+
+const getSnapshot = (): Theme =>
+  document.documentElement.classList.contains('dark') ? 'dark' : 'light';
+
+const getServerSnapshot = (): Theme => 'light';
+
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  // Always init 'light' to match server HTML; useEffect syncs to actual DOM after hydration.
-  const [theme, setThemeState] = useState<Theme>('light');
+  const theme = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
 
   const apply = useCallback((next: Theme) => {
     const root = document.documentElement;
@@ -21,31 +31,21 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     } catch {}
   }, []);
 
-  const setTheme = useCallback(
-    (next: Theme) => {
-      setThemeState(next);
-      apply(next);
-    },
-    [apply],
-  );
+  const setTheme = useCallback((next: Theme) => apply(next), [apply]);
 
   const toggle = useCallback(() => {
-    setTheme(theme === 'dark' ? 'light' : 'dark');
-  }, [theme, setTheme]);
-
-  useEffect(() => {
-    setThemeState(document.documentElement.classList.contains('dark') ? 'dark' : 'light');
-  }, []);
+    apply(theme === 'dark' ? 'light' : 'dark');
+  }, [theme, apply]);
 
   useEffect(() => {
     const mq = window.matchMedia('(prefers-color-scheme: dark)');
     const onChange = (e: MediaQueryListEvent) => {
       if (localStorage.getItem(STORAGE_KEY)) return;
-      setTheme(e.matches ? 'dark' : 'light');
+      apply(e.matches ? 'dark' : 'light');
     };
     mq.addEventListener('change', onChange);
     return () => mq.removeEventListener('change', onChange);
-  }, [setTheme]);
+  }, [apply]);
 
   return <Ctx.Provider value={{ theme, toggle, setTheme }}>{children}</Ctx.Provider>;
 }
