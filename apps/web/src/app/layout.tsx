@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { Archivo, Big_Shoulders } from 'next/font/google';
+import localFont from 'next/font/local';
 import { ThemeProvider } from '@/components/theme/theme-provider';
 import { ThemeScript } from '@/components/theme/theme-script';
 import { AppShell } from '@/components/app/app-shell';
@@ -7,19 +7,21 @@ import { TooltipProvider } from '@/components/ui/tooltip';
 import { Toaster } from '@/components/ui/sonner';
 import './globals.css';
 
-const archivo = Archivo({
-  variable: '--font-archivo',
-  subsets: ['latin'],
-  weight: ['400', '500', '600', '700'],
+const workSans = localFont({
+  src: [
+    { path: '../../font/Work_Sans/WorkSans-VariableFont_wght.ttf', style: 'normal' },
+    { path: '../../font/Work_Sans/WorkSans-Italic-VariableFont_wght.ttf', style: 'italic' },
+  ],
+  variable: '--font-work-sans',
+  weight: '100 900',
   display: 'swap',
 });
 
-const bigShoulders = Big_Shoulders({
+const bigShoulders = localFont({
+  src: '../../font/Big_Shoulders/BigShoulders-VariableFont_opsz,wght.ttf',
   variable: '--font-big-shoulders',
-  subsets: ['latin'],
-  weight: ['500', '700', '800', '900'],
+  weight: '100 900',
   display: 'swap',
-  adjustFontFallback: false,
 });
 
 export const metadata: Metadata = {
@@ -38,7 +40,7 @@ export default function RootLayout({
     <html
       lang="fr"
       suppressHydrationWarning
-      className={`${archivo.variable} ${bigShoulders.variable}`}
+      className={`${workSans.variable} ${bigShoulders.variable}`}
     >
       <head />
       <body className="min-h-screen antialiased">
