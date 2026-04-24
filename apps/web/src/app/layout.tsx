@@ -19,6 +19,7 @@ const bigShoulders = Big_Shoulders({
   subsets: ['latin'],
   weight: ['500', '700', '800', '900'],
   display: 'swap',
+  adjustFontFallback: false,
 });
 
 export const metadata: Metadata = {
@@ -39,10 +40,9 @@ export default function RootLayout({
       suppressHydrationWarning
       className={`${archivo.variable} ${bigShoulders.variable}`}
     >
-      <head>
-        <ThemeScript />
-      </head>
+      <head />
       <body className="min-h-screen antialiased">
+        <ThemeScript />
         <ThemeProvider>
           <TooltipProvider delayDuration={200}>
             <AppShell>{children}</AppShell>

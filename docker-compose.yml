@@ -42,23 +42,5 @@ services:
       redis:
         condition: service_healthy
 
-  web:
-    build:
-      context: ./apps/web
-    ports:
-      - "3000:3000"
-    environment:
-      API_URL: http://api:3001
-      NEXT_PUBLIC_API_URL: http://localhost:3001
-      NEXT_PUBLIC_APP_TZ: Europe/Paris
-      WATCHPACK_POLLING: "true"
-      CHOKIDAR_USEPOLLING: "true"
-    volumes:
-      - ./apps/web:/app
-      - /app/node_modules
-      - /app/.next
-    depends_on:
-      - api
-
 volumes:
   postgres_data:
