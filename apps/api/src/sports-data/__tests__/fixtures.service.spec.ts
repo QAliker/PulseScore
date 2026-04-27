@@ -21,7 +21,8 @@ describe('FixturesService', () => {
       getCached: jest.fn().mockResolvedValue(null),
       setCached: jest.fn().mockResolvedValue(undefined),
     };
-    service = new FixturesService(mockClient, mockNormalizer, mockCache);
+    const mockPrisma = { player: { findMany: jest.fn().mockResolvedValue([]) } };
+    service = new FixturesService(mockClient, mockNormalizer, mockCache, mockPrisma as any);
   });
 
   it('should fetch events from API when cache is empty', async () => {

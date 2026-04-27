@@ -84,6 +84,7 @@ export type ApiLineupPlayer = {
   positionRow: number;
   positionCol: number;
   positionLabel: string;
+  photo?: string | null;
 };
 
 export type ApiTeamLineup = {

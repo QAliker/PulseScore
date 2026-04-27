@@ -21,38 +21,38 @@ function convertApiLineups(apiLineups: ApiMatchLineups | null): MatchLineups | n
   if (!apiLineups) return null;
   const convertSide = (side: ApiMatchLineups['home']): TeamLineup => ({
     formation: side.formation,
-    starting: side.starting.map((p) => ({ ...p })),
-    bench: side.bench.map((p) => ({ ...p })),
+    starting: side.starting.map((p) => ({ ...p, photo: p.photo ?? null })),
+    bench: side.bench.map((p) => ({ ...p, photo: p.photo ?? null })),
     coach: side.coach,
   });
   return { home: convertSide(apiLineups.home), away: convertSide(apiLineups.away) };
 }
 
-function buildEvents(match: Match): MatchEventEntry[] {
+function buildEvents(match: Match, photoMap: Map<string, string | null>): MatchEventEntry[] {
   const events: MatchEventEntry[] = [];
 
   match.goalscorers.forEach((g, i) => {
     const minute = parseInt(g.time) || 0;
     const isOwn = g.info === 'own goal';
     if (g.homeScorer) {
-      events.push({ id: `g-h-${i}`, minute, type: isOwn ? 'owngoal' : 'goal', team: 'home', playerName: g.homeScorer });
+      events.push({ id: `g-h-${i}`, minute, type: isOwn ? 'owngoal' : 'goal', team: 'home', playerName: g.homeScorer, playerPhoto: photoMap.get(g.homeScorer) });
     }
     if (g.awayScorer) {
-      events.push({ id: `g-a-${i}`, minute, type: isOwn ? 'owngoal' : 'goal', team: 'away', playerName: g.awayScorer });
+      events.push({ id: `g-a-${i}`, minute, type: isOwn ? 'owngoal' : 'goal', team: 'away', playerName: g.awayScorer, playerPhoto: photoMap.get(g.awayScorer) });
     }
   });
 
   match.cards.forEach((c, i) => {
     const minute = parseInt(c.time) || 0;
     const type: MatchEventType = c.card === 'red card' ? 'red' : c.card === 'yellow-red card' ? 'yellowred' : 'yellow';
-    if (c.homeFault) events.push({ id: `c-h-${i}`, minute, type, team: 'home', playerName: c.homeFault });
-    if (c.awayFault) events.push({ id: `c-a-${i}`, minute, type, team: 'away', playerName: c.awayFault });
+    if (c.homeFault) events.push({ id: `c-h-${i}`, minute, type, team: 'home', playerName: c.homeFault, playerPhoto: photoMap.get(c.homeFault) });
+    if (c.awayFault) events.push({ id: `c-a-${i}`, minute, type, team: 'away', playerName: c.awayFault, playerPhoto: photoMap.get(c.awayFault) });
   });
 
   match.substitutions.forEach((s, i) => {
     const minute = parseInt(s.time) || 0;
     if (s.playerIn) {
-      events.push({ id: `s-${s.team}-${i}`, minute, type: 'sub', team: s.team, playerName: s.playerIn, detail: s.playerOut ?? undefined });
+      events.push({ id: `s-${s.team}-${i}`, minute, type: 'sub', team: s.team, playerName: s.playerIn, detail: s.playerOut ?? undefined, playerPhoto: photoMap.get(s.playerIn) });
     }
   });
 
@@ -73,7 +73,15 @@ export default async function MatchDetailPage({
   const league = getLeagueBySlug(match.leagueSlug);
   const detail = getMatchDetail(id, match);
   const lineups = convertApiLineups(apiMatch.lineups);
-  const events = buildEvents(match);
+
+  const photoMap = new Map<string, string | null>();
+  if (lineups) {
+    for (const p of [...lineups.home.starting, ...lineups.home.bench, ...lineups.away.starting, ...lineups.away.bench]) {
+      if (p.photo) photoMap.set(p.name, p.photo);
+    }
+  }
+
+  const events = buildEvents(match, photoMap);
   const statistics = apiMatch.statistics ?? [];
 
   return (

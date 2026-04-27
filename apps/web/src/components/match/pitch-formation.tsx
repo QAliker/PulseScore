@@ -1,5 +1,6 @@
 import { cn } from '@/lib/utils';
 import type { LineupPlayer, TeamLineup, Match } from '@/lib/types';
+import { PlayerPhoto } from './player-photo';
 
 type Props = {
   lineups: { home: TeamLineup; away: TeamLineup };
@@ -24,18 +25,17 @@ function PlayerDot({
   side: 'home' | 'away';
 }) {
   return (
-    <div className="flex flex-col items-center gap-1">
-      <div
-        className={cn(
-          'flex size-8 items-center justify-center rounded-full text-xs font-bold tabular ring-2',
-          side === 'home'
-            ? 'bg-home text-primary-foreground ring-home/40'
-            : 'bg-away text-away-foreground ring-away/40',
-        )}
-        title={`${player.number} ${player.name}`}
-      >
-        {player.number}
-      </div>
+    <div
+      className="group flex flex-col items-center gap-1 transition-transform duration-150 hover:scale-110"
+      title={`#${player.number} ${player.name} · ${player.positionLabel}`}
+    >
+      <PlayerPhoto
+        photo={player.photo}
+        name={player.name}
+        number={player.number}
+        side={side}
+        size="lg"
+      />
       <span className="w-14 truncate text-center text-[0.58rem] font-medium leading-tight text-pitch-foreground/80">
         {player.name.split(' ').pop()}
       </span>
@@ -78,20 +78,15 @@ function BenchRow({ lineup, side }: { lineup: TeamLineup; side: 'home' | 'away' 
         {lineup.bench.map((p) => (
           <div
             key={p.id}
-            className={cn(
-              'flex items-center gap-1.5 rounded-md border border-border/60 bg-card px-2 py-1',
-            )}
+            className="flex items-center gap-1.5 rounded-md border border-border/60 bg-card px-2 py-1"
           >
-            <span
-              className={cn(
-                'flex size-5 shrink-0 items-center justify-center rounded-full text-[0.6rem] font-bold',
-                side === 'home'
-                  ? 'bg-home/20 text-home'
-                  : 'bg-away/20 text-away',
-              )}
-            >
-              {p.number}
-            </span>
+            <PlayerPhoto
+              photo={p.photo}
+              name={p.name}
+              number={p.number}
+              side={side}
+              size="sm"
+            />
             <span className="text-[0.72rem] font-medium">{p.name}</span>
             <span className="text-[0.6rem] text-muted-foreground">{p.positionLabel}</span>
           </div>

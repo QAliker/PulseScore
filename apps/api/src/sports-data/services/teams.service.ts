@@ -23,9 +23,12 @@ export class TeamsService implements OnModuleInit {
   ) {}
 
   async onModuleInit(): Promise<void> {
-    const count = await this.prismaService.team.count();
-    if (count === 0) {
-      this.logger.log('DB empty — seeding teams on startup');
+    const [teamCount, playerCount] = await Promise.all([
+      this.prismaService.team.count(),
+      this.prismaService.player.count(),
+    ]);
+    if (teamCount === 0 || playerCount === 0) {
+      this.logger.log('DB missing teams or players — seeding on startup');
       void this.refreshTeamsAndPlayers();
     }
   }

@@ -8,6 +8,7 @@ export class LineupPlayerDto {
   positionRow: number;
   positionCol: number;
   positionLabel: string;
+  photo: string | null;
 }
 
 export class TeamLineupDto {
