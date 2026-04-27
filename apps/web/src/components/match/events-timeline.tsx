@@ -1,5 +1,6 @@
 import { cn } from '@/lib/utils';
 import type { MatchEventEntry, MatchEventType, Match } from '@/lib/types';
+import { PlayerPhoto } from './player-photo';
 
 type Props = {
   events: MatchEventEntry[];
@@ -55,12 +56,13 @@ function EventRow({ event, homeTeamName, awayTeamName }: {
       <div className={cn('flex flex-col items-end gap-0.5', !isHome && 'invisible')}>
         {isSub ? (
           <>
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-1.5">
               <span className="text-sm font-semibold text-emerald-500">{event.playerName}</span>
               <span className="text-sm leading-none text-emerald-500" aria-hidden>↑</span>
+              <PlayerPhoto photo={event.playerPhoto} name={event.playerName} side="home" size="sm" />
             </div>
             {event.detail && (
-              <div className="flex items-center gap-1">
+              <div className="flex items-center justify-end gap-1">
                 <span className="text-sm font-semibold text-rose-500">{event.detail}</span>
                 <span className="text-sm leading-none text-rose-500" aria-hidden>↓</span>
               </div>
@@ -71,6 +73,7 @@ function EventRow({ event, homeTeamName, awayTeamName }: {
             <div className="flex items-center gap-1.5">
               <span className={cn('text-sm font-semibold', color)}>{event.playerName}</span>
               <span className={cn('text-base leading-none', color)} aria-hidden>{symbol}</span>
+              <PlayerPhoto photo={event.playerPhoto} name={event.playerName} side="home" size="sm" />
             </div>
             {event.type === 'goal' && event.detail && (
               <span className="text-[0.68rem] text-muted-foreground">↳ {event.detail}</span>
@@ -88,7 +91,8 @@ function EventRow({ event, homeTeamName, awayTeamName }: {
       <div className={cn('flex flex-col items-start gap-0.5', isHome && 'invisible')}>
         {isSub ? (
           <>
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-1.5">
+              <PlayerPhoto photo={event.playerPhoto} name={event.playerName} side="away" size="sm" />
               <span className="text-sm leading-none text-emerald-500" aria-hidden>↑</span>
               <span className="text-sm font-semibold text-emerald-500">{event.playerName}</span>
             </div>
@@ -102,6 +106,7 @@ function EventRow({ event, homeTeamName, awayTeamName }: {
         ) : (
           <>
             <div className="flex items-center gap-1.5">
+              <PlayerPhoto photo={event.playerPhoto} name={event.playerName} side="away" size="sm" />
               <span className={cn('text-base leading-none', color)} aria-hidden>{symbol}</span>
               <span className={cn('text-sm font-semibold', color)}>{event.playerName}</span>
             </div>

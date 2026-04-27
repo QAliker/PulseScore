@@ -8,6 +8,7 @@ import {
 } from '../sports-data-cache.service';
 import { AfMatch } from '../interfaces/api-football.interfaces';
 import { MatchDto } from '../dto/match.dto';
+import { PrismaService } from '../../prisma/prisma.service';
 
 const LEAGUE_IDS = ['153', '164']; // Championship, Ligue 2
 
@@ -19,6 +20,7 @@ export class FixturesService {
     private readonly client: ApiFootballClient,
     private readonly normalizer: ApiFootballNormalizer,
     private readonly cacheService: SportsDataCacheService,
+    private readonly prisma: PrismaService,
   ) {}
 
   async getFixtures(
@@ -148,6 +150,7 @@ export class FixturesService {
     if (!Array.isArray(raw) || raw.length === 0) return null;
 
     const match = this.normalizer.normalizeMatch(raw[0]);
+    await this.enrichLineupPhotos(match);
     const ttl =
       match.status === 'LIVE' ? 30 : match.status === 'FINISHED' ? 3600 : 300;
     await this.cacheService.setCached(cacheKey, match, ttl);
@@ -182,6 +185,27 @@ export class FixturesService {
 
     await this.cacheService.setCached(cacheKey, fixtures, TTL_FIXTURES);
     return fixtures;
+  }
+
+  private async enrichLineupPhotos(match: MatchDto): Promise<void> {
+    if (!match.lineups) return;
+    const allPlayers = [
+      ...match.lineups.home.starting,
+      ...match.lineups.home.bench,
+      ...match.lineups.away.starting,
+      ...match.lineups.away.bench,
+    ];
+    const ids = allPlayers.map((p) => p.id).filter(Boolean);
+    if (ids.length === 0) return;
+
+    const rows = await this.prisma.player.findMany({
+      where: { externalId: { in: ids } },
+      select: { externalId: true, image: true },
+    });
+    const photoMap = new Map(rows.map((r) => [r.externalId, r.image]));
+    for (const p of allPlayers) {
+      p.photo = photoMap.get(p.id) ?? null;
+    }
   }
 
   @Cron('0 */6 * * *')

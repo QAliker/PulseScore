@@ -223,12 +223,13 @@ export class ApiFootballNormalizer {
 
     dto.bench = (lineup?.substitutes ?? []).map((p, i) => {
       const player = new LineupPlayerDto();
-      player.id = p.player_key || `b${i}`;
+      player.id = p.player_key ? String(p.player_key) : `b${i}`;
       player.name = p.lineup_player || '';
       player.number = parseInt(p.lineup_number) || 12 + i;
       player.positionRow = 0;
       player.positionCol = i;
       player.positionLabel = 'SUB';
+      player.photo = null;
       return player;
     });
 
@@ -244,12 +245,13 @@ export class ApiFootballNormalizer {
     label: string,
   ): LineupPlayerDto {
     const player = new LineupPlayerDto();
-    player.id = p.player_key || `s${idx}`;
+    player.id = p.player_key ? String(p.player_key) : `s${idx}`;
     player.name = p.lineup_player || '';
     player.number = parseInt(p.lineup_number) || idx + 1;
     player.positionRow = row;
     player.positionCol = col;
     player.positionLabel = label;
+    player.photo = null;
     return player;
   }
 
@@ -303,7 +305,7 @@ export class ApiFootballNormalizer {
 
   normalizePlayer(raw: AfPlayer, teamId: string): PlayerDto {
     const dto = new PlayerDto();
-    dto.externalId = raw.player_key;
+    dto.externalId = String(raw.player_key);
     dto.name = raw.player_name;
     dto.image = raw.player_image || null;
     dto.number = raw.player_number

@@ -98,6 +98,7 @@ export type LineupPlayer = {
   positionRow: number; // 0=GK 1=DEF 2=MID 3=FWD
   positionCol: number; // 0-based column within row
   positionLabel: string; // "GK" | "RB" | "CB" | "LB" | "CM" | "RM" | "LM" | "ST"
+  photo?: string | null;
 };
 
 export type TeamLineup = {
@@ -122,6 +123,7 @@ export type MatchEventEntry = {
   team: 'home' | 'away';
   playerName: string;
   detail?: string; // assist name for goal; player-out name for sub
+  playerPhoto?: string | null;
 };
 
 export type H2HMatch = {
