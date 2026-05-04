@@ -7,14 +7,14 @@ export type League = {
   season: string;
 };
 
-// Free-tier APIFootball.com leagues for PulseScore MVP.
+// API-Football v3 (RapidAPI) league IDs.
 export const LEAGUES: League[] = [
   {
     slug: 'england-championship',
     name: 'Championship',
     country: 'England',
     flag: '🏴󠁧󠁢󠁥󠁮󠁧󠁿',
-    apiFootballId: 153,
+    apiFootballId: 40,
     season: '2025/26',
   },
   {
@@ -22,7 +22,7 @@ export const LEAGUES: League[] = [
     name: 'Ligue 2',
     country: 'France',
     flag: '🇫🇷',
-    apiFootballId: 164,
+    apiFootballId: 61,
     season: '2025/26',
   },
 ];

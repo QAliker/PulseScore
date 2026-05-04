@@ -6,13 +6,25 @@ describe('FixturesService', () => {
   let mockNormalizer: any;
   let mockCache: any;
 
+  const makeRawFixture = (id: string) => ({
+    fixture: { id: parseInt(id), date: '2026-04-10T20:45:00Z', status: { short: 'FT', elapsed: 90 }, venue: { name: 'Stadium' } },
+    league: { id: 40, name: 'Championship', country: 'England', logo: '', flag: '', season: 2025, round: 'Round 38' },
+    teams: { home: { id: 1, name: 'Leeds', logo: '' }, away: { id: 2, name: 'Sheffield', logo: '' } },
+    goals: { home: 2, away: 1 },
+    score: { halftime: { home: 1, away: 0 }, fulltime: { home: 2, away: 1 }, extratime: { home: null, away: null }, penalty: { home: null, away: null } },
+    events: [],
+    lineups: [],
+    statistics: [],
+    players: [],
+  });
+
   beforeEach(() => {
     mockClient = { get: jest.fn() };
     mockNormalizer = {
-      normalizeMatch: jest.fn((m: any) => ({
-        externalId: m.match_id,
-        homeTeam: { name: m.match_hometeam_name },
-        awayTeam: { name: m.match_awayteam_name },
+      normalizeFixture: jest.fn((m: any) => ({
+        externalId: String(m.fixture.id),
+        homeTeam: { name: m.teams.home.name },
+        awayTeam: { name: m.teams.away.name },
         status: 'FINISHED',
         sport: 'Football',
       })),
@@ -21,21 +33,23 @@ describe('FixturesService', () => {
       getCached: jest.fn().mockResolvedValue(null),
       setCached: jest.fn().mockResolvedValue(undefined),
     };
-    const mockPrisma = { player: { findMany: jest.fn().mockResolvedValue([]) } };
-    service = new FixturesService(mockClient, mockNormalizer, mockCache, mockPrisma as any);
+    const mockPrisma = {
+      player: { findMany: jest.fn().mockResolvedValue([]) },
+    };
+    service = new FixturesService(
+      mockClient,
+      mockNormalizer,
+      mockCache,
+      mockPrisma as any,
+    );
   });
 
-  it('should fetch events from API when cache is empty', async () => {
-    mockClient.get.mockResolvedValue([
-      {
-        match_id: '1',
-        match_hometeam_name: 'Leeds',
-        match_awayteam_name: 'Sheffield',
-      },
-    ]);
-    const result = await service.getFixtures('152', '2026-04-10', '2026-04-10');
-    expect(mockClient.get).toHaveBeenCalledWith('get_events', {
-      league_id: '152',
+  it('should fetch fixtures from API when cache is empty', async () => {
+    mockClient.get.mockResolvedValue([makeRawFixture('1')]);
+    const result = await service.getFixtures('40', '2026-04-10', '2026-04-10');
+    expect(mockClient.get).toHaveBeenCalledWith('fixtures', {
+      league: '40',
+      season: 2025,
       from: '2026-04-10',
       to: '2026-04-10',
     });
@@ -45,7 +59,7 @@ describe('FixturesService', () => {
   it('should return cached data when available', async () => {
     const cached = [{ externalId: '1' }];
     mockCache.getCached.mockResolvedValue(cached);
-    const result = await service.getFixtures('152', '2026-04-10', '2026-04-10');
+    const result = await service.getFixtures('40', '2026-04-10', '2026-04-10');
     expect(mockClient.get).not.toHaveBeenCalled();
     expect(result).toEqual(cached);
   });
