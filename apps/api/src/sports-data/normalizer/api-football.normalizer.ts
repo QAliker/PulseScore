@@ -1,10 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import {
-  AfMatch,
-  AfStanding,
-  AfPlayer,
-  AfLineup,
-  AfLineupPlayer,
+  RafFixture,
+  RafStandingEntry,
+  RafPlayerResponse,
+  RafFixtureLineup,
 } from '../interfaces/api-football.interfaces';
 import {
   MatchDto,
@@ -23,209 +22,170 @@ import { PlayerDto } from '../dto/player.dto';
 
 @Injectable()
 export class ApiFootballNormalizer {
-  normalizeStatus(status: string): MatchDto['status'] {
-    if (!status || status.trim() === '') return 'SCHEDULED';
-
-    switch (status) {
-      case 'Finished':
-      case 'After ET':
-      case 'After Pen.':
+  normalizeStatus(short: string): MatchDto['status'] {
+    switch (short) {
+      case 'FT':
+      case 'AET':
+      case 'PEN':
         return 'FINISHED';
-      case 'Half Time':
+      case '1H':
+      case 'HT':
+      case '2H':
+      case 'ET':
+      case 'BT':
+      case 'P':
+      case 'SUSP':
+      case 'INT':
+      case 'LIVE':
         return 'LIVE';
-      case 'Postponed':
+      case 'PST':
         return 'POSTPONED';
-      case 'Cancelled':
-      case 'Awarded':
+      case 'CANC':
+      case 'ABD':
+      case 'AWD':
+      case 'WO':
         return 'CANCELLED';
       default:
-        if (/^\d+/.test(status)) return 'LIVE';
         return 'SCHEDULED';
     }
   }
 
-  parseScore(score: string): number | null {
-    if (!score || score.trim() === '') return null;
-    const parsed = parseInt(score, 10);
-    return isNaN(parsed) ? null : parsed;
-  }
-
   parseRound(round: string): number | null {
     if (!round) return null;
-    const match = round.match(/(\d+)/);
-    return match ? parseInt(match[1], 10) : null;
+    const m = round.match(/(\d+)/);
+    return m ? parseInt(m[1], 10) : null;
   }
 
-  normalizeMatch(raw: AfMatch): MatchDto {
+  normalizeFixture(raw: RafFixture): MatchDto {
     const dto = new MatchDto();
 
-    dto.id = raw.match_id;
-    dto.externalId = raw.match_id;
+    dto.id = String(raw.fixture.id);
+    dto.externalId = String(raw.fixture.id);
 
     const homeTeam = new TeamDto();
-    homeTeam.id = raw.match_hometeam_id;
-    homeTeam.externalId = raw.match_hometeam_id;
-    homeTeam.name = raw.match_hometeam_name;
-    homeTeam.logo = raw.team_home_badge || null;
+    homeTeam.id = String(raw.teams.home.id);
+    homeTeam.externalId = String(raw.teams.home.id);
+    homeTeam.name = raw.teams.home.name;
+    homeTeam.logo = raw.teams.home.logo || null;
     dto.homeTeam = homeTeam;
 
     const awayTeam = new TeamDto();
-    awayTeam.id = raw.match_awayteam_id;
-    awayTeam.externalId = raw.match_awayteam_id;
-    awayTeam.name = raw.match_awayteam_name;
-    awayTeam.logo = raw.team_away_badge || null;
+    awayTeam.id = String(raw.teams.away.id);
+    awayTeam.externalId = String(raw.teams.away.id);
+    awayTeam.name = raw.teams.away.name;
+    awayTeam.logo = raw.teams.away.logo || null;
     dto.awayTeam = awayTeam;
 
-    dto.homeScore = this.parseScore(raw.match_hometeam_score);
-    dto.awayScore = this.parseScore(raw.match_awayteam_score);
-    dto.status = this.normalizeStatus(raw.match_status);
+    dto.homeScore = raw.goals.home;
+    dto.awayScore = raw.goals.away;
+    dto.status = this.normalizeStatus(raw.fixture.status.short);
     dto.sport = 'Football';
-    dto.progress = raw.match_status || null;
-    dto.venue = raw.match_stadium || null;
-    dto.round = this.parseRound(raw.match_round);
+    dto.progress = raw.fixture.status.elapsed
+      ? `${raw.fixture.status.elapsed}'`
+      : (raw.fixture.status.short ?? null);
+    dto.venue = raw.fixture.venue.name ?? null;
+    dto.round = this.parseRound(raw.league.round);
+    dto.startTime = new Date(raw.fixture.date);
 
-    if (raw.league_id) {
-      const league = new LeagueDto();
-      league.id = raw.league_id;
-      league.externalId = raw.league_id;
-      league.name = raw.league_name || '';
-      league.sport = 'Football';
-      league.country = raw.country_name || null;
-      league.logo = raw.league_logo || null;
-      dto.league = league;
-    } else {
-      dto.league = null;
-    }
+    const league = new LeagueDto();
+    league.id = String(raw.league.id);
+    league.externalId = String(raw.league.id);
+    league.name = raw.league.name;
+    league.sport = 'Football';
+    league.country = raw.league.country || null;
+    league.logo = raw.league.logo || null;
+    dto.league = league;
 
-    const timeStr = raw.match_time || '00:00';
-    dto.startTime = new Date(`${raw.match_date}T${timeStr}:00Z`);
-    if (isNaN(dto.startTime.getTime())) {
-      dto.startTime = new Date(0);
-    }
+    const events = raw.events ?? [];
 
-    dto.goalscorers = (raw.goalscorer ?? []).map((g) => {
-      const gs = new GoalscorerDto();
-      gs.time = g.time;
-      gs.homeScorer = g.home_scorer || null;
-      gs.awayScorer = g.away_scorer || null;
-      gs.score = g.score;
-      gs.info = g.info || null;
-      return gs;
-    });
+    dto.goalscorers = events
+      .filter((e) => e.type === 'Goal')
+      .map((e) => {
+        const gs = new GoalscorerDto();
+        gs.time = String(e.time.elapsed);
+        const isHome = e.team.id === raw.teams.home.id;
+        gs.homeScorer = isHome ? (e.player.name ?? null) : null;
+        gs.awayScorer = !isHome ? (e.player.name ?? null) : null;
+        gs.score = '';
+        gs.info = e.detail || null;
+        return gs;
+      });
 
-    dto.cards = (raw.cards ?? []).map((c) => {
-      const card = new CardDto();
-      card.time = c.time;
-      card.homeFault = c.home_fault || null;
-      card.awayFault = c.away_fault || null;
-      card.card = c.card;
-      card.info = c.info || null;
-      return card;
-    });
+    dto.cards = events
+      .filter((e) => e.type === 'Card')
+      .map((e) => {
+        const card = new CardDto();
+        card.time = String(e.time.elapsed);
+        const isHome = e.team.id === raw.teams.home.id;
+        card.homeFault = isHome ? (e.player.name ?? null) : null;
+        card.awayFault = !isHome ? (e.player.name ?? null) : null;
+        card.card = e.detail;
+        card.info = e.comments || null;
+        return card;
+      });
 
-    const subs: SubstitutionDto[] = [];
-    const parseSub = (
-      raw: { time: string; substitution: string; substitution_out?: string },
-      team: 'home' | 'away',
-    ): SubstitutionDto => {
-      const sub = new SubstitutionDto();
-      sub.time = raw.time;
-      sub.team = team;
-      const parts = (raw.substitution || '').split(' | ');
-      if (parts.length === 2) {
-        sub.playerIn = parts[0].trim() || null;
-        sub.playerOut = raw.substitution_out || parts[1].trim() || null;
-      } else {
-        sub.playerIn = raw.substitution || null;
-        sub.playerOut = raw.substitution_out || null;
-      }
-      return sub;
-    };
-    for (const s of raw.substitutions?.home ?? [])
-      subs.push(parseSub(s, 'home'));
-    for (const s of raw.substitutions?.away ?? [])
-      subs.push(parseSub(s, 'away'));
-    dto.substitutions = subs;
+    dto.substitutions = events
+      .filter((e) => e.type === 'subst')
+      .map((e) => {
+        const sub = new SubstitutionDto();
+        sub.time = String(e.time.elapsed);
+        sub.team = e.team.id === raw.teams.home.id ? 'home' : 'away';
+        sub.playerIn = e.player.name ?? null;
+        sub.playerOut = e.assist.name ?? null;
+        return sub;
+      });
 
-    // Lineups
-    if (
-      raw.lineup?.home?.starting_lineups?.length ||
-      raw.lineup?.away?.starting_lineups?.length
-    ) {
+    if (raw.lineups?.length >= 2) {
       const lineups = new MatchLineupsDto();
-      lineups.home = this.normalizeTeamLineup(
-        raw.lineup.home,
-        raw.match_hometeam_system,
-      );
-      lineups.away = this.normalizeTeamLineup(
-        raw.lineup.away,
-        raw.match_awayteam_system,
-      );
+      lineups.home = this.normalizeLineup(raw.lineups[0]);
+      lineups.away = this.normalizeLineup(raw.lineups[1]);
       dto.lineups = lineups;
     } else {
       dto.lineups = null;
     }
 
-    // Statistics
-    dto.statistics = (raw.statistics ?? []).map((s) => {
-      const stat = new StatisticDto();
-      stat.type = s.type;
-      stat.home = s.home;
-      stat.away = s.away;
-      return stat;
-    });
+    dto.statistics = this.normalizeStatistics(raw);
 
     return dto;
   }
 
-  private normalizeTeamLineup(
-    lineup: AfLineup,
-    formation: string,
-  ): TeamLineupDto {
+  /** Alias kept for callers that haven't been updated yet */
+  normalizeMatch(raw: RafFixture): MatchDto {
+    return this.normalizeFixture(raw);
+  }
+
+  private normalizeLineup(raw: RafFixtureLineup): TeamLineupDto {
     const dto = new TeamLineupDto();
-    dto.formation = formation || '';
+    dto.formation = raw.formation || '';
+    dto.coach = raw.coach?.name || '';
 
-    const formationRows = (formation || '')
-      .split('-')
-      .map((n) => parseInt(n))
-      .filter((n) => !isNaN(n) && n > 0);
-
-    const starters = [...(lineup?.starting_lineups ?? [])].sort(
-      (a, b) =>
-        (parseInt(a.lineup_position) || 99) -
-        (parseInt(b.lineup_position) || 99),
-    );
-
-    dto.starting = [];
-    let idx = 0;
-
-    if (starters[idx]) {
-      dto.starting.push(this.makeLineupPlayer(starters[idx], idx, 0, 0, 'GK'));
-      idx++;
-    }
-
-    for (let row = 0; row < formationRows.length; row++) {
-      const count = formationRows[row];
-      const isFirst = row === 0;
-      const isLast = row === formationRows.length - 1;
-      for (let col = 0; col < count && idx < starters.length; col++) {
-        const label = isFirst
-          ? this.defLabel(col, count)
-          : isLast
-            ? this.fwdLabel(col, count)
-            : this.midLabel(col, count);
-        dto.starting.push(
-          this.makeLineupPlayer(starters[idx], idx, row + 1, col, label),
-        );
-        idx++;
-      }
-    }
-
-    dto.bench = (lineup?.substitutes ?? []).map((p, i) => {
+    dto.starting = (raw.startXI ?? []).map((entry, i) => {
+      const p = entry.player;
       const player = new LineupPlayerDto();
-      player.id = p.player_key ? String(p.player_key) : `b${i}`;
-      player.name = p.lineup_player || '';
-      player.number = parseInt(p.lineup_number) || 12 + i;
+      player.id = String(p.id);
+      player.name = p.name;
+      player.number = p.number;
+      player.positionLabel = p.pos || '';
+      player.photo = null;
+
+      // grid format is "row:col" (e.g. "1:1")
+      if (p.grid) {
+        const [row, col] = p.grid.split(':').map((n) => parseInt(n, 10));
+        player.positionRow = isNaN(row) ? i : row;
+        player.positionCol = isNaN(col) ? 0 : col - 1;
+      } else {
+        player.positionRow = i;
+        player.positionCol = 0;
+      }
+      return player;
+    });
+
+    dto.bench = (raw.substitutes ?? []).map((entry, i) => {
+      const p = entry.player;
+      const player = new LineupPlayerDto();
+      player.id = String(p.id);
+      player.name = p.name;
+      player.number = p.number;
       player.positionRow = 0;
       player.positionCol = i;
       player.positionLabel = 'SUB';
@@ -233,93 +193,74 @@ export class ApiFootballNormalizer {
       return player;
     });
 
-    dto.coach = lineup?.coach?.[0]?.lineup_player || '';
     return dto;
   }
 
-  private makeLineupPlayer(
-    p: AfLineupPlayer,
-    idx: number,
-    row: number,
-    col: number,
-    label: string,
-  ): LineupPlayerDto {
-    const player = new LineupPlayerDto();
-    player.id = p.player_key ? String(p.player_key) : `s${idx}`;
-    player.name = p.lineup_player || '';
-    player.number = parseInt(p.lineup_number) || idx + 1;
-    player.positionRow = row;
-    player.positionCol = col;
-    player.positionLabel = label;
-    player.photo = null;
-    return player;
+  private normalizeStatistics(raw: RafFixture): StatisticDto[] {
+    if (!raw.statistics?.length) return [];
+
+    const homeStats = raw.statistics.find(
+      (s) => s.team.id === raw.teams.home.id,
+    );
+    const awayStats = raw.statistics.find(
+      (s) => s.team.id === raw.teams.away.id,
+    );
+    if (!homeStats || !awayStats) return [];
+
+    const awayMap = new Map(
+      awayStats.statistics.map((s) => [s.type, s.value]),
+    );
+
+    return homeStats.statistics.map((hs) => {
+      const stat = new StatisticDto();
+      stat.type = hs.type;
+      stat.home = hs.value != null ? String(hs.value) : '0';
+      const awayVal = awayMap.get(hs.type);
+      stat.away = awayVal != null ? String(awayVal) : '0';
+      return stat;
+    });
   }
 
-  private defLabel(col: number, count: number): string {
-    const labels: Record<number, string[]> = {
-      3: ['LCB', 'CB', 'RCB'],
-      4: ['RB', 'CB', 'CB', 'LB'],
-      5: ['RB', 'CB', 'CB', 'CB', 'LB'],
-    };
-    return labels[count]?.[col] ?? 'DEF';
-  }
-
-  private midLabel(col: number, count: number): string {
-    const labels: Record<number, string[]> = {
-      2: ['CM', 'CM'],
-      3: ['CM', 'CM', 'CM'],
-      4: ['RM', 'CM', 'CM', 'LM'],
-      5: ['RM', 'CM', 'CM', 'CM', 'LM'],
-    };
-    return labels[count]?.[col] ?? 'MID';
-  }
-
-  private fwdLabel(col: number, count: number): string {
-    const labels: Record<number, string[]> = {
-      1: ['ST'],
-      2: ['ST', 'ST'],
-      3: ['LW', 'ST', 'RW'],
-      4: ['LW', 'ST', 'ST', 'RW'],
-    };
-    return labels[count]?.[col] ?? 'FWD';
-  }
-
-  normalizeStanding(raw: AfStanding): StandingDto {
+  normalizeStanding(
+    entry: RafStandingEntry,
+    leagueId: string,
+    leagueName: string,
+  ): StandingDto {
     const dto = new StandingDto();
-    dto.leagueId = raw.league_id;
-    dto.leagueName = raw.league_name;
-    dto.teamId = raw.team_id;
-    dto.teamName = raw.team_name;
-    dto.teamBadge = raw.team_badge || null;
-    dto.position = parseInt(raw.overall_league_position, 10) || 0;
-    dto.played = parseInt(raw.overall_league_payed, 10) || 0;
-    dto.won = parseInt(raw.overall_league_W, 10) || 0;
-    dto.drawn = parseInt(raw.overall_league_D, 10) || 0;
-    dto.lost = parseInt(raw.overall_league_L, 10) || 0;
-    dto.goalsFor = parseInt(raw.overall_league_GF, 10) || 0;
-    dto.goalsAgainst = parseInt(raw.overall_league_GA, 10) || 0;
-    dto.points = parseInt(raw.overall_league_PTS, 10) || 0;
-    dto.promotion = raw.overall_promotion || null;
+    dto.leagueId = leagueId;
+    dto.leagueName = leagueName;
+    dto.teamId = String(entry.team.id);
+    dto.teamName = entry.team.name;
+    dto.teamBadge = entry.team.logo || null;
+    dto.position = entry.rank;
+    dto.played = entry.all.played;
+    dto.won = entry.all.win;
+    dto.drawn = entry.all.draw;
+    dto.lost = entry.all.lose;
+    dto.goalsFor = entry.all.goals.for;
+    dto.goalsAgainst = entry.all.goals.against;
+    dto.points = entry.points;
+    dto.promotion = entry.description || null;
     return dto;
   }
 
-  normalizePlayer(raw: AfPlayer, teamId: string): PlayerDto {
+  normalizePlayer(raw: RafPlayerResponse): PlayerDto {
     const dto = new PlayerDto();
-    dto.externalId = String(raw.player_key);
-    dto.name = raw.player_name;
-    dto.image = raw.player_image || null;
-    dto.number = raw.player_number
-      ? parseInt(raw.player_number, 10) || null
-      : null;
-    dto.position = raw.player_type || null;
-    dto.age = raw.player_age ? parseInt(raw.player_age, 10) || null : null;
-    dto.teamId = teamId;
-    dto.goals = parseInt(raw.player_goals, 10) || 0;
-    dto.assists = parseInt(raw.player_assists, 10) || 0;
-    dto.yellowCards = parseInt(raw.player_yellow_cards, 10) || 0;
-    dto.redCards = parseInt(raw.player_red_cards, 10) || 0;
-    dto.matchesPlayed = parseInt(raw.player_match_played, 10) || 0;
-    dto.rating = raw.player_rating || null;
+    const stats = raw.statistics?.[0];
+
+    dto.externalId = String(raw.player.id);
+    dto.name = raw.player.name;
+    dto.image = raw.player.photo || null;
+    dto.number = stats?.games.number ?? null;
+    dto.position = stats?.games.position ?? null;
+    dto.age = raw.player.age ?? null;
+    dto.teamId = stats ? String(stats.team.id) : null;
+    dto.goals = stats?.goals.total ?? 0;
+    dto.assists = stats?.goals.assists ?? 0;
+    dto.yellowCards = stats?.cards.yellow ?? 0;
+    dto.redCards = stats?.cards.red ?? 0;
+    dto.matchesPlayed = stats?.games.appearences ?? 0;
+    dto.rating = stats?.games.rating ?? null;
     return dto;
   }
 }

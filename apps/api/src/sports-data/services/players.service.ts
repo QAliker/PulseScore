@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
+import { TeamsService } from './teams.service';
 import { PlayerDto } from '../dto/player.dto';
 
 type PrismaPlayer = {
@@ -20,7 +21,10 @@ type PrismaPlayer = {
 
 @Injectable()
 export class PlayersService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly teamsService: TeamsService,
+  ) {}
 
   async getByExternalId(
     externalId: string,
@@ -40,6 +44,9 @@ export class PlayersService {
   }
 
   async getByTeam(teamExternalId: string): Promise<PlayerDto[]> {
+    // Seed players on first access if DB is empty for this team
+    await this.teamsService.fetchPlayersForTeam(teamExternalId);
+
     const team = await this.prisma.team.findUnique({
       where: { externalId: teamExternalId },
       include: {

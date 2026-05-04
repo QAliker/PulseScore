@@ -7,10 +7,11 @@ import {
   TTL_STANDINGS,
 } from '../sports-data-cache.service';
 import { PrismaService } from '../../prisma/prisma.service';
-import { AfStanding } from '../interfaces/api-football.interfaces';
+import { RafStandingResponse } from '../interfaces/api-football.interfaces';
 import { StandingDto } from '../dto/standing.dto';
 
-const LEAGUE_IDS = ['153', '164']; // Championship, Ligue 2
+const LEAGUE_IDS = ['40', '61']; // Championship, Ligue 2
+const SEASON = 2025;
 
 @Injectable()
 export class StandingsService {
@@ -28,18 +29,25 @@ export class StandingsService {
     const cached = await this.cacheService.getCached<StandingDto[]>(cacheKey);
     if (cached) return cached;
 
-    const raw = await this.client.get<AfStanding[]>('get_standings', {
-      league_id: leagueId,
+    const raw = await this.client.get<RafStandingResponse>('standings', {
+      league: leagueId,
+      season: SEASON,
     });
 
-    if (!Array.isArray(raw)) return [];
+    if (!raw.length || !raw[0].league?.standings?.length) return [];
 
-    const standings = raw.map((s) => this.normalizer.normalizeStanding(s));
+    const leagueName = raw[0].league.name;
+    const standings = raw[0].league.standings
+      .flat()
+      .map((entry) =>
+        this.normalizer.normalizeStanding(entry, leagueId, leagueName),
+      );
+
     await this.cacheService.setCached(cacheKey, standings, TTL_STANDINGS);
     return standings;
   }
 
-  @Cron('0 */6 * * *') // Every 6 hours
+  @Cron('0 */12 * * *')
   async refreshStandings(): Promise<void> {
     for (const leagueId of LEAGUE_IDS) {
       try {
@@ -66,7 +74,7 @@ export class StandingsService {
     });
     if (!league) return;
 
-    const season = new Date().getFullYear().toString();
+    const season = String(SEASON);
 
     for (const s of standings) {
       const team = await this.prismaService.team.findUnique({

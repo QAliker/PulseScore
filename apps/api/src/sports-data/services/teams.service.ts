@@ -7,9 +7,13 @@ import {
   TTL_TEAMS,
 } from '../sports-data-cache.service';
 import { PrismaService } from '../../prisma/prisma.service';
-import { AfTeam } from '../interfaces/api-football.interfaces';
+import {
+  RafTeamResponse,
+  RafPlayerResponse,
+} from '../interfaces/api-football.interfaces';
 
-const LEAGUE_IDS = ['153', '164']; // Championship, Ligue 2
+const LEAGUE_IDS = ['40', '61']; // Championship, Ligue 2
+const SEASON = 2025;
 
 @Injectable()
 export class TeamsService implements OnModuleInit {
@@ -23,26 +27,24 @@ export class TeamsService implements OnModuleInit {
   ) {}
 
   async onModuleInit(): Promise<void> {
-    const [teamCount, playerCount] = await Promise.all([
-      this.prismaService.team.count(),
-      this.prismaService.player.count(),
-    ]);
-    if (teamCount === 0 || playerCount === 0) {
-      this.logger.log('DB missing teams or players — seeding on startup');
-      void this.refreshTeamsAndPlayers();
+    const teamCount = await this.prismaService.team.count();
+    if (teamCount === 0) {
+      this.logger.log('DB missing teams — seeding on startup');
+      void this.refreshTeams();
     }
   }
 
-  async getTeams(leagueId: string): Promise<AfTeam[]> {
+  async getTeams(leagueId: string): Promise<RafTeamResponse[]> {
     const cacheKey = SportsDataCacheService.teamsKey(leagueId);
-    const cached = await this.cacheService.getCached<AfTeam[]>(cacheKey);
+    const cached = await this.cacheService.getCached<RafTeamResponse[]>(
+      cacheKey,
+    );
     if (cached) return cached;
 
-    const raw = await this.client.get<AfTeam[]>('get_teams', {
-      league_id: leagueId,
+    const raw = await this.client.get<RafTeamResponse>('teams', {
+      league: leagueId,
+      season: SEASON,
     });
-
-    if (!Array.isArray(raw)) return [];
 
     await this.cacheService.setCached(cacheKey, raw, TTL_TEAMS);
     return raw;
@@ -61,8 +63,67 @@ export class TeamsService implements OnModuleInit {
     });
   }
 
-  @Cron('0 3 * * *') // Once per day at 3 AM
-  async refreshTeamsAndPlayers(): Promise<void> {
+  async fetchPlayersForTeam(teamId: string): Promise<void> {
+    const playerCount = await this.prismaService.player.count({
+      where: { team: { externalId: teamId } },
+    });
+    if (playerCount > 0) return;
+
+    try {
+      const raw = await this.client.get<RafPlayerResponse>('players', {
+        team: teamId,
+        season: SEASON,
+      });
+
+      const team = await this.prismaService.team.findUnique({
+        where: { externalId: teamId },
+      });
+      if (!team) return;
+
+      for (const entry of raw) {
+        const dto = this.normalizer.normalizePlayer(entry);
+        await this.prismaService.player.upsert({
+          where: { externalId: dto.externalId },
+          create: {
+            externalId: dto.externalId,
+            name: dto.name,
+            image: dto.image,
+            number: dto.number,
+            position: dto.position,
+            age: dto.age,
+            teamId: team.id,
+            goals: dto.goals,
+            assists: dto.assists,
+            yellowCards: dto.yellowCards,
+            redCards: dto.redCards,
+            matchesPlayed: dto.matchesPlayed,
+            rating: dto.rating,
+          },
+          update: {
+            name: dto.name,
+            image: dto.image,
+            number: dto.number,
+            position: dto.position,
+            age: dto.age,
+            teamId: team.id,
+            goals: dto.goals,
+            assists: dto.assists,
+            yellowCards: dto.yellowCards,
+            redCards: dto.redCards,
+            matchesPlayed: dto.matchesPlayed,
+            rating: dto.rating,
+          },
+        });
+      }
+    } catch (err) {
+      this.logger.error(
+        `Failed to fetch players for team ${teamId}: ${String(err)}`,
+      );
+    }
+  }
+
+  @Cron('0 3 * * *')
+  async refreshTeams(): Promise<void> {
     for (const leagueId of LEAGUE_IDS) {
       try {
         this.logger.log(`Refreshing teams for league ${leagueId}`);
@@ -79,62 +140,26 @@ export class TeamsService implements OnModuleInit {
     }
   }
 
-  private async persistTeams(teams: AfTeam[]): Promise<void> {
+  private async persistTeams(teams: RafTeamResponse[]): Promise<void> {
     for (const raw of teams) {
       try {
-        const team = await this.prismaService.team.upsert({
-          where: { externalId: raw.team_key },
+        await this.prismaService.team.upsert({
+          where: { externalId: String(raw.team.id) },
           create: {
-            externalId: raw.team_key,
-            name: raw.team_name,
-            logo: raw.team_badge || null,
-            country: raw.team_country || null,
+            externalId: String(raw.team.id),
+            name: raw.team.name,
+            logo: raw.team.logo || null,
+            country: raw.team.country || null,
           },
           update: {
-            name: raw.team_name,
-            logo: raw.team_badge || null,
-            country: raw.team_country || null,
+            name: raw.team.name,
+            logo: raw.team.logo || null,
+            country: raw.team.country || null,
           },
         });
-
-        for (const p of raw.players ?? []) {
-          const playerDto = this.normalizer.normalizePlayer(p, raw.team_key);
-          await this.prismaService.player.upsert({
-            where: { externalId: playerDto.externalId },
-            create: {
-              externalId: playerDto.externalId,
-              name: playerDto.name,
-              image: playerDto.image,
-              number: playerDto.number,
-              position: playerDto.position,
-              age: playerDto.age,
-              teamId: team.id,
-              goals: playerDto.goals,
-              assists: playerDto.assists,
-              yellowCards: playerDto.yellowCards,
-              redCards: playerDto.redCards,
-              matchesPlayed: playerDto.matchesPlayed,
-              rating: playerDto.rating,
-            },
-            update: {
-              name: playerDto.name,
-              image: playerDto.image,
-              number: playerDto.number,
-              position: playerDto.position,
-              age: playerDto.age,
-              teamId: team.id,
-              goals: playerDto.goals,
-              assists: playerDto.assists,
-              yellowCards: playerDto.yellowCards,
-              redCards: playerDto.redCards,
-              matchesPlayed: playerDto.matchesPlayed,
-              rating: playerDto.rating,
-            },
-          });
-        }
       } catch (err) {
         this.logger.error(
-          `Failed to persist team ${raw.team_key}: ${String(err)}`,
+          `Failed to persist team ${raw.team.id}: ${String(err)}`,
         );
       }
     }

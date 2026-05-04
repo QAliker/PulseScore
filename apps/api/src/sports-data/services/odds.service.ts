@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ApiFootballClient } from '../client/api-football.client';
 import { SportsDataCacheService, TTL_ODDS } from '../sports-data-cache.service';
-import { AfOdds } from '../interfaces/api-football.interfaces';
+import { RafOddsResponse } from '../interfaces/api-football.interfaces';
 import { OddsDto } from '../dto/odds.dto';
 
 @Injectable()
@@ -13,31 +13,69 @@ export class OddsService {
     private readonly cacheService: SportsDataCacheService,
   ) {}
 
-  async getOdds(matchId: string): Promise<OddsDto[]> {
-    const cacheKey = SportsDataCacheService.oddsKey(matchId);
+  async getOdds(fixtureId: string): Promise<OddsDto[]> {
+    const cacheKey = SportsDataCacheService.oddsKey(fixtureId);
     const cached = await this.cacheService.getCached<OddsDto[]>(cacheKey);
     if (cached) return cached;
 
-    const raw = await this.client.get<AfOdds[]>('get_odds', {
-      match_id: matchId,
+    const raw = await this.client.get<RafOddsResponse>('odds', {
+      fixture: fixtureId,
     });
 
-    if (!Array.isArray(raw)) return [];
+    const odds = raw.flatMap((r) =>
+      r.bookmakers.map((b) => {
+        const matchWinner = b.bets.find((bet) => bet.name === 'Match Winner');
+        const home = matchWinner?.values.find((v) => v.value === 'Home');
+        const draw = matchWinner?.values.find((v) => v.value === 'Draw');
+        const away = matchWinner?.values.find((v) => v.value === 'Away');
 
-    const odds = raw.map((o) => {
-      const dto = new OddsDto();
-      dto.matchId = o.match_id;
-      dto.bookmaker = o.odd_bookmakers;
-      dto.updatedAt = o.odd_date;
-      dto.home = o.odd_1 || null;
-      dto.draw = o.odd_x || null;
-      dto.away = o.odd_2 || null;
-      dto.btsYes = o.bts_yes || null;
-      dto.btsNo = o.bts_no || null;
-      return dto;
-    });
+        const dto = new OddsDto();
+        dto.matchId = fixtureId;
+        dto.bookmaker = b.name;
+        dto.updatedAt = r.update;
+        dto.home = home?.odd ?? null;
+        dto.draw = draw?.odd ?? null;
+        dto.away = away?.odd ?? null;
+        dto.btsYes = null;
+        dto.btsNo = null;
+        return dto;
+      }),
+    );
 
     await this.cacheService.setCached(cacheKey, odds, TTL_ODDS);
+    return odds;
+  }
+
+  async getLiveOdds(fixtureId: string): Promise<OddsDto[]> {
+    const cacheKey = `${SportsDataCacheService.oddsKey(fixtureId)}:live`;
+    const cached = await this.cacheService.getCached<OddsDto[]>(cacheKey);
+    if (cached) return cached;
+
+    const raw = await this.client.get<RafOddsResponse>('odds/live', {
+      fixture: fixtureId,
+    });
+
+    const odds = raw.flatMap((r) =>
+      r.bookmakers.map((b) => {
+        const matchWinner = b.bets.find((bet) => bet.name === 'Match Winner');
+        const home = matchWinner?.values.find((v) => v.value === 'Home');
+        const draw = matchWinner?.values.find((v) => v.value === 'Draw');
+        const away = matchWinner?.values.find((v) => v.value === 'Away');
+
+        const dto = new OddsDto();
+        dto.matchId = fixtureId;
+        dto.bookmaker = b.name;
+        dto.updatedAt = r.update;
+        dto.home = home?.odd ?? null;
+        dto.draw = draw?.odd ?? null;
+        dto.away = away?.odd ?? null;
+        dto.btsYes = null;
+        dto.btsNo = null;
+        return dto;
+      }),
+    );
+
+    await this.cacheService.setCached(cacheKey, odds, 30);
     return odds;
   }
 }

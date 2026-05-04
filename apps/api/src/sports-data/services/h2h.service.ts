@@ -2,7 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ApiFootballClient } from '../client/api-football.client';
 import { ApiFootballNormalizer } from '../normalizer/api-football.normalizer';
 import { SportsDataCacheService, TTL_H2H } from '../sports-data-cache.service';
-import { AfH2H } from '../interfaces/api-football.interfaces';
+import { RafFixture } from '../interfaces/api-football.interfaces';
 import { H2hDto } from '../dto/h2h.dto';
 
 @Injectable()
@@ -20,21 +20,28 @@ export class H2hService {
     const cached = await this.cacheService.getCached<H2hDto>(cacheKey);
     if (cached) return cached;
 
-    const raw = await this.client.get<AfH2H>('get_H2H', {
-      firstTeamId: teamId1,
-      secondTeamId: teamId2,
+    const raw = await this.client.get<RafFixture>('fixtures/headtohead', {
+      h2h: `${teamId1}-${teamId2}`,
     });
 
+    const allMatches = raw.map((m) => this.normalizer.normalizeFixture(m));
+
     const dto = new H2hDto();
-    dto.headToHead = (raw.firstTeam_VS_secondTeam ?? []).map((m) =>
-      this.normalizer.normalizeMatch(m),
-    );
-    dto.firstTeamResults = (raw.firstTeam_lastResults ?? []).map((m) =>
-      this.normalizer.normalizeMatch(m),
-    );
-    dto.secondTeamResults = (raw.secondTeam_lastResults ?? []).map((m) =>
-      this.normalizer.normalizeMatch(m),
-    );
+    dto.headToHead = allMatches;
+    dto.firstTeamResults = allMatches
+      .filter(
+        (m) =>
+          m.homeTeam.externalId === teamId1 ||
+          m.awayTeam.externalId === teamId1,
+      )
+      .slice(0, 5);
+    dto.secondTeamResults = allMatches
+      .filter(
+        (m) =>
+          m.homeTeam.externalId === teamId2 ||
+          m.awayTeam.externalId === teamId2,
+      )
+      .slice(0, 5);
 
     await this.cacheService.setCached(cacheKey, dto, TTL_H2H);
     return dto;

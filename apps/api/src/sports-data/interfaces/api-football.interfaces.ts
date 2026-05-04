@@ -1,232 +1,342 @@
 /**
- * Raw API response types from APIFootball.com v3.
- * All fields are strings as returned by the API.
+ * Raw API response types from API-Football v3 (RapidAPI).
+ * All responses are wrapped in { response: T[] }.
  */
 
-export interface AfMatch {
-  match_id: string;
-  country_id: string;
-  country_name: string;
-  league_id: string;
-  league_name: string;
-  match_date: string;
-  match_status: string;
-  match_time: string;
-  match_hometeam_id: string;
-  match_hometeam_name: string;
-  match_hometeam_score: string;
-  match_awayteam_id: string;
-  match_awayteam_name: string;
-  match_awayteam_score: string;
-  match_hometeam_halftime_score: string;
-  match_awayteam_halftime_score: string;
-  match_hometeam_extra_score: string;
-  match_awayteam_extra_score: string;
-  match_hometeam_penalty_score: string;
-  match_awayteam_penalty_score: string;
-  match_hometeam_ft_score: string;
-  match_awayteam_ft_score: string;
-  match_hometeam_system: string;
-  match_awayteam_system: string;
-  match_live: string;
-  match_round: string;
-  match_stadium: string;
-  match_referee: string;
-  team_home_badge: string;
-  team_away_badge: string;
-  league_logo: string;
-  country_logo: string;
-  league_year: string;
-  fk_stage_key: string;
-  stage_name: string;
-  goalscorer: AfGoalscorer[];
-  cards: AfCard[];
-  substitutions: { home: AfSubstitution[]; away: AfSubstitution[] };
-  lineup: { home: AfLineup; away: AfLineup };
-  statistics: AfStatistic[];
-  statistics_1half: AfStatistic[];
-}
-
-export interface AfGoalscorer {
-  time: string;
-  home_scorer: string;
-  home_scorer_id: string;
-  home_assist: string;
-  home_assist_id: string;
-  score: string;
-  away_scorer: string;
-  away_scorer_id: string;
-  away_assist: string;
-  away_assist_id: string;
-  info: string;
-  score_info_time: string;
-}
-
-export interface AfCard {
-  time: string;
-  home_fault: string;
-  card: string;
-  away_fault: string;
-  info: string;
-  home_player_id: string;
-  away_player_id: string;
-  score_info_time: string;
-}
-
-export interface AfSubstitution {
-  time: string;
-  substitution: string;
-  substitution_out?: string;
-  substitution_player_id: string;
-}
-
-export interface AfLineup {
-  starting_lineups: AfLineupPlayer[];
-  substitutes: AfLineupPlayer[];
-  coach: AfCoach[];
-  missing_players: AfLineupPlayer[];
-}
-
-export interface AfLineupPlayer {
-  lineup_player: string;
-  lineup_number: string;
-  lineup_position: string;
-  player_key: string;
-}
-
-export interface AfCoach {
-  lineup_player: string;
-  lineup_number: string;
-  lineup_position: string;
-  player_key: string;
-}
-
-export interface AfStatistic {
-  type: string;
-  home: string;
-  away: string;
-}
-
-export interface AfStanding {
-  country_name: string;
-  league_id: string;
-  league_name: string;
-  team_id: string;
-  team_name: string;
-  overall_promotion: string;
-  overall_league_position: string;
-  overall_league_payed: string;
-  overall_league_W: string;
-  overall_league_D: string;
-  overall_league_L: string;
-  overall_league_GF: string;
-  overall_league_GA: string;
-  overall_league_PTS: string;
-  home_league_position: string;
-  away_league_position: string;
-  league_round: string;
-  team_badge: string;
-  fk_stage_key: string;
-  stage_name: string;
-}
-
-export interface AfTeam {
-  team_key: string;
-  team_name: string;
-  team_country: string;
-  team_founded: string;
-  team_badge: string;
-  venue: {
-    venue_name: string;
-    venue_address: string;
-    venue_city: string;
-    venue_capacity: string;
-    venue_surface: string;
+export interface RafFixture {
+  fixture: {
+    id: number;
+    referee: string | null;
+    timezone: string;
+    date: string;
+    timestamp: number;
+    periods: { first: number | null; second: number | null };
+    venue: { id: number | null; name: string | null; city: string | null };
+    status: { long: string; short: string; elapsed: number | null };
   };
-  players: AfPlayer[];
-  coaches: AfCoachInfo[];
+  league: {
+    id: number;
+    name: string;
+    country: string;
+    logo: string;
+    flag: string;
+    season: number;
+    round: string;
+  };
+  teams: {
+    home: { id: number; name: string; logo: string; winner: boolean | null };
+    away: { id: number; name: string; logo: string; winner: boolean | null };
+  };
+  goals: { home: number | null; away: number | null };
+  score: {
+    halftime: { home: number | null; away: number | null };
+    fulltime: { home: number | null; away: number | null };
+    extratime: { home: number | null; away: number | null };
+    penalty: { home: number | null; away: number | null };
+  };
+  events: RafFixtureEvent[];
+  lineups: RafFixtureLineup[];
+  statistics: RafFixtureTeamStatistics[];
+  players: unknown[];
 }
 
-export interface AfPlayer {
-  player_key: string;
-  player_id: string;
-  player_image: string;
-  player_name: string;
-  player_number: string;
-  player_country: string;
-  player_type: string;
-  player_age: string;
-  player_match_played: string;
-  player_goals: string;
-  player_yellow_cards: string;
-  player_red_cards: string;
-  player_injured: string;
-  player_substitute_out: string;
-  player_substitutes_on_bench: string;
-  player_assists: string;
-  player_birthdate: string;
-  player_is_captain: string;
-  player_shots_total: string;
-  player_goals_conceded: string;
-  player_fouls_committed: string;
-  player_tackles: string;
-  player_blocks: string;
-  player_crosses_total: string;
-  player_interceptions: string;
-  player_clearances: string;
-  player_dispossesed: string;
-  player_saves: string;
-  player_inside_box_saves: string;
-  player_duels_total: string;
-  player_duels_won: string;
-  player_dribble_attempts: string;
-  player_dribble_succ: string;
-  player_pen_comm: string;
-  player_pen_won: string;
-  player_pen_scored: string;
-  player_pen_missed: string;
-  player_passes: string;
-  player_passes_accuracy: string;
-  player_key_passes: string;
-  player_woordworks: string;
-  player_rating: string;
+export interface RafFixtureEvent {
+  time: { elapsed: number; extra: number | null };
+  team: { id: number; name: string; logo: string };
+  player: { id: number | null; name: string | null };
+  assist: { id: number | null; name: string | null };
+  type: 'Goal' | 'Card' | 'subst' | 'Var';
+  detail: string;
+  comments: string | null;
 }
 
-export interface AfCoachInfo {
-  coach_name: string;
-  coach_country: string;
-  coach_age: string;
+export interface RafFixtureLineup {
+  team: { id: number; name: string; logo: string; colors: unknown };
+  coach: { id: number; name: string; photo: string };
+  formation: string;
+  startXI: Array<{
+    player: {
+      id: number;
+      name: string;
+      number: number;
+      pos: string;
+      grid: string | null;
+    };
+  }>;
+  substitutes: Array<{
+    player: {
+      id: number;
+      name: string;
+      number: number;
+      pos: string;
+      grid: null;
+    };
+  }>;
 }
 
-export interface AfOdds {
-  match_id: string;
-  odd_bookmakers: string;
-  odd_date: string;
-  odd_1: string;
-  odd_x: string;
-  odd_2: string;
-  bts_yes: string;
-  bts_no: string;
-  [key: string]: string;
+export interface RafFixtureTeamStatistics {
+  team: { id: number; name: string; logo: string };
+  statistics: Array<{ type: string; value: string | number | null }>;
 }
 
-export interface AfH2H {
-  firstTeam_VS_secondTeam: AfMatch[];
-  firstTeam_lastResults: AfMatch[];
-  secondTeam_lastResults: AfMatch[];
+export interface RafStandingResponse {
+  league: {
+    id: number;
+    name: string;
+    country: string;
+    logo: string;
+    flag: string;
+    season: number;
+    standings: RafStandingEntry[][];
+  };
 }
 
-export interface AfLeague {
-  country_id: string;
-  country_name: string;
-  league_id: string;
-  league_name: string;
-  league_season: string;
-  league_logo: string;
-  country_logo: string;
+export interface RafStandingEntry {
+  rank: number;
+  team: { id: number; name: string; logo: string };
+  points: number;
+  goalsDiff: number;
+  group: string;
+  form: string | null;
+  status: string;
+  description: string | null;
+  all: {
+    played: number;
+    win: number;
+    draw: number;
+    lose: number;
+    goals: { for: number; against: number };
+  };
+  home: {
+    played: number;
+    win: number;
+    draw: number;
+    lose: number;
+    goals: { for: number; against: number };
+  };
+  away: {
+    played: number;
+    win: number;
+    draw: number;
+    lose: number;
+    goals: { for: number; against: number };
+  };
+  update: string;
 }
 
-export interface AfErrorResponse {
-  error: number;
-  message: string;
+export interface RafTeamResponse {
+  team: {
+    id: number;
+    name: string;
+    code: string | null;
+    country: string;
+    founded: number | null;
+    national: boolean;
+    logo: string;
+  };
+  venue: {
+    id: number | null;
+    name: string | null;
+    address: string | null;
+    city: string | null;
+    capacity: number | null;
+    surface: string | null;
+    image: string | null;
+  };
+}
+
+export interface RafPlayerResponse {
+  player: {
+    id: number;
+    name: string;
+    firstname: string;
+    lastname: string;
+    age: number;
+    birth: { date: string; place: string; country: string };
+    nationality: string;
+    height: string | null;
+    weight: string | null;
+    injured: boolean;
+    photo: string;
+  };
+  statistics: Array<{
+    team: { id: number; name: string; logo: string };
+    league: {
+      id: number;
+      name: string;
+      country: string;
+      logo: string;
+      flag: string;
+      season: number;
+    };
+    games: {
+      appearences: number | null;
+      lineups: number | null;
+      minutes: number | null;
+      number: number | null;
+      position: string;
+      rating: string | null;
+      captain: boolean;
+    };
+    goals: {
+      total: number | null;
+      conceded: number;
+      assists: number | null;
+      saves: number | null;
+    };
+    cards: { yellow: number; yellowred: number; red: number };
+  }>;
+}
+
+export interface RafLeagueResponse {
+  league: { id: number; name: string; type: string; logo: string };
+  country: { name: string; code: string | null; flag: string | null };
+  seasons: Array<{
+    year: number;
+    start: string;
+    end: string;
+    current: boolean;
+    coverage: unknown;
+  }>;
+}
+
+export interface RafOddsResponse {
+  league: {
+    id: number;
+    name: string;
+    country: string;
+    logo: string;
+    flag: string;
+    season: number;
+  };
+  fixture: {
+    id: number;
+    timezone: string;
+    date: string;
+    timestamp: number;
+  };
+  update: string;
+  bookmakers: Array<{
+    id: number;
+    name: string;
+    bets: Array<{
+      id: number;
+      name: string;
+      values: Array<{ value: string; odd: string }>;
+    }>;
+  }>;
+}
+
+export interface RafInjuryResponse {
+  player: { id: number; name: string; type: string; reason: string };
+  team: { id: number; name: string; logo: string };
+  fixture: { id: number; timezone: string; date: string; timestamp: number };
+  league: {
+    id: number;
+    season: number;
+    name: string;
+    country: string;
+    logo: string;
+    flag: string;
+  };
+}
+
+export interface RafPredictionResponse {
+  predictions: {
+    winner: { id: number | null; comment: string; name: string | null };
+    win_or_draw: boolean;
+    under_over: string | null;
+    goals: { home: string; away: string };
+    advice: string;
+    percent: { home: string; draw: string; away: string };
+  };
+  league: {
+    id: number;
+    name: string;
+    country: string;
+    logo: string;
+    flag: string;
+    season: number;
+  };
+  teams: {
+    home: {
+      id: number;
+      name: string;
+      logo: string;
+      last_5: unknown;
+      league: unknown;
+    };
+    away: {
+      id: number;
+      name: string;
+      logo: string;
+      last_5: unknown;
+      league: unknown;
+    };
+  };
+  comparison: unknown;
+  h2h: RafFixture[];
+}
+
+export interface RafCoachResponse {
+  id: number;
+  name: string;
+  firstname: string;
+  lastname: string;
+  age: number | null;
+  birth: { date: string | null; place: string | null; country: string | null };
+  nationality: string | null;
+  height: string | null;
+  weight: string | null;
+  photo: string;
+  team: { id: number; name: string; logo: string } | null;
+  career: Array<{
+    team: { id: number; name: string; logo: string };
+    start: string;
+    end: string | null;
+  }>;
+}
+
+export interface RafTransferResponse {
+  player: { id: number; name: string };
+  update: string;
+  transfers: Array<{
+    date: string;
+    type: string;
+    teams: {
+      in: { id: number; name: string; logo: string };
+      out: { id: number; name: string; logo: string };
+    };
+  }>;
+}
+
+export interface RafTrophyResponse {
+  league: string;
+  country: string;
+  season: string;
+  place: string;
+  description: string;
+}
+
+export interface RafSidelinedResponse {
+  player: { id: number; name: string; type: string };
+  start: string;
+  end: string | null;
+}
+
+export interface RafCountryResponse {
+  name: string;
+  code: string | null;
+  flag: string | null;
+}
+
+export interface RafVenueResponse {
+  id: number;
+  name: string;
+  address: string | null;
+  city: string | null;
+  country: string | null;
+  capacity: number | null;
+  surface: string | null;
+  image: string | null;
 }

@@ -6,11 +6,12 @@ import {
   SportsDataCacheService,
   TTL_FIXTURES,
 } from '../sports-data-cache.service';
-import { AfMatch } from '../interfaces/api-football.interfaces';
+import { RafFixture } from '../interfaces/api-football.interfaces';
 import { MatchDto } from '../dto/match.dto';
 import { PrismaService } from '../../prisma/prisma.service';
 
-const LEAGUE_IDS = ['153', '164']; // Championship, Ligue 2
+const LEAGUE_IDS = ['40', '61']; // Championship, Ligue 2
+const SEASON = 2025;
 
 @Injectable()
 export class FixturesService {
@@ -32,15 +33,14 @@ export class FixturesService {
     const cached = await this.cacheService.getCached<MatchDto[]>(cacheKey);
     if (cached) return cached;
 
-    const raw = await this.client.get<AfMatch[]>('get_events', {
-      league_id: leagueId,
+    const raw = await this.client.get<RafFixture>('fixtures', {
+      league: leagueId,
+      season: SEASON,
       from,
       to,
     });
 
-    if (!Array.isArray(raw)) return [];
-
-    const fixtures = raw.map((m) => this.normalizer.normalizeMatch(m));
+    const fixtures = raw.map((m) => this.normalizer.normalizeFixture(m));
     await this.cacheService.setCached(cacheKey, fixtures, TTL_FIXTURES);
     return fixtures;
   }
@@ -59,16 +59,15 @@ export class FixturesService {
       .toISOString()
       .slice(0, 10);
 
-    const raw = await this.client.get<AfMatch[]>('get_events', {
-      team_id: teamId,
+    const raw = await this.client.get<RafFixture>('fixtures', {
+      team: teamId,
+      season: SEASON,
       from: ninetyDaysAgo,
       to: today,
     });
 
-    if (!Array.isArray(raw)) return [];
-
     const results = raw
-      .map((m) => this.normalizer.normalizeMatch(m))
+      .map((m) => this.normalizer.normalizeFixture(m))
       .filter((m) => m.status === 'FINISHED')
       .sort(
         (a, b) =>
@@ -89,16 +88,15 @@ export class FixturesService {
       .toISOString()
       .slice(0, 10);
 
-    const raw = await this.client.get<AfMatch[]>('get_events', {
-      team_id: teamId,
+    const raw = await this.client.get<RafFixture>('fixtures', {
+      team: teamId,
+      season: SEASON,
       from: today,
       to: thirtyDaysAhead,
     });
 
-    if (!Array.isArray(raw)) return [];
-
     const fixtures = raw
-      .map((m) => this.normalizer.normalizeMatch(m))
+      .map((m) => this.normalizer.normalizeFixture(m))
       .filter((m) => m.status === 'SCHEDULED')
       .sort(
         (a, b) =>
@@ -119,16 +117,15 @@ export class FixturesService {
       .toISOString()
       .slice(0, 10);
 
-    const raw = await this.client.get<AfMatch[]>('get_events', {
-      league_id: leagueId,
+    const raw = await this.client.get<RafFixture>('fixtures', {
+      league: leagueId,
+      season: SEASON,
       from: thirtyDaysAgo,
       to: today,
     });
 
-    if (!Array.isArray(raw)) return [];
-
     const results = raw
-      .map((m) => this.normalizer.normalizeMatch(m))
+      .map((m) => this.normalizer.normalizeFixture(m))
       .filter((m) => m.status === 'FINISHED')
       .sort(
         (a, b) =>
@@ -144,12 +141,12 @@ export class FixturesService {
     const cached = await this.cacheService.getCached<MatchDto>(cacheKey);
     if (cached) return cached;
 
-    const raw = await this.client.get<AfMatch[]>('get_events', {
-      match_id: matchId,
+    const raw = await this.client.get<RafFixture>('fixtures', {
+      id: matchId,
     });
-    if (!Array.isArray(raw) || raw.length === 0) return null;
+    if (!raw.length) return null;
 
-    const match = this.normalizer.normalizeMatch(raw[0]);
+    const match = this.normalizer.normalizeFixture(raw[0]);
     await this.enrichLineupPhotos(match);
     const ttl =
       match.status === 'LIVE' ? 30 : match.status === 'FINISHED' ? 3600 : 300;
@@ -167,16 +164,15 @@ export class FixturesService {
       .toISOString()
       .slice(0, 10);
 
-    const raw = await this.client.get<AfMatch[]>('get_events', {
-      league_id: leagueId,
+    const raw = await this.client.get<RafFixture>('fixtures', {
+      league: leagueId,
+      season: SEASON,
       from: today,
       to: thirtyDaysAhead,
     });
 
-    if (!Array.isArray(raw)) return [];
-
     const fixtures = raw
-      .map((m) => this.normalizer.normalizeMatch(m))
+      .map((m) => this.normalizer.normalizeFixture(m))
       .filter((m) => m.status === 'SCHEDULED')
       .sort(
         (a, b) =>
@@ -208,7 +204,7 @@ export class FixturesService {
     }
   }
 
-  @Cron('0 */6 * * *')
+  @Cron('0 */12 * * *')
   async refreshFixtures(): Promise<void> {
     const today = new Date().toISOString().slice(0, 10);
     const nextWeek = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
