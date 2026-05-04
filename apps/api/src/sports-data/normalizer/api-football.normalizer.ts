@@ -207,9 +207,7 @@ export class ApiFootballNormalizer {
     );
     if (!homeStats || !awayStats) return [];
 
-    const awayMap = new Map(
-      awayStats.statistics.map((s) => [s.type, s.value]),
-    );
+    const awayMap = new Map(awayStats.statistics.map((s) => [s.type, s.value]));
 
     return homeStats.statistics.map((hs) => {
       const stat = new StatisticDto();

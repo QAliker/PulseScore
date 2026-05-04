@@ -15,22 +15,42 @@ describe('StandingsService', () => {
       logo: '',
       flag: '',
       season: 2025,
-      standings: [[
-        {
-          rank: 1,
-          team: { id: 2627, name: 'Leeds United', logo: '' },
-          points: 83,
-          goalsDiff: 40,
-          group: 'Championship',
-          form: 'WWWDW',
-          status: 'same',
-          description: 'Promotion - Premier League',
-          all: { played: 38, win: 25, draw: 8, lose: 5, goals: { for: 70, against: 30 } },
-          home: { played: 19, win: 14, draw: 3, lose: 2, goals: { for: 38, against: 15 } },
-          away: { played: 19, win: 11, draw: 5, lose: 3, goals: { for: 32, against: 15 } },
-          update: '2026-05-01T00:00:00+00:00',
-        },
-      ]],
+      standings: [
+        [
+          {
+            rank: 1,
+            team: { id: 2627, name: 'Leeds United', logo: '' },
+            points: 83,
+            goalsDiff: 40,
+            group: 'Championship',
+            form: 'WWWDW',
+            status: 'same',
+            description: 'Promotion - Premier League',
+            all: {
+              played: 38,
+              win: 25,
+              draw: 8,
+              lose: 5,
+              goals: { for: 70, against: 30 },
+            },
+            home: {
+              played: 19,
+              win: 14,
+              draw: 3,
+              lose: 2,
+              goals: { for: 38, against: 15 },
+            },
+            away: {
+              played: 19,
+              win: 11,
+              draw: 5,
+              lose: 3,
+              goals: { for: 32, against: 15 },
+            },
+            update: '2026-05-01T00:00:00+00:00',
+          },
+        ],
+      ],
     },
   });
 

@@ -7,11 +7,32 @@ describe('FixturesService', () => {
   let mockCache: any;
 
   const makeRawFixture = (id: string) => ({
-    fixture: { id: parseInt(id), date: '2026-04-10T20:45:00Z', status: { short: 'FT', elapsed: 90 }, venue: { name: 'Stadium' } },
-    league: { id: 40, name: 'Championship', country: 'England', logo: '', flag: '', season: 2025, round: 'Round 38' },
-    teams: { home: { id: 1, name: 'Leeds', logo: '' }, away: { id: 2, name: 'Sheffield', logo: '' } },
+    fixture: {
+      id: parseInt(id),
+      date: '2026-04-10T20:45:00Z',
+      status: { short: 'FT', elapsed: 90 },
+      venue: { name: 'Stadium' },
+    },
+    league: {
+      id: 40,
+      name: 'Championship',
+      country: 'England',
+      logo: '',
+      flag: '',
+      season: 2025,
+      round: 'Round 38',
+    },
+    teams: {
+      home: { id: 1, name: 'Leeds', logo: '' },
+      away: { id: 2, name: 'Sheffield', logo: '' },
+    },
     goals: { home: 2, away: 1 },
-    score: { halftime: { home: 1, away: 0 }, fulltime: { home: 2, away: 1 }, extratime: { home: null, away: null }, penalty: { home: null, away: null } },
+    score: {
+      halftime: { home: 1, away: 0 },
+      fulltime: { home: 2, away: 1 },
+      extratime: { home: null, away: null },
+      penalty: { home: null, away: null },
+    },
     events: [],
     lineups: [],
     statistics: [],

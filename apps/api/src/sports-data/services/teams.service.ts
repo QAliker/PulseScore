@@ -36,9 +36,8 @@ export class TeamsService implements OnModuleInit {
 
   async getTeams(leagueId: string): Promise<RafTeamResponse[]> {
     const cacheKey = SportsDataCacheService.teamsKey(leagueId);
-    const cached = await this.cacheService.getCached<RafTeamResponse[]>(
-      cacheKey,
-    );
+    const cached =
+      await this.cacheService.getCached<RafTeamResponse[]>(cacheKey);
     if (cached) return cached;
 
     const raw = await this.client.get<RafTeamResponse>('teams', {

@@ -11,6 +11,7 @@ export class LivescoreService {
     return this.matchSubject.asObservable();
   }
 
+  // eslint-disable-next-line @typescript-eslint/require-await
   async getCurrent(): Promise<MatchDto[]> {
     return [];
   }
