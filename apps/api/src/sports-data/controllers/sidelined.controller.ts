@@ -14,9 +14,7 @@ export class SidelinedController {
   }
 
   @Get('coaches/:coachId/sidelined')
-  async getByCoach(
-    @Param('coachId') coachId: string,
-  ): Promise<SidelinedDto[]> {
+  async getByCoach(@Param('coachId') coachId: string): Promise<SidelinedDto[]> {
     return this.sidelinedService.getByCoach(coachId);
   }
 }

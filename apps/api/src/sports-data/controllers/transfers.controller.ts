@@ -7,9 +7,7 @@ export class TransfersController {
   constructor(private readonly transfersService: TransfersService) {}
 
   @Get('players/:playerId/transfers')
-  async getByPlayer(
-    @Param('playerId') playerId: string,
-  ): Promise<TransferDto> {
+  async getByPlayer(@Param('playerId') playerId: string): Promise<TransferDto> {
     const result = await this.transfersService.getByPlayer(playerId);
     if (!result) throw new NotFoundException();
     return result;

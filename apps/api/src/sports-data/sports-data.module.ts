@@ -36,7 +36,10 @@ import { TransfersController } from './controllers/transfers.controller';
 import { TrophiesController } from './controllers/trophies.controller';
 import { SidelinedController } from './controllers/sidelined.controller';
 import { CountriesController } from './controllers/countries.controller';
-import { VenuesController, TeamVenuesController } from './controllers/venues.controller';
+import {
+  VenuesController,
+  TeamVenuesController,
+} from './controllers/venues.controller';
 
 @Module({
   imports: [ScheduleModule.forRoot(), PrismaModule],

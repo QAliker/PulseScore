@@ -7,11 +7,32 @@ describe('H2hService', () => {
   let mockCache: any;
 
   const makeRawFixture = (id: string, homeId: number, awayId: number) => ({
-    fixture: { id: parseInt(id), date: '2025-01-01T15:00:00Z', status: { short: 'FT', elapsed: 90 }, venue: { name: null } },
-    league: { id: 40, name: 'Championship', country: 'England', logo: '', flag: '', season: 2025, round: '' },
-    teams: { home: { id: homeId, name: 'Home', logo: '' }, away: { id: awayId, name: 'Away', logo: '' } },
+    fixture: {
+      id: parseInt(id),
+      date: '2025-01-01T15:00:00Z',
+      status: { short: 'FT', elapsed: 90 },
+      venue: { name: null },
+    },
+    league: {
+      id: 40,
+      name: 'Championship',
+      country: 'England',
+      logo: '',
+      flag: '',
+      season: 2025,
+      round: '',
+    },
+    teams: {
+      home: { id: homeId, name: 'Home', logo: '' },
+      away: { id: awayId, name: 'Away', logo: '' },
+    },
     goals: { home: 1, away: 0 },
-    score: { halftime: { home: 0, away: 0 }, fulltime: { home: 1, away: 0 }, extratime: { home: null, away: null }, penalty: { home: null, away: null } },
+    score: {
+      halftime: { home: 0, away: 0 },
+      fulltime: { home: 1, away: 0 },
+      extratime: { home: null, away: null },
+      penalty: { home: null, away: null },
+    },
     events: [],
     lineups: [],
     statistics: [],
@@ -47,7 +68,11 @@ describe('H2hService', () => {
   });
 
   it('should return cached H2H', async () => {
-    const cached = { headToHead: [], firstTeamResults: [], secondTeamResults: [] };
+    const cached = {
+      headToHead: [],
+      firstTeamResults: [],
+      secondTeamResults: [],
+    };
     mockCache.getCached.mockResolvedValue(cached);
     const result = await service.getH2H('2627', '2637');
     expect(mockClient.get).not.toHaveBeenCalled();

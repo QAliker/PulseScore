@@ -6,8 +6,20 @@ describe('OddsService', () => {
   let mockCache: any;
 
   const makeRawOdds = (fixtureId: string) => ({
-    league: { id: 40, name: 'Championship', country: 'England', logo: '', flag: '', season: 2025 },
-    fixture: { id: parseInt(fixtureId), timezone: 'UTC', date: '2026-05-10', timestamp: 1000 },
+    league: {
+      id: 40,
+      name: 'Championship',
+      country: 'England',
+      logo: '',
+      flag: '',
+      season: 2025,
+    },
+    fixture: {
+      id: parseInt(fixtureId),
+      timezone: 'UTC',
+      date: '2026-05-10',
+      timestamp: 1000,
+    },
     update: '2026-05-09T10:00:00Z',
     bookmakers: [
       {
@@ -57,10 +69,18 @@ describe('OddsService', () => {
   });
 
   it('should return empty array when no bookmakers have Match Winner bet', async () => {
-    mockClient.get.mockResolvedValue([{
-      ...makeRawOdds('123'),
-      bookmakers: [{ id: 6, name: 'Bet365', bets: [{ id: 2, name: 'Asian Handicap', values: [] }] }],
-    }]);
+    mockClient.get.mockResolvedValue([
+      {
+        ...makeRawOdds('123'),
+        bookmakers: [
+          {
+            id: 6,
+            name: 'Bet365',
+            bets: [{ id: 2, name: 'Asian Handicap', values: [] }],
+          },
+        ],
+      },
+    ]);
     const result = await service.getOdds('123');
     expect(result).toHaveLength(1);
     expect(result[0].home).toBeNull();

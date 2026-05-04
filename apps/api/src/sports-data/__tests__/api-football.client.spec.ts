@@ -25,15 +25,23 @@ describe('ApiFootballClient', () => {
         json: async () => ({ response: [{ fixture: { id: 1 } }] }),
       } as Response);
 
-      const result = await client.get('fixtures', { league: '40', season: 2025 });
+      const result = await client.get('fixtures', {
+        league: '40',
+        season: 2025,
+      });
 
       expect(globalThis.fetch).toHaveBeenCalledTimes(1);
-      const [calledUrl, calledInit] = (globalThis.fetch as jest.Mock).mock.calls[0];
-      expect(calledUrl).toContain('https://api-football-v1.p.rapidapi.com/v3/fixtures');
+      const [calledUrl, calledInit] = (globalThis.fetch as jest.Mock).mock
+        .calls[0];
+      expect(calledUrl).toContain(
+        'https://api-football-v1.p.rapidapi.com/v3/fixtures',
+      );
       expect(calledUrl).toContain('league=40');
       expect(calledUrl).toContain('season=2025');
       expect(calledInit.headers['x-rapidapi-key']).toBe('test-rapidapi-key');
-      expect(calledInit.headers['x-rapidapi-host']).toBe('api-football-v1.p.rapidapi.com');
+      expect(calledInit.headers['x-rapidapi-host']).toBe(
+        'api-football-v1.p.rapidapi.com',
+      );
       expect(result).toHaveLength(1);
     });
 
@@ -69,7 +77,9 @@ describe('ApiFootballClient', () => {
         }),
       } as Response);
 
-      await expect(client.get('fixtures', {})).rejects.toThrow('API-Football error');
+      await expect(client.get('fixtures', {})).rejects.toThrow(
+        'API-Football error',
+      );
     });
 
     it('should return empty array when response is null', async () => {

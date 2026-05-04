@@ -76,8 +76,18 @@ describe('ApiFootballNormalizer', () => {
         round: 'Regular Season - 38',
       },
       teams: {
-        home: { id: 2627, name: 'Leeds United', logo: 'https://example.com/leeds.png', winner: true },
-        away: { id: 2637, name: 'Sheffield Wednesday', logo: 'https://example.com/sheffield.png', winner: false },
+        home: {
+          id: 2627,
+          name: 'Leeds United',
+          logo: 'https://example.com/leeds.png',
+          winner: true,
+        },
+        away: {
+          id: 2637,
+          name: 'Sheffield Wednesday',
+          logo: 'https://example.com/sheffield.png',
+          winner: false,
+        },
       },
       goals: { home: 2, away: 1 },
       score: {
@@ -199,16 +209,38 @@ describe('ApiFootballNormalizer', () => {
   describe('normalizeStanding', () => {
     const mockEntry: RafStandingEntry = {
       rank: 1,
-      team: { id: 2627, name: 'Leeds United', logo: 'https://example.com/leeds.png' },
+      team: {
+        id: 2627,
+        name: 'Leeds United',
+        logo: 'https://example.com/leeds.png',
+      },
       points: 83,
       goalsDiff: 40,
       group: 'Championship',
       form: 'WWWDW',
       status: 'same',
       description: 'Promotion - Premier League',
-      all: { played: 38, win: 25, draw: 8, lose: 5, goals: { for: 70, against: 30 } },
-      home: { played: 19, win: 14, draw: 3, lose: 2, goals: { for: 38, against: 15 } },
-      away: { played: 19, win: 11, draw: 5, lose: 3, goals: { for: 32, against: 15 } },
+      all: {
+        played: 38,
+        win: 25,
+        draw: 8,
+        lose: 5,
+        goals: { for: 70, against: 30 },
+      },
+      home: {
+        played: 19,
+        win: 14,
+        draw: 3,
+        lose: 2,
+        goals: { for: 38, against: 15 },
+      },
+      away: {
+        played: 19,
+        win: 11,
+        draw: 5,
+        lose: 3,
+        goals: { for: 32, against: 15 },
+      },
       update: '2026-05-01T00:00:00+00:00',
     };
 
@@ -263,7 +295,14 @@ describe('ApiFootballNormalizer', () => {
       statistics: [
         {
           team: { id: 2627, name: 'Leeds United', logo: '' },
-          league: { id: 40, name: 'Championship', country: 'England', logo: '', flag: '', season: 2025 },
+          league: {
+            id: 40,
+            name: 'Championship',
+            country: 'England',
+            logo: '',
+            flag: '',
+            season: 2025,
+          },
           games: {
             appearences: 35,
             lineups: 30,
