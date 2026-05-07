@@ -7,23 +7,47 @@ export type League = {
   season: string;
 };
 
-// API-Football v3 (RapidAPI) league IDs.
+// API-Football v3 (RapidAPI) league IDs — season year = year season started.
 export const LEAGUES: League[] = [
   {
-    slug: 'england-championship',
-    name: 'Championship',
+    slug: 'england-premier-league',
+    name: 'Premier League',
     country: 'England',
     flag: '🏴󠁧󠁢󠁥󠁮󠁧󠁿',
-    apiFootballId: 40,
-    season: '2025/26',
+    apiFootballId: 39,
+    season: '2024/25',
   },
   {
-    slug: 'france-ligue-2',
-    name: 'Ligue 2',
+    slug: 'spain-la-liga',
+    name: 'La Liga',
+    country: 'Spain',
+    flag: '🇪🇸',
+    apiFootballId: 140,
+    season: '2024/25',
+  },
+  {
+    slug: 'germany-bundesliga',
+    name: 'Bundesliga',
+    country: 'Germany',
+    flag: '🇩🇪',
+    apiFootballId: 78,
+    season: '2024/25',
+  },
+  {
+    slug: 'italy-serie-a',
+    name: 'Serie A',
+    country: 'Italy',
+    flag: '🇮🇹',
+    apiFootballId: 135,
+    season: '2024/25',
+  },
+  {
+    slug: 'france-ligue-1',
+    name: 'Ligue 1',
     country: 'France',
     flag: '🇫🇷',
     apiFootballId: 61,
-    season: '2025/26',
+    season: '2024/25',
   },
 ];
 

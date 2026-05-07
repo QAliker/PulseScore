@@ -10,30 +10,30 @@ import type {
   MatchDetail,
 } from './types';
 
-const CHAMPIONSHIP_TEAMS: Array<[string, string, string]> = [
-  ['lee', 'Leeds United', 'LEE'],
-  ['bur', 'Burnley', 'BUR'],
-  ['sun', 'Sunderland', 'SUN'],
-  ['lei', 'Leicester City', 'LEI'],
-  ['sou', 'Southampton', 'SOU'],
-  ['wat', 'Watford', 'WAT'],
-  ['shu', 'Sheffield United', 'SHU'],
-  ['nor', 'Norwich City', 'NOR'],
-  ['wba', 'West Brom', 'WBA'],
-  ['mid', 'Middlesbrough', 'MID'],
+const PREMIER_LEAGUE_TEAMS: Array<[string, string, string]> = [
+  ['mci', 'Manchester City', 'MCI'],
+  ['ars', 'Arsenal', 'ARS'],
+  ['liv', 'Liverpool', 'LIV'],
+  ['che', 'Chelsea', 'CHE'],
+  ['mun', 'Manchester United', 'MUN'],
+  ['tot', 'Tottenham', 'TOT'],
+  ['new', 'Newcastle', 'NEW'],
+  ['avl', 'Aston Villa', 'AVL'],
+  ['bha', 'Brighton', 'BHA'],
+  ['whu', 'West Ham', 'WHU'],
 ];
 
-const LIGUE2_TEAMS: Array<[string, string, string]> = [
-  ['bor', 'Girondins Bordeaux', 'BOR'],
-  ['sai', 'Saint-Étienne', 'ASSE'],
-  ['laval', 'Laval', 'LAV'],
-  ['ajac', 'AC Ajaccio', 'ACA'],
-  ['troy', 'Troyes', 'TRO'],
-  ['pau', 'Pau FC', 'PAU'],
-  ['caen', 'SM Caen', 'CAE'],
-  ['gre', 'Grenoble', 'GRE'],
-  ['bast', 'SC Bastia', 'SCB'],
-  ['amiens', 'Amiens SC', 'AMI'],
+const LIGUE1_TEAMS: Array<[string, string, string]> = [
+  ['psg', 'Paris Saint-Germain', 'PSG'],
+  ['mon', 'Monaco', 'MON'],
+  ['mar', 'Olympique Marseille', 'OM'],
+  ['lyo', 'Olympique Lyon', 'OL'],
+  ['lil', 'Lille', 'LIL'],
+  ['nic', 'Nice', 'NIC'],
+  ['ren', 'Rennes', 'REN'],
+  ['len', 'Lens', 'LEN'],
+  ['str', 'Strasbourg', 'STR'],
+  ['nan', 'Nantes', 'NAN'],
 ];
 
 function team([id, name, short]: [string, string, string]): Team {
@@ -313,7 +313,7 @@ function generateH2H(match: Match, rand: () => number): H2HStats {
 export function getMatchDetail(matchId: string, match: Match): MatchDetail {
   const seed = stringToSeed(matchId);
   const rand = mulberry32(seed);
-  const isEnglish = match.leagueSlug === 'england-championship';
+  const isEnglish = match.leagueSlug === 'england-premier-league';
   const names = isEnglish ? EN_NAMES : FR_NAMES;
   const usedNames = new Set<string>();
   const homeLineup = buildTeamLineup(names, usedNames, rand);
@@ -331,7 +331,7 @@ export function getInitialFixtures(now: Date = new Date()): Match[] {
   const daySeed =
     now.getUTCFullYear() * 10000 + (now.getUTCMonth() + 1) * 100 + now.getUTCDate();
   return [
-    ...buildFixtures('england-championship', CHAMPIONSHIP_TEAMS, daySeed + 1, now),
-    ...buildFixtures('france-ligue-2', LIGUE2_TEAMS, daySeed + 2, now),
+    ...buildFixtures('england-premier-league', PREMIER_LEAGUE_TEAMS, daySeed + 1, now),
+    ...buildFixtures('france-ligue-1', LIGUE1_TEAMS, daySeed + 2, now),
   ];
 }
