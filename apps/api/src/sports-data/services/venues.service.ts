@@ -4,8 +4,13 @@ import {
   SportsDataCacheService,
   TTL_TEAMS,
 } from '../sports-data-cache.service';
-import { RafVenueResponse } from '../interfaces/api-football.interfaces';
+import {
+  RafTeamResponse,
+  RafVenueResponse,
+} from '../interfaces/api-football.interfaces';
 import { VenueDto } from '../dto/venue.dto';
+
+const SEASON = 2024;
 
 @Injectable()
 export class VenuesService {
@@ -19,11 +24,15 @@ export class VenuesService {
     const cached = await this.cacheService.getCached<VenueDto[]>(cacheKey);
     if (cached) return cached;
 
-    const raw = await this.client.get<RafVenueResponse>('venues', {
+    const raw = await this.client.get<RafTeamResponse>('teams', {
       team: teamId,
+      season: SEASON,
     });
 
-    const venues = raw.map((r) => this.toDto(r));
+    const venues = raw
+      .map((r) => this.teamVenueToDto(r))
+      .filter((v): v is VenueDto => v !== null);
+
     await this.cacheService.setCached(cacheKey, venues, TTL_TEAMS);
     return venues;
   }
@@ -33,12 +42,15 @@ export class VenuesService {
     const cached = await this.cacheService.getCached<VenueDto[]>(cacheKey);
     if (cached) return cached;
 
-    const raw = await this.client.get<RafVenueResponse>('venues', {
+    const raw = await this.client.get<RafTeamResponse>('teams', {
       league: leagueId,
       season,
     });
 
-    const venues = raw.map((r) => this.toDto(r));
+    const venues = raw
+      .map((r) => this.teamVenueToDto(r))
+      .filter((v): v is VenueDto => v !== null);
+
     await this.cacheService.setCached(cacheKey, venues, TTL_TEAMS);
     return venues;
   }
@@ -53,12 +65,26 @@ export class VenuesService {
     });
 
     if (!raw.length) return null;
-    const dto = this.toDto(raw[0]);
+    const dto = this.venueResponseToDto(raw[0]);
     await this.cacheService.setCached(cacheKey, dto, TTL_TEAMS);
     return dto;
   }
 
-  private toDto(r: RafVenueResponse): VenueDto {
+  private teamVenueToDto(r: RafTeamResponse): VenueDto | null {
+    if (!r.venue.id && !r.venue.name) return null;
+    const dto = new VenueDto();
+    dto.id = r.venue.id ?? 0;
+    dto.name = r.venue.name ?? '';
+    dto.address = r.venue.address;
+    dto.city = r.venue.city;
+    dto.country = r.team.country || null;
+    dto.capacity = r.venue.capacity;
+    dto.surface = r.venue.surface;
+    dto.image = r.venue.image;
+    return dto;
+  }
+
+  private venueResponseToDto(r: RafVenueResponse): VenueDto {
     const dto = new VenueDto();
     dto.id = r.id;
     dto.name = r.name;

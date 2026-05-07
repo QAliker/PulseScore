@@ -11,7 +11,7 @@ import { MatchDto } from '../dto/match.dto';
 import { PrismaService } from '../../prisma/prisma.service';
 
 const LEAGUE_IDS = ['40', '61']; // Championship, Ligue 2
-const SEASON = 2025;
+const SEASON = 2024;
 
 @Injectable()
 export class FixturesService {
