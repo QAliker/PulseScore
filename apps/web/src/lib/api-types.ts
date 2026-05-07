@@ -131,3 +131,96 @@ export type ApiH2h = {
   firstTeamResults: ApiMatch[];
   secondTeamResults: ApiMatch[];
 };
+
+export type ApiInjury = {
+  playerId: number;
+  playerName: string;
+  type: string;
+  reason: string;
+  teamId: number;
+  teamName: string;
+  teamLogo: string;
+  fixtureId: number;
+  fixtureDate: string;
+  leagueId: number;
+  leagueName: string;
+  season: number;
+};
+
+export type ApiPrediction = {
+  winnerId: number | null;
+  winnerName: string | null;
+  winnerComment: string;
+  advice: string;
+  percentHome: string;
+  percentDraw: string;
+  percentAway: string;
+  underOver: string | null;
+  goalHome: string;
+  goalAway: string;
+};
+
+export type ApiCoachCareer = {
+  teamId: number;
+  teamName: string;
+  teamLogo: string;
+  start: string;
+  end: string | null;
+};
+
+export type ApiCoach = {
+  id: number;
+  name: string;
+  firstname: string;
+  lastname: string;
+  age: number | null;
+  nationality: string | null;
+  photo: string;
+  teamId: number | null;
+  teamName: string | null;
+  teamLogo: string | null;
+  career: ApiCoachCareer[];
+};
+
+export type ApiTransferEntry = {
+  date: string;
+  type: string;
+  teamInId: number;
+  teamInName: string;
+  teamInLogo: string;
+  teamOutId: number;
+  teamOutName: string;
+  teamOutLogo: string;
+};
+
+export type ApiTransfers = {
+  playerId: number;
+  playerName: string;
+  transfers: ApiTransferEntry[];
+};
+
+export type ApiTrophy = {
+  league: string;
+  country: string;
+  season: string;
+  place: string;
+  description: string;
+};
+
+export type ApiSidelined = {
+  playerName: string;
+  type: string;
+  start: string;
+  end: string | null;
+};
+
+export type ApiVenue = {
+  id: number;
+  name: string;
+  address: string | null;
+  city: string | null;
+  country: string | null;
+  capacity: number | null;
+  surface: string | null;
+  image: string | null;
+};
