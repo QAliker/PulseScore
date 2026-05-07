@@ -24,12 +24,18 @@ import { VenuesService } from './services/venues.service';
 import { LeaguesService } from './services/leagues.service';
 
 // Controllers
-import { LeaguesController, TimezonesController } from './controllers/leagues.controller';
+import {
+  LeaguesController,
+  TimezonesController,
+} from './controllers/leagues.controller';
 import { TeamsController } from './controllers/teams.controller';
 import { PlayersController } from './controllers/players.controller';
 import { H2hController } from './controllers/h2h.controller';
 import { LivescoreController } from './controllers/livescore.controller';
-import { MatchesController, OddsMetaController } from './controllers/matches.controller';
+import {
+  MatchesController,
+  OddsMetaController,
+} from './controllers/matches.controller';
 import { InjuriesController } from './controllers/injuries.controller';
 import { PredictionsController } from './controllers/predictions.controller';
 import { CoachesController } from './controllers/coaches.controller';

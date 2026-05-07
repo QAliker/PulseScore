@@ -10,8 +10,8 @@ import { RafFixture } from '../interfaces/api-football.interfaces';
 import { MatchDto } from '../dto/match.dto';
 import { PrismaService } from '../../prisma/prisma.service';
 
-const LEAGUE_IDS = ['40', '61']; // Championship, Ligue 2
-const SEASON = 2024;
+const LEAGUE_IDS = ['39', '140', '78', '135', '61']; // PL, La Liga, Bundesliga, Serie A, Ligue 1
+const SEASON = 2024; // free plan supports 2022–2024
 
 @Injectable()
 export class FixturesService {

@@ -4,7 +4,10 @@ import { TeamsService } from './teams.service';
 import { PlayerDto } from '../dto/player.dto';
 import { ApiFootballClient } from '../client/api-football.client';
 import { ApiFootballNormalizer } from '../normalizer/api-football.normalizer';
-import { SportsDataCacheService, TTL_TEAMS } from '../sports-data-cache.service';
+import {
+  SportsDataCacheService,
+  TTL_TEAMS,
+} from '../sports-data-cache.service';
 import { RafPlayerResponse } from '../interfaces/api-football.interfaces';
 
 type PrismaPlayer = {

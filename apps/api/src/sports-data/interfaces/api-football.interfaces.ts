@@ -371,7 +371,14 @@ export interface RafOddsBetResponse {
 
 export interface RafOddsMappingResponse {
   fixture: { id: number; timezone: string; date: string; timestamp: number };
-  league: { id: number; name: string; country: string; logo: string; flag: string; season: number };
+  league: {
+    id: number;
+    name: string;
+    country: string;
+    logo: string;
+    flag: string;
+    season: number;
+  };
   teams: {
     home: { id: number; name: string; logo: string };
     away: { id: number; name: string; logo: string };
