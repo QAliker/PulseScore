@@ -21,7 +21,9 @@ export class WarmupService implements OnApplicationBootstrap {
         await this.fixtures.getLeagueFixtures(leagueId);
         await this.fixtures.getLeagueResults(leagueId);
       } catch (err) {
-        this.logger.warn(`Warmup failed for league ${leagueId}: ${String(err)}`);
+        this.logger.warn(
+          `Warmup failed for league ${leagueId}: ${String(err)}`,
+        );
       }
     }
     this.logger.log('Cache warmup complete.');
