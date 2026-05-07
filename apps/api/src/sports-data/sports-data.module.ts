@@ -21,14 +21,15 @@ import { TrophiesService } from './services/trophies.service';
 import { SidelinedService } from './services/sidelined.service';
 import { CountriesService } from './services/countries.service';
 import { VenuesService } from './services/venues.service';
+import { LeaguesService } from './services/leagues.service';
 
 // Controllers
-import { LeaguesController } from './controllers/leagues.controller';
+import { LeaguesController, TimezonesController } from './controllers/leagues.controller';
 import { TeamsController } from './controllers/teams.controller';
 import { PlayersController } from './controllers/players.controller';
 import { H2hController } from './controllers/h2h.controller';
 import { LivescoreController } from './controllers/livescore.controller';
-import { MatchesController } from './controllers/matches.controller';
+import { MatchesController, OddsMetaController } from './controllers/matches.controller';
 import { InjuriesController } from './controllers/injuries.controller';
 import { PredictionsController } from './controllers/predictions.controller';
 import { CoachesController } from './controllers/coaches.controller';
@@ -46,10 +47,12 @@ import {
   controllers: [
     LivescoreController,
     LeaguesController,
+    TimezonesController,
     TeamsController,
     PlayersController,
     H2hController,
     MatchesController,
+    OddsMetaController,
     InjuriesController,
     PredictionsController,
     CoachesController,
@@ -79,6 +82,7 @@ import {
     SidelinedService,
     CountriesService,
     VenuesService,
+    LeaguesService,
   ],
   exports: [
     LivescoreService,
@@ -96,6 +100,7 @@ import {
     SidelinedService,
     CountriesService,
     VenuesService,
+    LeaguesService,
     SportsDataCacheService,
   ],
 })

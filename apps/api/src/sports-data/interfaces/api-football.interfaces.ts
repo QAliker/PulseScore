@@ -324,6 +324,60 @@ export interface RafSidelinedResponse {
   end: string | null;
 }
 
+export interface RafTeamStatisticsResponse {
+  league: {
+    id: number;
+    name: string;
+    country: string;
+    logo: string;
+    flag: string;
+    season: number;
+  };
+  team: { id: number; name: string; logo: string };
+  form: string | null;
+  fixtures: {
+    played: { home: number; away: number; total: number };
+    wins: { home: number; away: number; total: number };
+    draws: { home: number; away: number; total: number };
+    loses: { home: number; away: number; total: number };
+  };
+  goals: {
+    for: {
+      total: { home: number; away: number; total: number };
+      average: { home: string; away: string; total: string };
+    };
+    against: {
+      total: { home: number; away: number; total: number };
+      average: { home: string; away: string; total: string };
+    };
+  };
+  clean_sheet: { home: number; away: number; total: number };
+  failed_to_score: { home: number; away: number; total: number };
+  penalty: {
+    scored: { total: number; percentage: string };
+    missed: { total: number; percentage: string };
+  };
+}
+
+export interface RafOddsBookmakerResponse {
+  id: number;
+  name: string;
+}
+
+export interface RafOddsBetResponse {
+  id: number;
+  name: string;
+}
+
+export interface RafOddsMappingResponse {
+  fixture: { id: number; timezone: string; date: string; timestamp: number };
+  league: { id: number; name: string; country: string; logo: string; flag: string; season: number };
+  teams: {
+    home: { id: number; name: string; logo: string };
+    away: { id: number; name: string; logo: string };
+  };
+}
+
 export interface RafCountryResponse {
   name: string;
   code: string | null;

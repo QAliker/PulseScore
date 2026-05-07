@@ -55,6 +55,28 @@ export class VenuesService {
     return venues;
   }
 
+  async search(params: {
+    city?: string;
+    country?: string;
+    name?: string;
+    search?: string;
+  }): Promise<VenueDto[]> {
+    const cacheKey = `sports:venues:search:${JSON.stringify(params)}`;
+    const cached = await this.cacheService.getCached<VenueDto[]>(cacheKey);
+    if (cached) return cached;
+
+    const queryParams: Record<string, string | number> = {};
+    if (params.city) queryParams.city = params.city;
+    if (params.country) queryParams.country = params.country;
+    if (params.name) queryParams.name = params.name;
+    if (params.search) queryParams.search = params.search;
+
+    const raw = await this.client.get<RafVenueResponse>('venues', queryParams);
+    const venues = raw.map((r) => this.venueResponseToDto(r));
+    await this.cacheService.setCached(cacheKey, venues, TTL_TEAMS);
+    return venues;
+  }
+
   async getById(venueId: string): Promise<VenueDto | null> {
     const cacheKey = `sports:venues:${venueId}`;
     const cached = await this.cacheService.getCached<VenueDto>(cacheKey);
