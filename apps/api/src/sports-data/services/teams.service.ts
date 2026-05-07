@@ -13,7 +13,7 @@ import {
 } from '../interfaces/api-football.interfaces';
 
 const LEAGUE_IDS = ['40', '61']; // Championship, Ligue 2
-const SEASON = 2025;
+const SEASON = 2024;
 
 @Injectable()
 export class TeamsService implements OnModuleInit {
@@ -69,10 +69,23 @@ export class TeamsService implements OnModuleInit {
     if (playerCount > 0) return;
 
     try {
-      const raw = await this.client.get<RafPlayerResponse>('players', {
-        team: teamId,
-        season: SEASON,
-      });
+      let page = 1;
+      let totalPages = 1;
+      const allRaw: RafPlayerResponse[] = [];
+
+      do {
+        const { data, totalPages: tp } =
+          await this.client.getPage<RafPlayerResponse>('players', {
+            team: teamId,
+            season: SEASON,
+            page,
+          });
+        allRaw.push(...data);
+        totalPages = tp;
+        page++;
+      } while (page <= totalPages);
+
+      const raw = allRaw;
 
       const team = await this.prismaService.team.findUnique({
         where: { externalId: teamId },

@@ -11,7 +11,7 @@ import { RafStandingResponse } from '../interfaces/api-football.interfaces';
 import { StandingDto } from '../dto/standing.dto';
 
 const LEAGUE_IDS = ['40', '61']; // Championship, Ligue 2
-const SEASON = 2025;
+const SEASON = 2024;
 
 @Injectable()
 export class StandingsService {
