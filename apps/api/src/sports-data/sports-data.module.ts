@@ -22,6 +22,7 @@ import { SidelinedService } from './services/sidelined.service';
 import { CountriesService } from './services/countries.service';
 import { VenuesService } from './services/venues.service';
 import { LeaguesService } from './services/leagues.service';
+import { WarmupService } from './services/warmup.service';
 
 // Controllers
 import {
@@ -89,6 +90,7 @@ import {
     CountriesService,
     VenuesService,
     LeaguesService,
+    WarmupService,
   ],
   exports: [
     LivescoreService,
