@@ -12,6 +12,16 @@ import { VenueDto } from '../dto/venue.dto';
 export class VenuesController {
   constructor(private readonly venuesService: VenuesService) {}
 
+  @Get()
+  async search(
+    @Query('city') city?: string,
+    @Query('country') country?: string,
+    @Query('name') name?: string,
+    @Query('search') search?: string,
+  ): Promise<VenueDto[]> {
+    return this.venuesService.search({ city, country, name, search });
+  }
+
   @Get(':venueId')
   async getById(@Param('venueId') venueId: string): Promise<VenueDto> {
     const venue = await this.venuesService.getById(venueId);

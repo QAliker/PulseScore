@@ -7,7 +7,13 @@ export class CountriesController {
   constructor(private readonly countriesService: CountriesService) {}
 
   @Get()
-  async getAll(@Query('search') search?: string): Promise<CountryDto[]> {
+  async getAll(
+    @Query('name') name?: string,
+    @Query('code') code?: string,
+    @Query('search') search?: string,
+  ): Promise<CountryDto[]> {
+    if (code) return this.countriesService.getByCode(code);
+    if (name) return this.countriesService.getByName(name);
     if (search) return this.countriesService.search(search);
     return this.countriesService.getAll();
   }

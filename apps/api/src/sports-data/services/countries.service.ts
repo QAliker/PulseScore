@@ -37,4 +37,16 @@ export class CountriesService {
     const q = name.toLowerCase();
     return all.filter((c) => c.name.toLowerCase().includes(q));
   }
+
+  async getByCode(code: string): Promise<CountryDto[]> {
+    const all = await this.getAll();
+    const q = code.toUpperCase();
+    return all.filter((c) => c.code?.toUpperCase() === q);
+  }
+
+  async getByName(name: string): Promise<CountryDto[]> {
+    const all = await this.getAll();
+    const q = name.toLowerCase();
+    return all.filter((c) => c.name.toLowerCase() === q);
+  }
 }

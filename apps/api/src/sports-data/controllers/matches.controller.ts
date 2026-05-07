@@ -1,4 +1,4 @@
-import { Controller, Get, Param, NotFoundException } from '@nestjs/common';
+import { Controller, Get, Param, NotFoundException, Query } from '@nestjs/common';
 import { FixturesService } from '../services/fixtures.service';
 import { OddsService } from '../services/odds.service';
 import { MatchDto } from '../dto/match.dto';
@@ -26,5 +26,35 @@ export class MatchesController {
   @Get(':id/odds/live')
   async getLiveOdds(@Param('id') id: string): Promise<OddsDto[]> {
     return this.oddsService.getLiveOdds(id);
+  }
+}
+
+@Controller('odds')
+export class OddsMetaController {
+  constructor(private readonly oddsService: OddsService) {}
+
+  @Get('bookmakers')
+  async getBookmakers() {
+    return this.oddsService.getBookmakers();
+  }
+
+  @Get('bets')
+  async getBets() {
+    return this.oddsService.getBets();
+  }
+
+  @Get('live/bets')
+  async getLiveBets() {
+    return this.oddsService.getLiveBets();
+  }
+
+  @Get('mapping')
+  async getMapping(
+    @Query('fixture') fixtureId?: string,
+    @Query('league') league?: string,
+    @Query('date') date?: string,
+    @Query('page') page?: string,
+  ) {
+    return this.oddsService.getMapping({ fixtureId, league, date, page });
   }
 }

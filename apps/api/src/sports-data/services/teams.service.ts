@@ -10,7 +10,9 @@ import { PrismaService } from '../../prisma/prisma.service';
 import {
   RafTeamResponse,
   RafPlayerResponse,
+  RafTeamStatisticsResponse,
 } from '../interfaces/api-football.interfaces';
+import { TeamStatisticsDto } from '../dto/team-statistics.dto';
 
 const LEAGUE_IDS = ['40', '61']; // Championship, Ligue 2
 const SEASON = 2024;
@@ -132,6 +134,50 @@ export class TeamsService implements OnModuleInit {
         `Failed to fetch players for team ${teamId}: ${String(err)}`,
       );
     }
+  }
+
+  async getStatistics(
+    league: string,
+    season: string,
+    team: string,
+    date?: string,
+  ): Promise<TeamStatisticsDto | null> {
+    const cacheKey = `sports:team:stats:${team}:${league}:${season}:${date ?? ''}`;
+    const cached =
+      await this.cacheService.getCached<TeamStatisticsDto>(cacheKey);
+    if (cached) return cached;
+
+    const params: Record<string, string | number> = { league, season, team };
+    if (date) params.date = date;
+
+    const raw = await this.client.getSingle<RafTeamStatisticsResponse>(
+      'teams/statistics',
+      params,
+    );
+    if (!raw) return null;
+
+    const dto = new TeamStatisticsDto();
+    dto.teamId = String(raw.team.id);
+    dto.teamName = raw.team.name;
+    dto.leagueId = raw.league.id;
+    dto.leagueName = raw.league.name;
+    dto.season = raw.league.season;
+    dto.form = raw.form;
+    dto.played = raw.fixtures.played;
+    dto.wins = raw.fixtures.wins;
+    dto.draws = raw.fixtures.draws;
+    dto.losses = raw.fixtures.loses;
+    dto.goalsFor = raw.goals.for.total;
+    dto.goalsAgainst = raw.goals.against.total;
+    dto.goalsForAvg = raw.goals.for.average;
+    dto.goalsAgainstAvg = raw.goals.against.average;
+    dto.cleanSheets = raw.clean_sheet;
+    dto.failedToScore = raw.failed_to_score;
+    dto.penaltiesScored = raw.penalty?.scored?.total ?? 0;
+    dto.penaltiesMissed = raw.penalty?.missed?.total ?? 0;
+
+    await this.cacheService.setCached(cacheKey, dto, TTL_TEAMS);
+    return dto;
   }
 
   @Cron('0 3 * * *')

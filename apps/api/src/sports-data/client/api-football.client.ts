@@ -58,6 +58,49 @@ export class ApiFootballClient {
     return data.response ?? [];
   }
 
+  async getSingle<T>(
+    endpoint: string,
+    params: Record<string, string | number> = {},
+  ): Promise<T | null> {
+    const query = new URLSearchParams();
+    for (const [k, v] of Object.entries(params)) {
+      query.set(k, String(v));
+    }
+
+    const url = `${this.baseUrl}/${endpoint}${query.toString() ? `?${query.toString()}` : ''}`;
+    this.logger.debug(`GET ${url}`);
+
+    const response = await fetch(url, {
+      headers: {
+        'x-apisports-key': this.apiKey,
+        Accept: 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(
+        `API-Football request failed: ${response.status} ${response.statusText}`,
+      );
+    }
+
+    const data = (await response.json()) as {
+      response: T;
+      errors: unknown;
+    };
+
+    if (
+      data.errors &&
+      !Array.isArray(data.errors) &&
+      Object.keys(data.errors as object).length > 0
+    ) {
+      const msg = JSON.stringify(data.errors);
+      this.logger.error(`API-Football error response: ${msg}`);
+      throw new Error(`API-Football error: ${msg}`);
+    }
+
+    return data.response ?? null;
+  }
+
   async getPage<T>(
     endpoint: string,
     params: Record<string, string | number> = {},

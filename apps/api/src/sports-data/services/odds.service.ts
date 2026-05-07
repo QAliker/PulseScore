@@ -1,7 +1,12 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ApiFootballClient } from '../client/api-football.client';
 import { SportsDataCacheService, TTL_ODDS } from '../sports-data-cache.service';
-import { RafOddsResponse } from '../interfaces/api-football.interfaces';
+import {
+  RafOddsResponse,
+  RafOddsBookmakerResponse,
+  RafOddsBetResponse,
+  RafOddsMappingResponse,
+} from '../interfaces/api-football.interfaces';
 import { OddsDto } from '../dto/odds.dto';
 
 @Injectable()
@@ -77,5 +82,66 @@ export class OddsService {
 
     await this.cacheService.setCached(cacheKey, odds, 30);
     return odds;
+  }
+
+  async getBookmakers(): Promise<RafOddsBookmakerResponse[]> {
+    const cacheKey = 'sports:odds:bookmakers';
+    const cached =
+      await this.cacheService.getCached<RafOddsBookmakerResponse[]>(cacheKey);
+    if (cached) return cached;
+
+    const raw =
+      await this.client.get<RafOddsBookmakerResponse>('odds/bookmakers');
+    await this.cacheService.setCached(cacheKey, raw, 86400);
+    return raw;
+  }
+
+  async getBets(): Promise<RafOddsBetResponse[]> {
+    const cacheKey = 'sports:odds:bets';
+    const cached =
+      await this.cacheService.getCached<RafOddsBetResponse[]>(cacheKey);
+    if (cached) return cached;
+
+    const raw = await this.client.get<RafOddsBetResponse>('odds/bets');
+    await this.cacheService.setCached(cacheKey, raw, 86400);
+    return raw;
+  }
+
+  async getLiveBets(): Promise<RafOddsBetResponse[]> {
+    const cacheKey = 'sports:odds:live:bets';
+    const cached =
+      await this.cacheService.getCached<RafOddsBetResponse[]>(cacheKey);
+    if (cached) return cached;
+
+    const raw = await this.client.get<RafOddsBetResponse>('odds/live/bets');
+    await this.cacheService.setCached(cacheKey, raw, 86400);
+    return raw;
+  }
+
+  async getMapping(params: {
+    fixtureId?: string;
+    league?: string;
+    date?: string;
+    page?: string;
+  }): Promise<{ data: RafOddsMappingResponse[]; totalPages: number }> {
+    const cacheKey = `sports:odds:mapping:${JSON.stringify(params)}`;
+    const cached = await this.cacheService.getCached<{
+      data: RafOddsMappingResponse[];
+      totalPages: number;
+    }>(cacheKey);
+    if (cached) return cached;
+
+    const queryParams: Record<string, string | number> = {};
+    if (params.fixtureId) queryParams.fixture = params.fixtureId;
+    if (params.league) queryParams.league = params.league;
+    if (params.date) queryParams.date = params.date;
+    if (params.page) queryParams.page = params.page;
+
+    const result = await this.client.getPage<RafOddsMappingResponse>(
+      'odds/mapping',
+      queryParams,
+    );
+    await this.cacheService.setCached(cacheKey, result, TTL_ODDS);
+    return result;
   }
 }

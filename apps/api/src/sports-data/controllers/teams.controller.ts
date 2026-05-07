@@ -10,6 +10,7 @@ import { PlayersService } from '../services/players.service';
 import { FixturesService } from '../services/fixtures.service';
 import { PlayerDto } from '../dto/player.dto';
 import { MatchDto } from '../dto/match.dto';
+import { TeamStatisticsDto } from '../dto/team-statistics.dto';
 
 @Controller('teams')
 export class TeamsController {
@@ -47,5 +48,22 @@ export class TeamsController {
   @Get(':teamId/fixtures')
   async getFixtures(@Param('teamId') teamId: string): Promise<MatchDto[]> {
     return this.fixturesService.getTeamFixtures(teamId);
+  }
+
+  @Get(':teamId/statistics')
+  async getStatistics(
+    @Param('teamId') teamId: string,
+    @Query('league') league: string,
+    @Query('season') season: string,
+    @Query('date') date?: string,
+  ): Promise<TeamStatisticsDto> {
+    const stats = await this.teamsService.getStatistics(
+      league,
+      season,
+      teamId,
+      date,
+    );
+    if (!stats) throw new NotFoundException();
+    return stats;
   }
 }

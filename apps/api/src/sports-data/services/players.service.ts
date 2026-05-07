@@ -2,6 +2,10 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { TeamsService } from './teams.service';
 import { PlayerDto } from '../dto/player.dto';
+import { ApiFootballClient } from '../client/api-football.client';
+import { ApiFootballNormalizer } from '../normalizer/api-football.normalizer';
+import { SportsDataCacheService, TTL_TEAMS } from '../sports-data-cache.service';
+import { RafPlayerResponse } from '../interfaces/api-football.interfaces';
 
 type PrismaPlayer = {
   externalId: string;
@@ -24,6 +28,9 @@ export class PlayersService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly teamsService: TeamsService,
+    private readonly client: ApiFootballClient,
+    private readonly normalizer: ApiFootballNormalizer,
+    private readonly cacheService: SportsDataCacheService,
   ) {}
 
   async getByExternalId(
@@ -55,6 +62,52 @@ export class PlayersService {
     });
     if (!team) return [];
     return team.players.map((p) => this.toDto(p));
+  }
+
+  async getTopscorers(league: string, season: string): Promise<PlayerDto[]> {
+    const cacheKey = `sports:topscorers:${league}:${season}`;
+    const cached = await this.cacheService.getCached<PlayerDto[]>(cacheKey);
+    if (cached) return cached;
+
+    const raw = await this.client.get<RafPlayerResponse>('players/topscorers', {
+      league,
+      season,
+    });
+
+    const players = raw.map((r) => this.normalizer.normalizePlayer(r));
+    await this.cacheService.setCached(cacheKey, players, TTL_TEAMS);
+    return players;
+  }
+
+  async getProfiles(params: {
+    league?: string;
+    season?: string;
+    page?: string;
+  }): Promise<{ data: PlayerDto[]; totalPages: number }> {
+    const cacheKey = `sports:player:profiles:${JSON.stringify(params)}`;
+    const cached = await this.cacheService.getCached<{
+      data: PlayerDto[];
+      totalPages: number;
+    }>(cacheKey);
+    if (cached) return cached;
+
+    const queryParams: Record<string, string | number> = {};
+    if (params.league) queryParams.league = params.league;
+    if (params.season) queryParams.season = params.season;
+    if (params.page) queryParams.page = params.page;
+
+    const { data: raw, totalPages } =
+      await this.client.getPage<RafPlayerResponse>(
+        'players/profiles',
+        queryParams,
+      );
+
+    const result = {
+      data: raw.map((r) => this.normalizer.normalizePlayer(r)),
+      totalPages,
+    };
+    await this.cacheService.setCached(cacheKey, result, TTL_TEAMS);
+    return result;
   }
 
   private toDto(p: PrismaPlayer): PlayerDto {
