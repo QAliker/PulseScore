@@ -47,14 +47,16 @@ export default async function ResultsPage({
     ),
   ).sort((a, b) => b - a);
 
-  // Auto-redirect to latest finished round when no explicit round/all param.
-  if (!roundParam && !showAll) {
-    const allMatches = results.flatMap((g) => g.matches);
-    const defaultRound = getLatestRound(allMatches);
+  // Auto-redirect to latest finished round only when a specific league is selected.
+  // For all-leagues view, different leagues are at different rounds — a global max
+  // would leave some leagues showing empty for rounds they haven't reached yet.
+  if (!roundParam && !showAll && activeLeague) {
+    const leagueMatches = results.find((r) => r.league.slug === activeLeague.slug)?.matches ?? [];
+    const defaultRound = getLatestRound(leagueMatches);
     if (defaultRound != null) {
       const params = new URLSearchParams();
       params.set('round', String(defaultRound));
-      if (leagueFilter) params.set('league', leagueFilter);
+      params.set('league', leagueFilter!);
       redirect(`/results?${params.toString()}`);
     }
   }
@@ -116,7 +118,7 @@ export default async function ResultsPage({
           <div className="rounded-xl border border-border/60 bg-card px-4 sm:px-6">
             <MatchHistory
               matches={matches}
-              emptyMessage="No recent results — API key required."
+              emptyMessage="No results in this round."
               groupByRound={roundFilter == null}
             />
           </div>

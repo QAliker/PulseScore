@@ -56,14 +56,16 @@ export default async function FixturesPage({
     ),
   ).sort((a, b) => a - b);
 
-  // Auto-redirect to current round when no explicit round/all param.
-  if (!roundParam && !showAll) {
-    const allMatches = fixtureGroups.flatMap((g) => g.matches);
-    const defaultRound = getCurrentRound(allMatches);
+  // Auto-redirect to current round only when a specific league is selected.
+  // For all-leagues view, different leagues are at different rounds — a global min
+  // would leave some leagues showing empty.
+  if (!roundParam && !showAll && activeLeague) {
+    const leagueMatches = fixtureGroups.find((g) => g.league.slug === activeLeague.slug)?.matches ?? [];
+    const defaultRound = getCurrentRound(leagueMatches);
     if (defaultRound != null) {
       const params = new URLSearchParams();
       params.set('round', String(defaultRound));
-      if (leagueFilter) params.set('league', leagueFilter);
+      params.set('league', leagueFilter!);
       redirect(`/fixtures?${params.toString()}`);
     }
   }
@@ -122,7 +124,7 @@ export default async function FixturesPage({
           <div className="rounded-xl border border-border/60 bg-card px-4 sm:px-6">
             <MatchHistory
               matches={matches}
-              emptyMessage="No upcoming fixtures — API key required."
+              emptyMessage="No fixtures in this round."
               groupByRound={roundFilter == null}
             />
           </div>
