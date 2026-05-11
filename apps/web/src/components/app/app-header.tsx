@@ -23,7 +23,7 @@ export function AppHeader() {
         </Link>
 
         <div className="mx-2 h-5 w-px bg-border/60 hidden md:block" aria-hidden />
-        <HeaderNav />
+        {/* <HeaderNav /> */}
 
         <div className="ml-auto flex items-center gap-2">
           <div className="hidden min-w-[220px] items-center gap-2 rounded-md border border-input bg-secondary/50 px-3 py-1.5 text-sm text-muted-foreground md:flex">
