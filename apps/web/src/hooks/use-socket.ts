@@ -53,7 +53,7 @@ export function useSocket(enabled = true): UseSocketResult {
       };
     }
 
-    connect();
+    // connect();
 
     return () => {
       esRef.current?.close();

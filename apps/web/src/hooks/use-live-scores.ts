@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
@@ -17,43 +18,43 @@ export function useLiveScores(initial: Match[]): UseLiveScoresResult {
   const [matches, setMatches] = useState<Match[]>(initial);
   const [flashes, setFlashes] = useState<FlashEntry[]>([]);
   const prevRef = useRef<Match[]>(initial);
-  const { status, subscribe } = useSocket();
+  // const { status, subscribe } = useSocket();
 
-  useEffect(() => {
-    return subscribe((fresh: Match[]) => {
-      const prev = prevRef.current;
-      const newFlashes: FlashEntry[] = [];
+  // useEffect(() => {
+  //   return subscribe((fresh: Match[]) => {
+  //     const prev = prevRef.current;
+  //     const newFlashes: FlashEntry[] = [];
 
-      for (const next of fresh) {
-        const old = prev.find((m) => m.id === next.id);
-        if (!old) continue;
-        if (next.homeScore > old.homeScore) {
-          newFlashes.push({ matchId: next.id, scorer: 'home', at: Date.now() });
-        } else if (next.awayScore > old.awayScore) {
-          newFlashes.push({ matchId: next.id, scorer: 'away', at: Date.now() });
-        }
-      }
+  //     for (const next of fresh) {
+  //       const old = prev.find((m) => m.id === next.id);
+  //       if (!old) continue;
+  //       if (next.homeScore > old.homeScore) {
+  //         newFlashes.push({ matchId: next.id, scorer: 'home', at: Date.now() });
+  //       } else if (next.awayScore > old.awayScore) {
+  //         newFlashes.push({ matchId: next.id, scorer: 'away', at: Date.now() });
+  //       }
+  //     }
 
-      prevRef.current = fresh;
-      setMatches(fresh);
-      if (newFlashes.length) {
-        setFlashes((prev) => [
-          ...prev.filter((f) => !newFlashes.some((n) => n.matchId === f.matchId)),
-          ...newFlashes,
-        ]);
-      }
-    });
-  }, [subscribe]);
+  //     prevRef.current = fresh;
+  //     setMatches(fresh);
+  //     if (newFlashes.length) {
+  //       setFlashes((prev) => [
+  //         ...prev.filter((f) => !newFlashes.some((n) => n.matchId === f.matchId)),
+  //         ...newFlashes,
+  //       ]);
+  //     }
+  //   });
+  // }, [subscribe]);
 
   // Auto-clear flashes after animation window.
-  useEffect(() => {
-    if (!flashes.length) return;
-    const t = setTimeout(() => {
-      const cutoff = Date.now() - 1000;
-      setFlashes((prev) => prev.filter((f) => f.at > cutoff));
-    }, 1100);
-    return () => clearTimeout(t);
-  }, [flashes]);
+  // useEffect(() => {
+  //   if (!flashes.length) return;
+  //   const t = setTimeout(() => {
+  //     const cutoff = Date.now() - 1000;
+  //     setFlashes((prev) => prev.filter((f) => f.at > cutoff));
+  //   }, 1100);
+  //   return () => clearTimeout(t);
+  // }, [flashes]);
 
   const matchesByLeague = useMemo(() => {
     const map: MatchesByLeague = {};
