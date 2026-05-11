@@ -3,8 +3,11 @@ import { notFound } from 'next/navigation';
 import { ArrowLeft } from 'lucide-react';
 import type { Metadata } from 'next';
 import { apiFetch } from '@/lib/api';
-import type { ApiPlayerDetail } from '@/lib/api-types';
+import type { ApiPlayerDetail, ApiTransfers, ApiTrophy, ApiSidelined } from '@/lib/api-types';
 import Image from 'next/image';
+import { TransfersTimeline } from '@/components/player/transfers-timeline';
+import { TrophiesSection } from '@/components/player/trophies-section';
+import { SidelinedSection } from '@/components/player/sidelined-section';
 
 export const dynamic = 'force-dynamic';
 
@@ -37,6 +40,10 @@ export default async function PlayerPage({
   const { playerId } = await params;
 
   let player: ApiPlayerDetail | null = null;
+  let transfers: ApiTransfers | null = null;
+  let trophies: ApiTrophy[] = [];
+  let sidelined: ApiSidelined[] = [];
+
   try {
     player = await apiFetch<ApiPlayerDetail>(`/players/${playerId}`);
   } catch {
@@ -44,6 +51,12 @@ export default async function PlayerPage({
   }
 
   if (!player) notFound();
+
+  [transfers, trophies, sidelined] = await Promise.all([
+    apiFetch<ApiTransfers>(`/players/${playerId}/transfers`).catch(() => null),
+    apiFetch<ApiTrophy[]>(`/players/${playerId}/trophies`).catch(() => [] as ApiTrophy[]),
+    apiFetch<ApiSidelined[]>(`/players/${playerId}/sidelined`).catch(() => [] as ApiSidelined[]),
+  ]);
 
   const posColor =
     player.position
@@ -125,7 +138,42 @@ export default async function PlayerPage({
           <DetailRow label="Age" value={String(player.age)} />
         </div>
       )}
+
+      {transfers && transfers.transfers.length > 0 && (
+        <section className="flex flex-col gap-3">
+          <SectionHeading>Transfer History</SectionHeading>
+          <div className="rounded-xl border border-border/60 bg-card py-1">
+            <TransfersTimeline transfers={transfers} />
+          </div>
+        </section>
+      )}
+
+      {trophies.length > 0 && (
+        <section className="flex flex-col gap-3">
+          <SectionHeading>Trophy Cabinet ({trophies.length})</SectionHeading>
+          <div className="rounded-xl border border-border/60 bg-card py-1">
+            <TrophiesSection trophies={trophies} />
+          </div>
+        </section>
+      )}
+
+      {sidelined.length > 0 && (
+        <section className="flex flex-col gap-3">
+          <SectionHeading>Injury History</SectionHeading>
+          <div className="rounded-xl border border-border/60 bg-card py-1">
+            <SidelinedSection sidelined={sidelined} />
+          </div>
+        </section>
+      )}
     </div>
+  );
+}
+
+function SectionHeading({ children }: { children: React.ReactNode }) {
+  return (
+    <h2 className="text-[0.72rem] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+      {children}
+    </h2>
   );
 }
 
