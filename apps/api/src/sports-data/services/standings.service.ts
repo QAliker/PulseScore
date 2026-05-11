@@ -2,24 +2,30 @@ import { Injectable, Logger } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 import { ApiFootballClient } from '../client/api-football.client';
 import { ApiFootballNormalizer } from '../normalizer/api-football.normalizer';
-import {
-  SportsDataCacheService,
-  TTL_STANDINGS,
-} from '../sports-data-cache.service';
+import { FootballDataOrgClient } from '../client/football-data-org.client';
+import { FootballDataOrgNormalizer } from '../normalizer/football-data-org.normalizer';
+import { SportsDataCacheService, TTL_STANDINGS } from '../sports-data-cache.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { RafStandingResponse } from '../interfaces/api-football.interfaces';
+import { FdoStandingsResponse } from '../interfaces/football-data-org.interfaces';
 import { StandingDto } from '../dto/standing.dto';
+import {
+  getCurrentSeason,
+  HISTORY_SEASON_RAF,
+  LEAGUE_MAP,
+} from '../constants/season.constants';
 
-const LEAGUE_IDS = ['39', '140', '78', '135', '61']; // PL, La Liga, Bundesliga, Serie A, Ligue 1
-const SEASON = 2024; // free plan supports 2022–2024
+const LEAGUE_IDS = ['39', '140', '78', '135', '61'];
 
 @Injectable()
 export class StandingsService {
   private readonly logger = new Logger(StandingsService.name);
 
   constructor(
-    private readonly client: ApiFootballClient,
-    private readonly normalizer: ApiFootballNormalizer,
+    private readonly rafClient: ApiFootballClient,
+    private readonly rafNormalizer: ApiFootballNormalizer,
+    private readonly fdoClient: FootballDataOrgClient,
+    private readonly fdoNormalizer: FootballDataOrgNormalizer,
     private readonly cacheService: SportsDataCacheService,
     private readonly prismaService: PrismaService,
   ) {}
@@ -29,22 +35,59 @@ export class StandingsService {
     const cached = await this.cacheService.getCached<StandingDto[]>(cacheKey);
     if (cached) return cached;
 
-    const raw = await this.client.get<RafStandingResponse>('standings', {
-      league: leagueId,
-      season: SEASON,
-    });
-
-    if (!raw.length || !raw[0].league?.standings?.length) return [];
-
-    const leagueName = raw[0].league.name;
-    const standings = raw[0].league.standings
-      .flat()
-      .map((entry) =>
-        this.normalizer.normalizeStanding(entry, leagueId, leagueName),
-      );
+    const season = getCurrentSeason();
+    const standings =
+      season >= 2025
+        ? await this.getStandingsFdo(leagueId)
+        : await this.getStandingsRaf(leagueId);
 
     await this.cacheService.setCached(cacheKey, standings, TTL_STANDINGS);
     return standings;
+  }
+
+  private async getStandingsRaf(leagueId: string): Promise<StandingDto[]> {
+    const raw = await this.rafClient.get<RafStandingResponse>('standings', {
+      league: leagueId,
+      season: HISTORY_SEASON_RAF,
+    });
+    if (!raw.length || !raw[0].league?.standings?.length) return [];
+    const leagueName = raw[0].league.name;
+    return raw[0].league.standings
+      .flat()
+      .map((entry) =>
+        this.rafNormalizer.normalizeStanding(entry, leagueId, leagueName),
+      );
+  }
+
+  private async getStandingsFdo(leagueId: string): Promise<StandingDto[]> {
+    const mapping = LEAGUE_MAP[leagueId];
+    if (!mapping) return [];
+
+    const data = await this.fdoClient.get<FdoStandingsResponse>(
+      `competitions/${mapping.fdoCode}/standings`,
+    );
+
+    const totalTable = data.standings.find((s) => s.type === 'TOTAL');
+    if (!totalTable) return [];
+
+    const league = await this.prismaService.league.findFirst({
+      where: { externalId: leagueId },
+    });
+    const leagueResolvedId = league?.id ?? leagueId;
+
+    return Promise.all(
+      totalTable.table.map(async (entry) => {
+        const team = await this.prismaService.team.findFirst({
+          where: { fdoExternalId: String(entry.team.id) },
+        });
+        return this.fdoNormalizer.normalizeStanding(
+          entry,
+          leagueResolvedId,
+          data.competition.name,
+          team?.externalId ?? null,
+        );
+      }),
+    );
   }
 
   @Cron('0 */12 * * *')
@@ -74,7 +117,7 @@ export class StandingsService {
     });
     if (!league) return;
 
-    const season = String(SEASON);
+    const season = String(getCurrentSeason());
 
     for (const s of standings) {
       const team = await this.prismaService.team.findUnique({

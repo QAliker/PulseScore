@@ -59,8 +59,11 @@ export class TeamsService implements OnModuleInit {
     shortName: string | null;
     country: string | null;
   } | null> {
-    return this.prismaService.team.findUnique({
-      where: { externalId: teamId },
+    const rawFdoId = teamId.startsWith('fdo:') ? teamId.slice(4) : null;
+    return this.prismaService.team.findFirst({
+      where: rawFdoId
+        ? { fdoExternalId: rawFdoId }
+        : { OR: [{ externalId: teamId }, { fdoExternalId: teamId }] },
     });
   }
 

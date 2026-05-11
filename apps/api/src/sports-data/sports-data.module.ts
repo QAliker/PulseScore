@@ -3,6 +3,8 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { PrismaModule } from '../prisma/prisma.module';
 import { ApiFootballClient } from './client/api-football.client';
 import { ApiFootballNormalizer } from './normalizer/api-football.normalizer';
+import { FootballDataOrgClient } from './client/football-data-org.client';
+import { FootballDataOrgNormalizer } from './normalizer/football-data-org.normalizer';
 import { SportsDataCacheService } from './sports-data-cache.service';
 
 // Services
@@ -73,6 +75,8 @@ import {
   providers: [
     ApiFootballClient,
     ApiFootballNormalizer,
+    FootballDataOrgClient,
+    FootballDataOrgNormalizer,
     SportsDataCacheService,
     LivescoreService,
     FixturesService,

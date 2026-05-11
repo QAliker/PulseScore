@@ -42,6 +42,7 @@ model Match {
 model League {
   id         String   @id @default(cuid())
   externalId String   @unique @map("external_id")
+  fdoExternalId String?    @unique @map("fdo_external_id")
   name       String
   sport      String
   country    String?
@@ -57,6 +58,7 @@ model League {
 model Team {
   id         String   @id @default(cuid())
   externalId String   @unique @map("external_id")
+  fdoExternalId String?    @unique @map("fdo_external_id")
   name       String
   shortName  String?  @map("short_name")
   logo       String?
