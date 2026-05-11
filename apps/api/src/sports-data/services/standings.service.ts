@@ -4,7 +4,10 @@ import { ApiFootballClient } from '../client/api-football.client';
 import { ApiFootballNormalizer } from '../normalizer/api-football.normalizer';
 import { FootballDataOrgClient } from '../client/football-data-org.client';
 import { FootballDataOrgNormalizer } from '../normalizer/football-data-org.normalizer';
-import { SportsDataCacheService, TTL_STANDINGS } from '../sports-data-cache.service';
+import {
+  SportsDataCacheService,
+  TTL_STANDINGS,
+} from '../sports-data-cache.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { RafStandingResponse } from '../interfaces/api-football.interfaces';
 import { FdoStandingsResponse } from '../interfaces/football-data-org.interfaces';

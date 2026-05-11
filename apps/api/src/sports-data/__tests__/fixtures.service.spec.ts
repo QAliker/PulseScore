@@ -5,8 +5,8 @@ jest.mock('../constants/season.constants', () => ({
   getCurrentSeason: () => 2024,
   HISTORY_SEASON_RAF: 2024,
   LEAGUE_MAP: {
-    '39':  { fdoCode: 'PL',  name: 'Premier League' },
-    '40':  { fdoCode: 'ELC', name: 'Championship' },
+    '39': { fdoCode: 'PL', name: 'Premier League' },
+    '40': { fdoCode: 'ELC', name: 'Championship' },
   },
 }));
 
@@ -80,7 +80,7 @@ describe('FixturesService', () => {
       mockFdoClient,
       mockFdoNormalizer,
       mockCache,
-      mockPrisma as any,
+      mockPrisma,
     );
   });
 

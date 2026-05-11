@@ -62,7 +62,9 @@ describe('StandingsService', () => {
 
   beforeEach(() => {
     // Pin date to May 2024 so getCurrentSeason() returns 2024 (RAF path)
-    dateSpy = jest.spyOn(global, 'Date').mockImplementation(() => MOCK_DATE as any);
+    dateSpy = jest
+      .spyOn(global, 'Date')
+      .mockImplementation(() => MOCK_DATE as any);
 
     mockRafClient = { get: jest.fn() };
     mockRafNormalizer = {
@@ -86,8 +88,12 @@ describe('StandingsService', () => {
         findFirst: jest.fn().mockResolvedValue({ id: 'db-league-1' }),
       },
       team: {
-        findUnique: jest.fn().mockResolvedValue({ id: 'db-team-1', externalId: '2627' }),
-        findFirst: jest.fn().mockResolvedValue({ id: 'db-team-1', externalId: '2627' }),
+        findUnique: jest
+          .fn()
+          .mockResolvedValue({ id: 'db-team-1', externalId: '2627' }),
+        findFirst: jest
+          .fn()
+          .mockResolvedValue({ id: 'db-team-1', externalId: '2627' }),
       },
       standing: { upsert: jest.fn().mockResolvedValue({}) },
     };

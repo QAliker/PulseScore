@@ -42,7 +42,9 @@ describe('LivescoreService', () => {
 
   it('getCurrent should fetch from cache first', async () => {
     const mockMatches: any[] = [];
-    jest.spyOn(mockCacheService, 'getCached' as any).mockResolvedValue(mockMatches);
+    jest
+      .spyOn(mockCacheService, 'getCached' as any)
+      .mockResolvedValue(mockMatches);
     const result = await service.getCurrent();
     expect(result).toEqual(mockMatches);
     expect(mockCacheService.getCached).toHaveBeenCalled();

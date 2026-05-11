@@ -4,9 +4,15 @@ import { ApiFootballClient } from '../client/api-football.client';
 import { ApiFootballNormalizer } from '../normalizer/api-football.normalizer';
 import { FootballDataOrgClient } from '../client/football-data-org.client';
 import { FootballDataOrgNormalizer } from '../normalizer/football-data-org.normalizer';
-import { SportsDataCacheService, TTL_FIXTURES } from '../sports-data-cache.service';
+import {
+  SportsDataCacheService,
+  TTL_FIXTURES,
+} from '../sports-data-cache.service';
 import { RafFixture } from '../interfaces/api-football.interfaces';
-import { FdoMatch, FdoMatchesResponse } from '../interfaces/football-data-org.interfaces';
+import {
+  FdoMatch,
+  FdoMatchesResponse,
+} from '../interfaces/football-data-org.interfaces';
 import { MatchDto } from '../dto/match.dto';
 import { PrismaService } from '../../prisma/prisma.service';
 import {
@@ -53,7 +59,11 @@ export class FixturesService {
     return this.fdoNormalizer.normalizeMatch(raw, homeId, awayId, leagueId);
   }
 
-  async getFixtures(leagueId: string, from: string, to: string): Promise<MatchDto[]> {
+  async getFixtures(
+    leagueId: string,
+    from: string,
+    to: string,
+  ): Promise<MatchDto[]> {
     const cacheKey = SportsDataCacheService.fixturesKey(leagueId, from, to);
     const cached = await this.cacheService.getCached<MatchDto[]>(cacheKey);
     if (cached) return cached;
@@ -68,7 +78,9 @@ export class FixturesService {
         `competitions/${mapping.fdoCode}/matches`,
         { dateFrom: from, dateTo: to },
       );
-      fixtures = await Promise.all(data.matches.map((m) => this.normalizeFdoMatch(m)));
+      fixtures = await Promise.all(
+        data.matches.map((m) => this.normalizeFdoMatch(m)),
+      );
     } else {
       const raw = await this.rafClient.get<RafFixture>('fixtures', {
         league: leagueId,
@@ -95,7 +107,9 @@ export class FixturesService {
       const raw = await this.fdoClient.get<FdoMatch>(`matches/${fdoId}`);
       match = await this.normalizeFdoMatch(raw);
     } else {
-      const raw = await this.rafClient.get<RafFixture>('fixtures', { id: matchId });
+      const raw = await this.rafClient.get<RafFixture>('fixtures', {
+        id: matchId,
+      });
       if (!raw.length) return null;
       match = this.rafNormalizer.normalizeFixture(raw[0]);
       await this.enrichLineupPhotos(match);
@@ -116,19 +130,29 @@ export class FixturesService {
     let fixtures: MatchDto[];
 
     if (season >= 2025) {
-      const team = await this.prisma.team.findFirst({ where: { externalId: teamId } });
+      const team = await this.prisma.team.findFirst({
+        where: { externalId: teamId },
+      });
       if (!team?.fdoExternalId) return [];
       const today = new Date().toISOString().slice(0, 10);
-      const thirtyDaysAhead = new Date(Date.now() + 30 * 86400000).toISOString().slice(0, 10);
+      const thirtyDaysAhead = new Date(Date.now() + 30 * 86400000)
+        .toISOString()
+        .slice(0, 10);
       const data = await this.fdoClient.get<FdoMatchesResponse>(
         `teams/${team.fdoExternalId}/matches`,
         { dateFrom: today, dateTo: thirtyDaysAhead, status: 'SCHEDULED' },
       );
-      fixtures = (await Promise.all(data.matches.map((m) => this.normalizeFdoMatch(m))))
-        .sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
+      fixtures = (
+        await Promise.all(data.matches.map((m) => this.normalizeFdoMatch(m)))
+      ).sort(
+        (a, b) =>
+          new Date(a.startTime).getTime() - new Date(b.startTime).getTime(),
+      );
     } else {
       const today = new Date().toISOString().slice(0, 10);
-      const thirtyDaysAhead = new Date(Date.now() + 30 * 86400000).toISOString().slice(0, 10);
+      const thirtyDaysAhead = new Date(Date.now() + 30 * 86400000)
+        .toISOString()
+        .slice(0, 10);
       const raw = await this.rafClient.get<RafFixture>('fixtures', {
         team: teamId,
         season: HISTORY_SEASON_RAF,
@@ -138,14 +162,21 @@ export class FixturesService {
       fixtures = raw
         .map((m) => this.rafNormalizer.normalizeFixture(m))
         .filter((m) => m.status === 'SCHEDULED')
-        .sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
+        .sort(
+          (a, b) =>
+            new Date(a.startTime).getTime() - new Date(b.startTime).getTime(),
+        );
     }
 
     await this.cacheService.setCached(cacheKey, fixtures, TTL_FIXTURES);
     return fixtures;
   }
 
-  async getTeamResults(teamId: string, limit = 10, offset = 0): Promise<MatchDto[]> {
+  async getTeamResults(
+    teamId: string,
+    limit = 10,
+    offset = 0,
+  ): Promise<MatchDto[]> {
     const cacheKey = SportsDataCacheService.teamResultsKey(teamId);
     const cached = await this.cacheService.getCached<MatchDto[]>(cacheKey);
     if (cached) return cached.slice(offset, offset + limit);
@@ -154,19 +185,29 @@ export class FixturesService {
     let results: MatchDto[];
 
     if (season >= 2025) {
-      const team = await this.prisma.team.findFirst({ where: { externalId: teamId } });
+      const team = await this.prisma.team.findFirst({
+        where: { externalId: teamId },
+      });
       if (!team?.fdoExternalId) return [];
       const today = new Date().toISOString().slice(0, 10);
-      const ninetyDaysAgo = new Date(Date.now() - 90 * 86400000).toISOString().slice(0, 10);
+      const ninetyDaysAgo = new Date(Date.now() - 90 * 86400000)
+        .toISOString()
+        .slice(0, 10);
       const data = await this.fdoClient.get<FdoMatchesResponse>(
         `teams/${team.fdoExternalId}/matches`,
         { dateFrom: ninetyDaysAgo, dateTo: today, status: 'FINISHED' },
       );
-      results = (await Promise.all(data.matches.map((m) => this.normalizeFdoMatch(m))))
-        .sort((a, b) => new Date(b.startTime).getTime() - new Date(a.startTime).getTime());
+      results = (
+        await Promise.all(data.matches.map((m) => this.normalizeFdoMatch(m)))
+      ).sort(
+        (a, b) =>
+          new Date(b.startTime).getTime() - new Date(a.startTime).getTime(),
+      );
     } else {
       const today = new Date().toISOString().slice(0, 10);
-      const ninetyDaysAgo = new Date(Date.now() - 90 * 86400000).toISOString().slice(0, 10);
+      const ninetyDaysAgo = new Date(Date.now() - 90 * 86400000)
+        .toISOString()
+        .slice(0, 10);
       const raw = await this.rafClient.get<RafFixture>('fixtures', {
         team: teamId,
         season: HISTORY_SEASON_RAF,
@@ -176,7 +217,10 @@ export class FixturesService {
       results = raw
         .map((m) => this.rafNormalizer.normalizeFixture(m))
         .filter((m) => m.status === 'FINISHED')
-        .sort((a, b) => new Date(b.startTime).getTime() - new Date(a.startTime).getTime());
+        .sort(
+          (a, b) =>
+            new Date(b.startTime).getTime() - new Date(a.startTime).getTime(),
+        );
     }
 
     await this.cacheService.setCached(cacheKey, results, TTL_FIXTURES);
@@ -195,16 +239,24 @@ export class FixturesService {
       const mapping = LEAGUE_MAP[leagueId];
       if (!mapping) return [];
       const today = new Date().toISOString().slice(0, 10);
-      const thirtyDaysAhead = new Date(Date.now() + 30 * 86400000).toISOString().slice(0, 10);
+      const thirtyDaysAhead = new Date(Date.now() + 30 * 86400000)
+        .toISOString()
+        .slice(0, 10);
       const data = await this.fdoClient.get<FdoMatchesResponse>(
         `competitions/${mapping.fdoCode}/matches`,
         { dateFrom: today, dateTo: thirtyDaysAhead, status: 'SCHEDULED' },
       );
-      fixtures = (await Promise.all(data.matches.map((m) => this.normalizeFdoMatch(m))))
-        .sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
+      fixtures = (
+        await Promise.all(data.matches.map((m) => this.normalizeFdoMatch(m)))
+      ).sort(
+        (a, b) =>
+          new Date(a.startTime).getTime() - new Date(b.startTime).getTime(),
+      );
     } else {
       const today = new Date().toISOString().slice(0, 10);
-      const thirtyDaysAhead = new Date(Date.now() + 30 * 86400000).toISOString().slice(0, 10);
+      const thirtyDaysAhead = new Date(Date.now() + 30 * 86400000)
+        .toISOString()
+        .slice(0, 10);
       const raw = await this.rafClient.get<RafFixture>('fixtures', {
         league: leagueId,
         season: HISTORY_SEASON_RAF,
@@ -214,7 +266,10 @@ export class FixturesService {
       fixtures = raw
         .map((m) => this.rafNormalizer.normalizeFixture(m))
         .filter((m) => m.status === 'SCHEDULED')
-        .sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
+        .sort(
+          (a, b) =>
+            new Date(a.startTime).getTime() - new Date(b.startTime).getTime(),
+        );
     }
 
     await this.cacheService.setCached(cacheKey, fixtures, TTL_FIXTURES);
@@ -233,16 +288,24 @@ export class FixturesService {
       const mapping = LEAGUE_MAP[leagueId];
       if (!mapping) return [];
       const today = new Date().toISOString().slice(0, 10);
-      const thirtyDaysAgo = new Date(Date.now() - 30 * 86400000).toISOString().slice(0, 10);
+      const thirtyDaysAgo = new Date(Date.now() - 30 * 86400000)
+        .toISOString()
+        .slice(0, 10);
       const data = await this.fdoClient.get<FdoMatchesResponse>(
         `competitions/${mapping.fdoCode}/matches`,
         { dateFrom: thirtyDaysAgo, dateTo: today, status: 'FINISHED' },
       );
-      results = (await Promise.all(data.matches.map((m) => this.normalizeFdoMatch(m))))
-        .sort((a, b) => new Date(b.startTime).getTime() - new Date(a.startTime).getTime());
+      results = (
+        await Promise.all(data.matches.map((m) => this.normalizeFdoMatch(m)))
+      ).sort(
+        (a, b) =>
+          new Date(b.startTime).getTime() - new Date(a.startTime).getTime(),
+      );
     } else {
       const today = new Date().toISOString().slice(0, 10);
-      const thirtyDaysAgo = new Date(Date.now() - 30 * 86400000).toISOString().slice(0, 10);
+      const thirtyDaysAgo = new Date(Date.now() - 30 * 86400000)
+        .toISOString()
+        .slice(0, 10);
       const raw = await this.rafClient.get<RafFixture>('fixtures', {
         league: leagueId,
         season: HISTORY_SEASON_RAF,
@@ -252,7 +315,10 @@ export class FixturesService {
       results = raw
         .map((m) => this.rafNormalizer.normalizeFixture(m))
         .filter((m) => m.status === 'FINISHED')
-        .sort((a, b) => new Date(b.startTime).getTime() - new Date(a.startTime).getTime());
+        .sort(
+          (a, b) =>
+            new Date(b.startTime).getTime() - new Date(a.startTime).getTime(),
+        );
     }
 
     await this.cacheService.setCached(cacheKey, results, TTL_FIXTURES);
