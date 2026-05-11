@@ -4,8 +4,16 @@ export type League = {
   country: string;
   flag: string;
   apiFootballId: number;
+  fdoCode: string;
   season: string;
 };
+
+function getCurrentSeasonLabel(): string {
+  const now = new Date();
+  const month = now.getMonth() + 1;
+  const year = month >= 8 ? now.getFullYear() : now.getFullYear() - 1;
+  return `${year}/${String(year + 1).slice(2)}`;
+}
 
 // API-Football v3 (RapidAPI) league IDs — season year = year season started.
 export const LEAGUES: League[] = [
@@ -15,7 +23,8 @@ export const LEAGUES: League[] = [
     country: 'England',
     flag: '🏴󠁧󠁢󠁥󠁮󠁧󠁿',
     apiFootballId: 39,
-    season: '2024/25',
+    fdoCode: 'PL',
+    season: getCurrentSeasonLabel(),
   },
   {
     slug: 'spain-la-liga',
@@ -23,7 +32,8 @@ export const LEAGUES: League[] = [
     country: 'Spain',
     flag: '🇪🇸',
     apiFootballId: 140,
-    season: '2024/25',
+    fdoCode: 'PD',
+    season: getCurrentSeasonLabel(),
   },
   {
     slug: 'germany-bundesliga',
@@ -31,7 +41,8 @@ export const LEAGUES: League[] = [
     country: 'Germany',
     flag: '🇩🇪',
     apiFootballId: 78,
-    season: '2024/25',
+    fdoCode: 'BL1',
+    season: getCurrentSeasonLabel(),
   },
   {
     slug: 'italy-serie-a',
@@ -39,7 +50,8 @@ export const LEAGUES: League[] = [
     country: 'Italy',
     flag: '🇮🇹',
     apiFootballId: 135,
-    season: '2024/25',
+    fdoCode: 'SA',
+    season: getCurrentSeasonLabel(),
   },
   {
     slug: 'france-ligue-1',
@@ -47,7 +59,8 @@ export const LEAGUES: League[] = [
     country: 'France',
     flag: '🇫🇷',
     apiFootballId: 61,
-    season: '2024/25',
+    fdoCode: 'FL1',
+    season: getCurrentSeasonLabel(),
   },
 ];
 
