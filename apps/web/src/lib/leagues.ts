@@ -2,7 +2,8 @@ export type League = {
   slug: string;
   name: string;
   country: string;
-  flag: string;
+  logo: string;
+  darkInvert?: boolean;
   apiFootballId: number;
   fdoCode: string;
   season: string;
@@ -21,7 +22,7 @@ export const LEAGUES: League[] = [
     slug: 'england-premier-league',
     name: 'Premier League',
     country: 'England',
-    flag: '🏴󠁧󠁢󠁥󠁮󠁧󠁿',
+    logo: 'https://media.api-sports.io/football/leagues/39.png',
     apiFootballId: 39,
     fdoCode: 'PL',
     season: getCurrentSeasonLabel(),
@@ -30,7 +31,7 @@ export const LEAGUES: League[] = [
     slug: 'spain-la-liga',
     name: 'La Liga',
     country: 'Spain',
-    flag: '🇪🇸',
+    logo: 'https://media.api-sports.io/football/leagues/140.png',
     apiFootballId: 140,
     fdoCode: 'PD',
     season: getCurrentSeasonLabel(),
@@ -39,7 +40,7 @@ export const LEAGUES: League[] = [
     slug: 'germany-bundesliga',
     name: 'Bundesliga',
     country: 'Germany',
-    flag: '🇩🇪',
+    logo: 'https://media.api-sports.io/football/leagues/78.png',
     apiFootballId: 78,
     fdoCode: 'BL1',
     season: getCurrentSeasonLabel(),
@@ -48,7 +49,7 @@ export const LEAGUES: League[] = [
     slug: 'italy-serie-a',
     name: 'Serie A',
     country: 'Italy',
-    flag: '🇮🇹',
+    logo: 'https://media.api-sports.io/football/leagues/135.png',
     apiFootballId: 135,
     fdoCode: 'SA',
     season: getCurrentSeasonLabel(),
@@ -57,7 +58,8 @@ export const LEAGUES: League[] = [
     slug: 'france-ligue-1',
     name: 'Ligue 1',
     country: 'France',
-    flag: '🇫🇷',
+    logo: 'https://media.api-sports.io/football/leagues/61.png',
+    darkInvert: true,
     apiFootballId: 61,
     fdoCode: 'FL1',
     season: getCurrentSeasonLabel(),

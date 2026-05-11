@@ -6,6 +6,7 @@ import { apiFetch } from '@/lib/api';
 import { LEAGUES } from '@/lib/leagues';
 import type { ApiStanding } from '@/lib/api-types';
 import { StandingTable } from '@/components/standings/standing-table';
+import { LeagueLogo } from '@/components/feed/league-logo';
 
 export const dynamic = 'force-dynamic';
 
@@ -46,8 +47,9 @@ export default async function StandingsPage({
       </Link>
 
       <header className="flex flex-col gap-1">
-        <p className="text-[0.72rem] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-          {league.flag} {league.country}
+        <p className="flex items-center gap-1.5 text-[0.72rem] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+          <LeagueLogo league={league} size={16} className="size-4" />
+          {league.country}
         </p>
         <h1 className="font-display text-2xl font-extrabold tracking-tight sm:text-3xl">
           {league.name} Standings

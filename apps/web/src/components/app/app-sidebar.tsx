@@ -1,31 +1,9 @@
-import Image from 'next/image';
 import { Trophy, Calendar, BarChart2 } from 'lucide-react';
 import { LEAGUES } from '@/lib/leagues';
-import { apiFetch } from '@/lib/api';
-import type { ApiMatch } from '@/lib/api-types';
 import { SidebarLink } from './sidebar-link';
+import { LeagueLogo } from '@/components/feed/league-logo';
 
-async function fetchLeagueLogos(): Promise<Record<number, string | null>> {
-  const results = await Promise.allSettled(
-    LEAGUES.map((l) =>
-      apiFetch<ApiMatch[]>(`/leagues/${l.apiFootballId}/fixtures`, {
-        next: { revalidate: 3600 },
-      }),
-    ),
-  );
-
-  return Object.fromEntries(
-    LEAGUES.map((l, i) => {
-      const r = results[i];
-      const logo =
-        r.status === 'fulfilled' ? (r.value[0]?.league?.logo ?? null) : null;
-      return [l.apiFootballId, logo];
-    }),
-  );
-}
-
-export async function AppSidebar() {
-  const logos = await fetchLeagueLogos();
+export function AppSidebar() {
 
   return (
     <aside className="hidden border-r border-border/60 bg-sidebar/60 lg:block">
@@ -37,30 +15,15 @@ export async function AppSidebar() {
         </SidebarSection>
 
         <SidebarSection label="Football">
-          {LEAGUES.map((l) => {
-            const logo = logos[l.apiFootballId];
-            const icon = logo ? (
-              <Image
-                src={logo}
-                alt={l.name}
-                width={20}
-                height={20}
-                className="size-5 object-contain"
-                unoptimized
-              />
-            ) : (
-              <span className="text-[1.05rem] leading-none">{l.flag}</span>
-            );
-            return (
-              <SidebarLink
-                key={l.slug}
-                href={`/leagues/${l.slug}`}
-                icon={icon}
-                label={l.name}
-                sublabel={l.country}
-              />
-            );
-          })}
+          {LEAGUES.map((l) => (
+            <SidebarLink
+              key={l.slug}
+              href={`/leagues/${l.slug}`}
+              icon={<LeagueLogo league={l} size={20} className="size-5" />}
+              label={l.name}
+              sublabel={l.country}
+            />
+          ))}
         </SidebarSection>
       </nav>
     </aside>

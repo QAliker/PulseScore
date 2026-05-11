@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
+import { LeagueLogo } from '@/components/feed/league-logo';
 import { redirect } from 'next/navigation';
 import type { Metadata } from 'next';
 import { apiFetch } from '@/lib/api';
@@ -88,9 +89,10 @@ export default async function ResultsPage({
               <Link
                 key={l.slug}
                 href={`/results?league=${l.apiFootballId}${roundFilter != null ? `&round=${roundFilter}` : ''}`}
-                className={`rounded-full px-3.5 py-1.5 text-[0.78rem] font-semibold transition-colors ${leagueFilter === String(l.apiFootballId) ? 'bg-foreground text-background' : 'text-muted-foreground hover:text-foreground'}`}
+                className={`inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-[0.78rem] font-semibold transition-colors ${leagueFilter === String(l.apiFootballId) ? 'bg-foreground text-background' : 'text-muted-foreground hover:text-foreground'}`}
               >
-                {l.flag} {l.name}
+                <LeagueLogo league={l} size={16} className="size-4" />
+                {l.name}
               </Link>
             ))}
           </div>
@@ -107,8 +109,9 @@ export default async function ResultsPage({
 
       {filteredResults.map(({ league, matches }) => (
         <section key={league.slug} className="flex flex-col gap-3">
-          <h2 className="text-[0.72rem] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-            {league.flag} {league.name}
+          <h2 className="flex items-center gap-1.5 text-[0.72rem] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+            <LeagueLogo league={league} size={16} className="size-4" />
+            {league.name}
           </h2>
           <div className="rounded-xl border border-border/60 bg-card px-4 sm:px-6">
             <MatchHistory

@@ -1,5 +1,4 @@
 import Link from 'next/link';
-import Image from 'next/image';
 import type { ApiMatch, ApiStanding } from '@/lib/api-types';
 import type { League } from '@/lib/leagues';
 import { apiFetch } from '@/lib/api';
@@ -8,6 +7,7 @@ import { LEAGUES } from '@/lib/leagues';
 import { LiveFeed } from '@/components/feed/live-feed';
 import { MatchHistory } from '@/components/matches/match-history';
 import { StandingTable } from '@/components/standings/standing-table';
+import { LeagueLogo } from '@/components/feed/league-logo';
 
 export const dynamic = 'force-dynamic';
 
@@ -19,30 +19,22 @@ function SectionHeading({ children }: { children: React.ReactNode }) {
   );
 }
 
-function LeagueLabel({ league, logo }: { league: League; logo: string | null }) {
+function LeagueLabel({ league }: { league: League }) {
   return (
     <h3 className="flex items-center gap-3 text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-      {logo ? (
-        <Image src={logo} alt="" width={32} height={32} className="size-8 object-contain" unoptimized />
-      ) : (
-        <span className="text-2xl leading-none" aria-hidden>{league.flag}</span>
-      )}
+      <LeagueLogo league={league} size={32} className="size-8" />
       {league.name}
     </h3>
   );
 }
 
-function LeagueCard({ league, logo }: { league: League; logo: string | null }) {
+function LeagueCard({ league }: { league: League }) {
   return (
     <Link
       href={`/leagues/${league.slug}`}
       className="group flex items-center gap-4 rounded-xl border border-border/60 bg-card p-4 transition-colors hover:bg-accent/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
     >
-      {logo ? (
-        <Image src={logo} alt="" width={40} height={40} className="size-10 object-contain" unoptimized />
-      ) : (
-        <span className="text-3xl leading-none" aria-hidden>{league.flag}</span>
-      )}
+      <LeagueLogo league={league} size={40} className="size-10" />
       <div className="flex flex-col">
         <span className="font-display text-base font-extrabold tracking-tight group-hover:text-foreground">
           {league.name}
@@ -117,10 +109,10 @@ export default async function HomePage() {
 
             {hasFixtures ? (
               <div className="flex flex-col gap-4">
-                {fixtureGroups.map(({ league, matches, logo }) =>
+                {fixtureGroups.map(({ league, matches }) =>
                   matches.length ? (
                     <div key={league.slug} className="flex flex-col gap-2">
-                      <LeagueLabel league={league} logo={logo} />
+                      <LeagueLabel league={league}  />
                       <div className="rounded-xl border border-border/60 bg-card px-4 sm:px-6">
                         <MatchHistory matches={matches} />
                       </div>
@@ -134,8 +126,8 @@ export default async function HomePage() {
                   No fixtures scheduled yet. Browse by league:
                 </p>
                 <div className="flex flex-col gap-2">
-                  {fixtureGroups.map(({ league, logo }) => (
-                    <LeagueCard key={league.slug} league={league} logo={logo} />
+                  {fixtureGroups.map(({ league }) => (
+                    <LeagueCard key={league.slug} league={league}  />
                   ))}
                 </div>
               </div>
@@ -155,10 +147,10 @@ export default async function HomePage() {
                 </Link>
               </div>
               <div className="flex flex-col gap-4">
-                {resultGroups.map(({ league, matches, logo }) =>
+                {resultGroups.map(({ league, matches }) =>
                   matches.length ? (
                     <div key={league.slug} className="flex flex-col gap-2">
-                      <LeagueLabel league={league} logo={logo} />
+                      <LeagueLabel league={league}  />
                       <div className="rounded-xl border border-border/60 bg-card px-4 sm:px-6">
                         <MatchHistory matches={matches} />
                       </div>
@@ -177,7 +169,12 @@ export default async function HomePage() {
               standings.length > 0 ? (
                 <section key={league.slug} className="flex flex-col gap-3">
                   <div className="flex items-baseline justify-between">
-                    <SectionHeading>{league.flag} {league.name}</SectionHeading>
+                    <SectionHeading>
+                      <span className="inline-flex items-center gap-1.5">
+                        <LeagueLogo league={league} size={14} className="size-3.5" />
+                        {league.name}
+                      </span>
+                    </SectionHeading>
                     <Link
                       href={`/leagues/${league.slug}?tab=standings`}
                       className="text-[0.78rem] font-medium text-muted-foreground hover:text-foreground"
@@ -198,7 +195,7 @@ export default async function HomePage() {
               <SectionHeading>Leagues</SectionHeading>
               <div className="flex flex-col gap-2">
                 {LEAGUES.map((league) => (
-                  <LeagueCard key={league.slug} league={league} logo={null} />
+                  <LeagueCard key={league.slug} league={league}  />
                 ))}
               </div>
             </section>
