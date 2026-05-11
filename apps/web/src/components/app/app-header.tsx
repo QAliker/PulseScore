@@ -3,11 +3,10 @@ import { Search } from 'lucide-react';
 import { ThemeToggle } from '@/components/theme/theme-toggle';
 import { LiveConnectionBadge } from './live-connection-badge';
 import { SoundToggle } from './sound-toggle';
-import { HeaderNav } from './header-nav';
 
 export function AppHeader() {
   return (
-    <header className="sticky top-0 z-30 border-b border-border/60 bg-background/85 backdrop-blur supports-[backdrop-filter]:bg-background/70">
+    <header className="sticky top-0 z-30 border-b border-border/60 bg-background/85 backdrop-blur supports-backdrop-filter:bg-background/70">
       <div className="flex h-14 items-center gap-3 px-4 lg:px-6">
         <Link
           href="/"
@@ -23,10 +22,9 @@ export function AppHeader() {
         </Link>
 
         <div className="mx-2 h-5 w-px bg-border/60 hidden md:block" aria-hidden />
-        {/* <HeaderNav /> */}
 
         <div className="ml-auto flex items-center gap-2">
-          <div className="hidden min-w-[220px] items-center gap-2 rounded-md border border-input bg-secondary/50 px-3 py-1.5 text-sm text-muted-foreground md:flex">
+          <div className="hidden min-w-55 items-center gap-2 rounded-md border border-input bg-secondary/50 px-3 py-1.5 text-sm text-muted-foreground md:flex">
             <Search className="size-4" aria-hidden />
             <span>Search teams, matches, leagues</span>
             <kbd className="ml-auto rounded bg-background/60 px-1.5 py-0.5 font-mono text-[0.65rem] text-muted-foreground">
