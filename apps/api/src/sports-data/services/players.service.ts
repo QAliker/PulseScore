@@ -54,16 +54,24 @@ export class PlayersService {
   }
 
   async getByTeam(teamExternalId: string): Promise<PlayerDto[]> {
-    // Seed players on first access if DB is empty for this team
-    await this.teamsService.fetchPlayersForTeam(teamExternalId);
-
-    const team = await this.prisma.team.findUnique({
-      where: { externalId: teamExternalId },
+    const rawFdoId = teamExternalId.startsWith('fdo:') ? teamExternalId.slice(4) : null;
+    const team = await this.prisma.team.findFirst({
+      where: rawFdoId
+        ? { fdoExternalId: rawFdoId }
+        : { OR: [{ externalId: teamExternalId }, { fdoExternalId: teamExternalId }] },
       include: {
         players: { orderBy: [{ number: 'asc' }, { name: 'asc' }] },
       },
     });
     if (!team) return [];
+    if (team.players.length === 0) {
+      await this.teamsService.fetchPlayersForTeam(team.externalId);
+      const fresh = await this.prisma.team.findUnique({
+        where: { id: team.id },
+        include: { players: { orderBy: [{ number: 'asc' }, { name: 'asc' }] } },
+      });
+      return (fresh?.players ?? []).map((p) => this.toDto(p));
+    }
     return team.players.map((p) => this.toDto(p));
   }
 

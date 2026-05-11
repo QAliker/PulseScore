@@ -81,6 +81,7 @@ describe('FixturesService', () => {
       mockFdoNormalizer,
       mockCache,
       mockPrisma,
+      { getLineups: jest.fn().mockResolvedValue(null) } as any,
     );
   });
 

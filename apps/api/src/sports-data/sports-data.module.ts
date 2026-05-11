@@ -5,6 +5,7 @@ import { ApiFootballClient } from './client/api-football.client';
 import { ApiFootballNormalizer } from './normalizer/api-football.normalizer';
 import { FootballDataOrgClient } from './client/football-data-org.client';
 import { FootballDataOrgNormalizer } from './normalizer/football-data-org.normalizer';
+import { EspnClient } from './client/espn.client';
 import { SportsDataCacheService } from './sports-data-cache.service';
 
 // Services
@@ -24,6 +25,7 @@ import { SidelinedService } from './services/sidelined.service';
 import { CountriesService } from './services/countries.service';
 import { VenuesService } from './services/venues.service';
 import { LeaguesService } from './services/leagues.service';
+import { EspnService } from './services/espn.service';
 import { WarmupService } from './services/warmup.service';
 
 // Controllers
@@ -77,6 +79,8 @@ import {
     ApiFootballNormalizer,
     FootballDataOrgClient,
     FootballDataOrgNormalizer,
+    EspnClient,
+    EspnService,
     SportsDataCacheService,
     LivescoreService,
     FixturesService,

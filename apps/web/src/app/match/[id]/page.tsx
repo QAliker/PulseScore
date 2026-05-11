@@ -7,8 +7,8 @@ import { getLeagueBySlug } from '@/lib/leagues';
 import { formatDate, formatKickoff, formatMinute } from '@/lib/format';
 import { apiFetch } from '@/lib/api';
 import { apiMatchToMatch } from '@/lib/api-match-map';
-import type { ApiMatch, ApiMatchLineups, ApiInjury, ApiPrediction } from '@/lib/api-types';
-import type { MatchLineups, TeamLineup, MatchEventEntry, MatchEventType, Match } from '@/lib/types';
+import type { ApiMatch, ApiMatchLineups, ApiInjury, ApiPrediction, ApiH2h } from '@/lib/api-types';
+import type { MatchLineups, TeamLineup, MatchEventEntry, MatchEventType, Match, H2HStats } from '@/lib/types';
 import { TeamCrest } from '@/components/feed/team-crest';
 import { MatchMinute } from '@/components/feed/match-minute';
 import { SectionNav } from '@/components/match/section-nav';
@@ -62,6 +62,35 @@ function buildEvents(match: Match, photoMap: Map<string, string | null>): MatchE
   return events.sort((a, b) => a.minute - b.minute);
 }
 
+function apiH2hToStats(data: ApiH2h, homeId: string, awayId: string): H2HStats {
+  const matches = data.headToHead
+    .filter((m) => m.status === 'FINISHED')
+    .slice(0, 10)
+    .map((m) => ({
+      id: m.externalId,
+      date: new Date(m.startTime).toISOString().split('T')[0],
+      homeTeamName: m.homeTeam.name,
+      awayTeamName: m.awayTeam.name,
+      homeTeamId: m.homeTeam.externalId,
+      awayTeamId: m.awayTeam.externalId,
+      homeTeamLogo: m.homeTeam.logo ?? undefined,
+      awayTeamLogo: m.awayTeam.logo ?? undefined,
+      homeScore: m.homeScore ?? 0,
+      awayScore: m.awayScore ?? 0,
+    }));
+
+  let homeWins = 0, draws = 0, awayWins = 0;
+  for (const m of matches) {
+    const isHome = m.homeTeamId === homeId;
+    const homeTeamScore = isHome ? m.homeScore : m.awayScore;
+    const awayTeamScore = isHome ? m.awayScore : m.homeScore;
+    if (homeTeamScore > awayTeamScore) homeWins++;
+    else if (homeTeamScore < awayTeamScore) awayWins++;
+    else draws++;
+  }
+  return { matches, homeWins, draws, awayWins };
+}
+
 export default async function MatchDetailPage({
   params,
 }: {
@@ -69,7 +98,7 @@ export default async function MatchDetailPage({
 }) {
   const { id } = await params;
 
-  const apiMatch = await apiFetch<ApiMatch>(`/matches/${id}`).catch(() => null);
+  const apiMatch = await apiFetch<ApiMatch>(`/matches/${id}`, { cache: 'no-store' }).catch(() => null);
   if (!apiMatch) notFound();
 
   const match = apiMatchToMatch(apiMatch);
@@ -81,9 +110,10 @@ export default async function MatchDetailPage({
   const homeExternalId = apiMatch.homeTeam.externalId;
   const awayExternalId = apiMatch.awayTeam.externalId;
 
-  const [injuries, prediction] = await Promise.all([
+  const [injuries, prediction, h2hData] = await Promise.all([
     apiFetch<ApiInjury[]>(`/fixtures/${externalId}/injuries`).catch(() => [] as ApiInjury[]),
     apiFetch<ApiPrediction>(`/fixtures/${externalId}/predictions`).catch(() => null),
+    apiFetch<ApiH2h>(`/h2h/${homeExternalId}/${awayExternalId}`).catch(() => null),
   ]);
 
   const photoMap = new Map<string, string | null>();
@@ -95,6 +125,9 @@ export default async function MatchDetailPage({
 
   const events = buildEvents(match, photoMap);
   const statistics = apiMatch.statistics ?? [];
+  const h2hStats = h2hData
+    ? apiH2hToStats(h2hData, homeExternalId, awayExternalId)
+    : detail.h2h;
 
   const visibleSections = [
     'lineups',
@@ -185,6 +218,7 @@ export default async function MatchDetailPage({
             <div className="flex flex-col items-center gap-3 py-12 text-muted-foreground">
               <div className="text-3xl opacity-40">📋</div>
               <p className="text-sm">Lineups not available yet.</p>
+              <pre>{JSON.stringify(lineups, null, 2)}</pre>
             </div>
           )}
         </div>
@@ -257,7 +291,7 @@ export default async function MatchDetailPage({
       <section id="h2h" className="scroll-mt-28 flex flex-col gap-3">
         <SectionHeading>Head to Head</SectionHeading>
         <div className="rounded-xl border border-border/60 bg-card p-4 sm:p-6">
-          <H2HSection h2h={detail.h2h} match={match} />
+          <H2HSection h2h={h2hStats} match={match} />
         </div>
       </section>
     </div>

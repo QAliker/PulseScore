@@ -290,6 +290,8 @@ function generateH2H(match: Match, rand: () => number): H2HStats {
       awayTeamName: homeFirst ? match.away.name : match.home.name,
       homeTeamId: homeFirst ? match.home.id : match.away.id,
       awayTeamId: homeFirst ? match.away.id : match.home.id,
+      homeTeamLogo: homeFirst ? match.home.logo : match.away.logo,
+      awayTeamLogo: homeFirst ? match.away.logo : match.home.logo,
       homeScore: hs,
       awayScore: as,
     });
