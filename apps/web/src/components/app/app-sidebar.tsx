@@ -22,6 +22,7 @@ export function AppSidebar() {
               icon={<LeagueLogo league={l} size={20} className="size-5" />}
               label={l.name}
               sublabel={l.country}
+              countryCode={l.countryCode}
             />
           ))}
         </SidebarSection>

@@ -3,17 +3,26 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
+import * as Flags from 'country-flag-icons/react/3x2';
 
 type Props = {
   href: string;
   icon: React.ReactNode;
   label: string;
   sublabel?: string;
+  countryCode?: string;
   badge?: string;
   exact?: boolean;
 };
 
-export function SidebarLink({ href, icon, label, sublabel, badge, exact = false }: Props) {
+function CountryFlag({ code, className }: { code: string; className?: string }) {
+  const key = code.replace('-', '_') as keyof typeof Flags;
+  const Flag = Flags[key];
+  if (!Flag) return null;
+  return <Flag className={className} />;
+}
+
+export function SidebarLink({ href, icon, label, sublabel, countryCode, badge, exact = false }: Props) {
   const pathname = usePathname();
   const isActive = exact ? pathname === href : pathname.startsWith(href);
 
@@ -34,7 +43,12 @@ export function SidebarLink({ href, icon, label, sublabel, badge, exact = false 
       <span className="flex min-w-0 flex-col">
         <span className="truncate">{label}</span>
         {sublabel && (
-          <span className="text-[0.7rem] font-normal text-muted-foreground">{sublabel}</span>
+          <span className="flex items-center gap-1 text-[0.7rem] font-normal text-muted-foreground">
+            {countryCode && (
+              <CountryFlag code={countryCode} className="size-3 rounded-[1px]" />
+            )}
+            {sublabel}
+          </span>
         )}
       </span>
       {badge && (
