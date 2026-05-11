@@ -54,11 +54,18 @@ export class PlayersService {
   }
 
   async getByTeam(teamExternalId: string): Promise<PlayerDto[]> {
-    const rawFdoId = teamExternalId.startsWith('fdo:') ? teamExternalId.slice(4) : null;
+    const rawFdoId = teamExternalId.startsWith('fdo:')
+      ? teamExternalId.slice(4)
+      : null;
     const team = await this.prisma.team.findFirst({
       where: rawFdoId
         ? { fdoExternalId: rawFdoId }
-        : { OR: [{ externalId: teamExternalId }, { fdoExternalId: teamExternalId }] },
+        : {
+            OR: [
+              { externalId: teamExternalId },
+              { fdoExternalId: teamExternalId },
+            ],
+          },
       include: {
         players: { orderBy: [{ number: 'asc' }, { name: 'asc' }] },
       },
