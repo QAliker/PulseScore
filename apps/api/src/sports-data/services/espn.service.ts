@@ -31,7 +31,7 @@ const NAME_ALIASES: Record<string, string> = {
   'ac milan': 'milan',
   'borussia dortmund': 'dortmund',
   'borussia monchengladbach': 'gladbach',
-  'monchengladbach': 'gladbach',
+  monchengladbach: 'gladbach',
   'bayer leverkusen': 'leverkusen',
   'atletico madrid': 'atletico',
   'real madrid': 'madrid',
@@ -150,7 +150,9 @@ export class EspnService {
       await this.cacheService.setCached(cacheKey, lineups, TTL_LINEUPS);
       return lineups;
     } catch (err) {
-      this.logger.error(`ESPN lineup fetch failed [${matchId}]: ${String(err)}`);
+      this.logger.error(
+        `ESPN lineup fetch failed [${matchId}]: ${String(err)}`,
+      );
       return null;
     }
   }
@@ -246,9 +248,15 @@ export class EspnService {
     return dto;
   }
 
-  private buildPlayer(entry: EspnRosterEntry, formation: string): LineupPlayerDto {
+  private buildPlayer(
+    entry: EspnRosterEntry,
+    formation: string,
+  ): LineupPlayerDto {
     const { id } = entry.athlete;
-    const { row, col } = this.computePosition(Number(entry.formationPlace), formation);
+    const { row, col } = this.computePosition(
+      Number(entry.formationPlace),
+      formation,
+    );
 
     const dto = new LineupPlayerDto();
     dto.id = id;
@@ -289,7 +297,7 @@ export class EspnService {
   }
 
   private normalize(name: string): string {
-    let n = name
+    const n = name
       .toLowerCase()
       .normalize('NFD')
       .replace(/[̀-ͯ]/g, '')
