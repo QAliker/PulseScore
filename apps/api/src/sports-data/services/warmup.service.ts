@@ -53,7 +53,12 @@ export class WarmupService implements OnApplicationBootstrap {
         for (const fdoTeam of data.teams) {
           const updated = await this.prisma.team.updateMany({
             where: {
-              name: { contains: fdoTeam.name.replace(' FC', '').replace(' CF', '').trim() },
+              name: {
+                contains: fdoTeam.name
+                  .replace(' FC', '')
+                  .replace(' CF', '')
+                  .trim(),
+              },
               fdoExternalId: null,
             },
             data: { fdoExternalId: String(fdoTeam.id) },
@@ -65,7 +70,9 @@ export class WarmupService implements OnApplicationBootstrap {
           }
         }
       } catch (err) {
-        this.logger.error(`FDO seeding failed for league ${rafId} (${fdoCode}): ${String(err)}`);
+        this.logger.error(
+          `FDO seeding failed for league ${rafId} (${fdoCode}): ${String(err)}`,
+        );
       }
     }
 

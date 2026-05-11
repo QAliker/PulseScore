@@ -1,5 +1,8 @@
 import { Injectable } from '@nestjs/common';
-import { FdoMatch, FdoStanding } from '../interfaces/football-data-org.interfaces';
+import {
+  FdoMatch,
+  FdoStanding,
+} from '../interfaces/football-data-org.interfaces';
 import { MatchDto } from '../dto/match.dto';
 import { TeamDto } from '../dto/team.dto';
 import { LeagueDto } from '../dto/league.dto';
@@ -9,14 +12,19 @@ import { StandingDto } from '../dto/standing.dto';
 export class FootballDataOrgNormalizer {
   normalizeStatus(status: string): MatchDto['status'] {
     switch (status) {
-      case 'FINISHED': return 'FINISHED';
+      case 'FINISHED':
+        return 'FINISHED';
       case 'IN_PLAY':
       case 'PAUSED':
-      case 'LIVE': return 'LIVE';
-      case 'POSTPONED': return 'POSTPONED';
+      case 'LIVE':
+        return 'LIVE';
+      case 'POSTPONED':
+        return 'POSTPONED';
       case 'CANCELLED':
-      case 'SUSPENDED': return 'CANCELLED';
-      default: return 'SCHEDULED';
+      case 'SUSPENDED':
+        return 'CANCELLED';
+      default:
+        return 'SCHEDULED';
     }
   }
 

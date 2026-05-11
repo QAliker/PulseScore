@@ -21,7 +21,9 @@ describe('FootballDataOrgClient', () => {
       json: async () => ({ matches: [] }),
     });
 
-    await client.get<{ matches: unknown[] }>('competitions/PL/matches', { matchday: '5' });
+    await client.get<{ matches: unknown[] }>('competitions/PL/matches', {
+      matchday: '5',
+    });
 
     expect(global.fetch).toHaveBeenCalledWith(
       'https://api.football-data.org/v4/competitions/PL/matches?matchday=5',
@@ -38,8 +40,8 @@ describe('FootballDataOrgClient', () => {
       statusText: 'Too Many Requests',
     });
 
-    await expect(
-      client.get('competitions/PL/matches'),
-    ).rejects.toThrow('football-data.org request failed: 429 Too Many Requests');
+    await expect(client.get('competitions/PL/matches')).rejects.toThrow(
+      'football-data.org request failed: 429 Too Many Requests',
+    );
   });
 });

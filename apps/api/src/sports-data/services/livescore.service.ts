@@ -3,7 +3,10 @@ import { FootballDataOrgClient } from '../client/football-data-org.client';
 import { FootballDataOrgNormalizer } from '../normalizer/football-data-org.normalizer';
 import { SportsDataCacheService, TTL_LIVE } from '../sports-data-cache.service';
 import { PrismaService } from '../../prisma/prisma.service';
-import { FdoMatch, FdoMatchesResponse } from '../interfaces/football-data-org.interfaces';
+import {
+  FdoMatch,
+  FdoMatchesResponse,
+} from '../interfaces/football-data-org.interfaces';
 import { MatchDto } from '../dto/match.dto';
 import { LEAGUE_MAP } from '../constants/season.constants';
 
@@ -39,12 +42,15 @@ export class LivescoreService {
         );
         allMatches.push(...normalized);
       } catch (err) {
-        this.logger.warn(`Livescore fetch failed for ${fdoCode}: ${String(err)}`);
+        this.logger.warn(
+          `Livescore fetch failed for ${fdoCode}: ${String(err)}`,
+        );
       }
     }
 
     const sorted = allMatches.sort(
-      (a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime(),
+      (a, b) =>
+        new Date(a.startTime).getTime() - new Date(b.startTime).getTime(),
     );
     await this.cacheService.setCached(cacheKey, sorted, TTL_LIVE);
     return sorted;
@@ -52,9 +58,15 @@ export class LivescoreService {
 
   private async normalizeFdoMatch(raw: FdoMatch): Promise<MatchDto> {
     const [homeTeam, awayTeam, league] = await Promise.all([
-      this.prisma.team.findFirst({ where: { fdoExternalId: String(raw.homeTeam.id) } }),
-      this.prisma.team.findFirst({ where: { fdoExternalId: String(raw.awayTeam.id) } }),
-      this.prisma.league.findFirst({ where: { fdoExternalId: raw.competition.code } }),
+      this.prisma.team.findFirst({
+        where: { fdoExternalId: String(raw.homeTeam.id) },
+      }),
+      this.prisma.team.findFirst({
+        where: { fdoExternalId: String(raw.awayTeam.id) },
+      }),
+      this.prisma.league.findFirst({
+        where: { fdoExternalId: raw.competition.code },
+      }),
     ]);
     return this.fdoNormalizer.normalizeMatch(
       raw,
