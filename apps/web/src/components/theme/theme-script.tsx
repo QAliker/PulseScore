@@ -5,5 +5,6 @@ const THEME_SCRIPT = `(function(){try{var s=localStorage.getItem('pulse-theme');
 
 export function ThemeScript() {
   // dangerouslySetInnerHTML is safe here: THEME_SCRIPT is a build-time constant, not user-controlled. No XSS risk.
+  // eslint-disable-next-line @next/next/no-before-interactive-script-outside-document
   return <Script id="theme-script" strategy="beforeInteractive" dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />;
 }

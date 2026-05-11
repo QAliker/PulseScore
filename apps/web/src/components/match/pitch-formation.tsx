@@ -1,4 +1,3 @@
-import { cn } from '@/lib/utils';
 import type { LineupPlayer, TeamLineup, Match } from '@/lib/types';
 import { PlayerPhoto } from './player-photo';
 
