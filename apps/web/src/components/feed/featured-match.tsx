@@ -287,9 +287,16 @@ export function FeaturedMatch({
                 />
               </div>
             ) : league ? (
-              <span className="shrink-0 text-lg leading-none" aria-hidden>
-                {league.flag}
-              </span>
+              <div className="flex size-6 shrink-0 items-center justify-center rounded bg-white/10 p-0.5">
+                <Image
+                  src={league.logo}
+                  alt=""
+                  width={20}
+                  height={20}
+                  className={`size-5 object-contain${league.darkInvert ? ' dark:invert' : ''}`}
+                  unoptimized
+                />
+              </div>
             ) : null}
             {leagueLabel && (
               <span className="truncate text-[0.67rem] font-semibold uppercase tracking-[0.18em] opacity-80">

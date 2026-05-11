@@ -1,4 +1,3 @@
-import Image from 'next/image';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { ArrowLeft } from 'lucide-react';
@@ -9,6 +8,7 @@ import type { ApiStanding, ApiMatch } from '@/lib/api-types';
 import { StandingTable } from '@/components/standings/standing-table';
 import { MatchHistory } from '@/components/matches/match-history';
 import { RoundSelector } from '@/components/feed/round-selector';
+import { LeagueLogo } from '@/components/feed/league-logo';
 
 export const dynamic = 'force-dynamic';
 
@@ -40,8 +40,6 @@ export default async function LeagueSlugPage({
   const tab: Tab =
     rawTab === 'results' || rawTab === 'fixtures' ? rawTab : 'standings';
 
-  const fixturesPromise = apiFetch<ApiMatch[]>(`/leagues/${league.apiFootballId}/fixtures`);
-
   const [standingsResult, matchesResult, fixturesResult] = await Promise.allSettled([
     tab === 'standings'
       ? apiFetch<ApiStanding[]>(`/leagues/${league.apiFootballId}/standings`)
@@ -49,7 +47,9 @@ export default async function LeagueSlugPage({
     tab === 'results'
       ? apiFetch<ApiMatch[]>(`/leagues/${league.apiFootballId}/results`)
       : Promise.resolve([] as ApiMatch[]),
-    fixturesPromise,
+    tab === 'fixtures'
+      ? apiFetch<ApiMatch[]>(`/leagues/${league.apiFootballId}/fixtures`)
+      : Promise.resolve([] as ApiMatch[]),
   ]);
 
   const standings = standingsResult.status === 'fulfilled' ? standingsResult.value : [];
@@ -60,7 +60,6 @@ export default async function LeagueSlugPage({
       : matchesResult.status === 'fulfilled'
         ? matchesResult.value
         : [];
-  const logo = fixtureMatches[0]?.league?.logo ?? null;
 
   const allRounds = Array.from(
     new Set(rawMatches.map((m) => m.round).filter((r): r is number => r != null)),
@@ -86,18 +85,7 @@ export default async function LeagueSlugPage({
       </Link>
 
       <header className="flex items-center gap-4">
-        {logo ? (
-          <Image
-            src={logo}
-            alt={league.name}
-            width={56}
-            height={56}
-            className="size-14 object-contain"
-            unoptimized
-          />
-        ) : (
-          <span className="text-5xl leading-none">{league.flag}</span>
-        )}
+        <LeagueLogo league={league} size={56} className="size-14" />
         <div>
           <p className="text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
             {league.country} · {league.season}

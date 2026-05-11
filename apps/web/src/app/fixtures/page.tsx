@@ -1,5 +1,4 @@
 import Link from 'next/link';
-import Image from 'next/image';
 import { ArrowLeft } from 'lucide-react';
 import { redirect } from 'next/navigation';
 import type { Metadata } from 'next';
@@ -9,15 +8,12 @@ import type { ApiMatch } from '@/lib/api-types';
 import { getCurrentRound } from '@/lib/rounds';
 import { MatchHistory } from '@/components/matches/match-history';
 import { RoundSelector } from '@/components/feed/round-selector';
+import { LeagueLogo } from '@/components/feed/league-logo';
 
-function LeagueLabel({ league, logo }: { league: League; logo: string | null }) {
+function LeagueLabel({ league }: { league: League }) {
   return (
     <h3 className="flex items-center gap-3 text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-      {logo ? (
-        <Image src={logo} alt="" width={32} height={32} className="size-8 object-contain" unoptimized />
-      ) : (
-        <span className="text-2xl leading-none" aria-hidden>{league.flag}</span>
-      )}
+      <LeagueLogo league={league} size={32} className="size-8" />
       {league.name}
     </h3>
   );
@@ -102,9 +98,10 @@ export default async function FixturesPage({
               <Link
                 key={l.slug}
                 href={`/fixtures?league=${l.apiFootballId}${roundFilter != null ? `&round=${roundFilter}` : ''}`}
-                className={`rounded-full px-3.5 py-1.5 text-[0.78rem] font-semibold transition-colors ${leagueFilter === String(l.apiFootballId) ? 'bg-foreground text-background' : 'text-muted-foreground hover:text-foreground'}`}
+                className={`inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-[0.78rem] font-semibold transition-colors ${leagueFilter === String(l.apiFootballId) ? 'bg-foreground text-background' : 'text-muted-foreground hover:text-foreground'}`}
               >
-                {l.flag} {l.name}
+                <LeagueLogo league={l} size={16} className="size-4" />
+                {l.name}
               </Link>
             ))}
           </div>
@@ -121,7 +118,7 @@ export default async function FixturesPage({
 
       {filteredGroups.map(({ league, matches }) => (
         <section key={league.slug} className="flex flex-col gap-2">
-          <LeagueLabel league={league} logo={matches[0]?.league?.logo ?? null} />
+          <LeagueLabel league={league} />
           <div className="rounded-xl border border-border/60 bg-card px-4 sm:px-6">
             <MatchHistory
               matches={matches}

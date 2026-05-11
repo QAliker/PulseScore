@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import { notFound } from 'next/navigation';
 import { ArrowLeft } from 'lucide-react';
 import { getMatchDetail } from '@/lib/mock-data';
@@ -118,7 +119,10 @@ export default async function MatchDetailPage({
         <div className="absolute inset-x-0 bottom-0 h-2/3 bg-linear-to-t from-black/55 via-black/15 to-transparent" aria-hidden />
         <div className="relative flex flex-col gap-6 p-6 text-pitch-foreground sm:p-10">
           <header className="flex items-center justify-between text-[0.72rem] font-semibold uppercase tracking-[0.18em] opacity-90">
-            <span>{league ? `${league.flag} ${league.name}` : ''}</span>
+            <span className="inline-flex items-center gap-1.5">
+                {league && <Image src={league.logo} alt="" width={14} height={14} className={`size-3.5 object-contain${league.darkInvert ? ' dark:invert' : ''}`} unoptimized />}
+                {league?.name ?? ''}
+              </span>
             <span>{formatDate(match.kickoff)} · {formatKickoff(match.kickoff)}</span>
           </header>
 
