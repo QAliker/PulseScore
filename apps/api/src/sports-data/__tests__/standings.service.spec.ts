@@ -1,11 +1,17 @@
 import { StandingsService } from '../services/standings.service';
 
+// Freeze time so getCurrentSeason() returns 2024 (historical → RAF path)
+const MOCK_DATE = new Date('2024-05-11T12:00:00Z');
+
 describe('StandingsService', () => {
   let service: StandingsService;
-  let mockClient: any;
-  let mockNormalizer: any;
+  let mockRafClient: any;
+  let mockRafNormalizer: any;
+  let mockFdoClient: any;
+  let mockFdoNormalizer: any;
   let mockCache: any;
   let mockPrisma: any;
+  let dateSpy: jest.SpyInstance;
 
   const makeRawStandingsResponse = () => ({
     league: {
@@ -14,7 +20,7 @@ describe('StandingsService', () => {
       country: 'England',
       logo: '',
       flag: '',
-      season: 2025,
+      season: 2024,
       standings: [
         [
           {
@@ -47,7 +53,7 @@ describe('StandingsService', () => {
               lose: 3,
               goals: { for: 32, against: 15 },
             },
-            update: '2026-05-01T00:00:00+00:00',
+            update: '2024-05-01T00:00:00+00:00',
           },
         ],
       ],
@@ -55,8 +61,11 @@ describe('StandingsService', () => {
   });
 
   beforeEach(() => {
-    mockClient = { get: jest.fn() };
-    mockNormalizer = {
+    // Pin date to May 2024 so getCurrentSeason() returns 2024 (RAF path)
+    dateSpy = jest.spyOn(global, 'Date').mockImplementation(() => MOCK_DATE as any);
+
+    mockRafClient = { get: jest.fn() };
+    mockRafNormalizer = {
       normalizeStanding: jest.fn((entry: any, leagueId: string) => ({
         leagueId,
         teamId: String(entry.team.id),
@@ -65,6 +74,8 @@ describe('StandingsService', () => {
         points: entry.points,
       })),
     };
+    mockFdoClient = { get: jest.fn() };
+    mockFdoNormalizer = { normalizeStanding: jest.fn() };
     mockCache = {
       getCached: jest.fn().mockResolvedValue(null),
       setCached: jest.fn().mockResolvedValue(undefined),
@@ -72,24 +83,34 @@ describe('StandingsService', () => {
     mockPrisma = {
       league: {
         findUnique: jest.fn().mockResolvedValue({ id: 'db-league-1' }),
+        findFirst: jest.fn().mockResolvedValue({ id: 'db-league-1' }),
       },
-      team: { findUnique: jest.fn().mockResolvedValue({ id: 'db-team-1' }) },
+      team: {
+        findUnique: jest.fn().mockResolvedValue({ id: 'db-team-1', externalId: '2627' }),
+        findFirst: jest.fn().mockResolvedValue({ id: 'db-team-1', externalId: '2627' }),
+      },
       standing: { upsert: jest.fn().mockResolvedValue({}) },
     };
     service = new StandingsService(
-      mockClient,
-      mockNormalizer,
+      mockRafClient,
+      mockRafNormalizer,
+      mockFdoClient,
+      mockFdoNormalizer,
       mockCache,
       mockPrisma,
     );
   });
 
-  it('should fetch standings from API when cache is empty', async () => {
-    mockClient.get.mockResolvedValue([makeRawStandingsResponse()]);
+  afterEach(() => {
+    dateSpy.mockRestore();
+  });
+
+  it('should fetch standings from RAF API when season < 2025', async () => {
+    mockRafClient.get.mockResolvedValue([makeRawStandingsResponse()]);
     const result = await service.getStandings('40');
-    expect(mockClient.get).toHaveBeenCalledWith('standings', {
+    expect(mockRafClient.get).toHaveBeenCalledWith('standings', {
       league: '40',
-      season: 2025,
+      season: 2024,
     });
     expect(result).toHaveLength(1);
     expect(result[0].position).toBe(1);
@@ -99,12 +120,12 @@ describe('StandingsService', () => {
     const cached = [{ position: 1, teamName: 'Leeds' }];
     mockCache.getCached.mockResolvedValue(cached);
     const result = await service.getStandings('40');
-    expect(mockClient.get).not.toHaveBeenCalled();
+    expect(mockRafClient.get).not.toHaveBeenCalled();
     expect(result).toEqual(cached);
   });
 
-  it('should return empty array when API returns empty response', async () => {
-    mockClient.get.mockResolvedValue([]);
+  it('should return empty array when RAF API returns empty response', async () => {
+    mockRafClient.get.mockResolvedValue([]);
     const result = await service.getStandings('40');
     expect(result).toEqual([]);
   });

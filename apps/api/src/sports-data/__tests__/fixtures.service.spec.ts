@@ -1,10 +1,23 @@
 import { FixturesService } from '../services/fixtures.service';
 
+// Mock getCurrentSeason to return a historical season so RAF path is exercised
+jest.mock('../constants/season.constants', () => ({
+  getCurrentSeason: () => 2024,
+  HISTORY_SEASON_RAF: 2024,
+  LEAGUE_MAP: {
+    '39':  { fdoCode: 'PL',  name: 'Premier League' },
+    '40':  { fdoCode: 'ELC', name: 'Championship' },
+  },
+}));
+
 describe('FixturesService', () => {
   let service: FixturesService;
-  let mockClient: any;
-  let mockNormalizer: any;
+  let mockRafClient: any;
+  let mockRafNormalizer: any;
+  let mockFdoClient: any;
+  let mockFdoNormalizer: any;
   let mockCache: any;
+  let mockPrisma: any;
 
   const makeRawFixture = (id: string) => ({
     fixture: {
@@ -19,7 +32,7 @@ describe('FixturesService', () => {
       country: 'England',
       logo: '',
       flag: '',
-      season: 2025,
+      season: 2024,
       round: 'Round 38',
     },
     teams: {
@@ -40,8 +53,8 @@ describe('FixturesService', () => {
   });
 
   beforeEach(() => {
-    mockClient = { get: jest.fn() };
-    mockNormalizer = {
+    mockRafClient = { get: jest.fn() };
+    mockRafNormalizer = {
       normalizeFixture: jest.fn((m: any) => ({
         externalId: String(m.fixture.id),
         homeTeam: { name: m.teams.home.name },
@@ -50,27 +63,33 @@ describe('FixturesService', () => {
         sport: 'Football',
       })),
     };
+    mockFdoClient = { get: jest.fn() };
+    mockFdoNormalizer = { normalizeMatch: jest.fn() };
     mockCache = {
       getCached: jest.fn().mockResolvedValue(null),
       setCached: jest.fn().mockResolvedValue(undefined),
     };
-    const mockPrisma = {
+    mockPrisma = {
       player: { findMany: jest.fn().mockResolvedValue([]) },
+      team: { findFirst: jest.fn().mockResolvedValue(null) },
+      league: { findFirst: jest.fn().mockResolvedValue(null) },
     };
     service = new FixturesService(
-      mockClient,
-      mockNormalizer,
+      mockRafClient,
+      mockRafNormalizer,
+      mockFdoClient,
+      mockFdoNormalizer,
       mockCache,
       mockPrisma as any,
     );
   });
 
-  it('should fetch fixtures from API when cache is empty', async () => {
-    mockClient.get.mockResolvedValue([makeRawFixture('1')]);
+  it('should fetch fixtures from RAF API when cache is empty (historical season)', async () => {
+    mockRafClient.get.mockResolvedValue([makeRawFixture('1')]);
     const result = await service.getFixtures('40', '2026-04-10', '2026-04-10');
-    expect(mockClient.get).toHaveBeenCalledWith('fixtures', {
+    expect(mockRafClient.get).toHaveBeenCalledWith('fixtures', {
       league: '40',
-      season: 2025,
+      season: 2024,
       from: '2026-04-10',
       to: '2026-04-10',
     });
@@ -81,7 +100,7 @@ describe('FixturesService', () => {
     const cached = [{ externalId: '1' }];
     mockCache.getCached.mockResolvedValue(cached);
     const result = await service.getFixtures('40', '2026-04-10', '2026-04-10');
-    expect(mockClient.get).not.toHaveBeenCalled();
+    expect(mockRafClient.get).not.toHaveBeenCalled();
     expect(result).toEqual(cached);
   });
 });
