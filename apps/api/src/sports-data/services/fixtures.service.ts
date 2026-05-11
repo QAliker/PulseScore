@@ -20,6 +20,7 @@ import {
   HISTORY_SEASON_RAF,
   LEAGUE_MAP,
 } from '../constants/season.constants';
+import { EspnService } from './espn.service';
 
 const LEAGUE_IDS = ['39', '140', '78', '135', '61']; // PL, La Liga, Bundesliga, Serie A, Ligue 1
 
@@ -34,7 +35,17 @@ export class FixturesService {
     private readonly fdoNormalizer: FootballDataOrgNormalizer,
     private readonly cacheService: SportsDataCacheService,
     private readonly prisma: PrismaService,
+    private readonly espnService: EspnService,
   ) {}
+
+  private async resolveTeamByAnyId(teamId: string) {
+    const rawFdoId = teamId.startsWith('fdo:') ? teamId.slice(4) : null;
+    return this.prisma.team.findFirst({
+      where: rawFdoId
+        ? { fdoExternalId: rawFdoId }
+        : { OR: [{ externalId: teamId }, { fdoExternalId: teamId }] },
+    });
+  }
 
   private async resolveTeamId(fdoTeamId: number): Promise<string | null> {
     const team = await this.prisma.team.findFirst({
@@ -106,6 +117,15 @@ export class FixturesService {
       const fdoId = matchId.slice(4);
       const raw = await this.fdoClient.get<FdoMatch>(`matches/${fdoId}`);
       match = await this.normalizeFdoMatch(raw);
+      if (match.homeTeam && match.awayTeam && match.league?.externalId) {
+        match.lineups = await this.espnService.getLineups(
+          matchId,
+          match.league.externalId,
+          match.homeTeam.name,
+          match.awayTeam.name,
+          match.startTime,
+        );
+      }
     } else {
       const raw = await this.rafClient.get<RafFixture>('fixtures', {
         id: matchId,
@@ -130,9 +150,7 @@ export class FixturesService {
     let fixtures: MatchDto[];
 
     if (season >= 2025) {
-      const team = await this.prisma.team.findFirst({
-        where: { externalId: teamId },
-      });
+      const team = await this.resolveTeamByAnyId(teamId);
       if (!team?.fdoExternalId) return [];
       const today = new Date().toISOString().slice(0, 10);
       const thirtyDaysAhead = new Date(Date.now() + 30 * 86400000)
@@ -185,9 +203,7 @@ export class FixturesService {
     let results: MatchDto[];
 
     if (season >= 2025) {
-      const team = await this.prisma.team.findFirst({
-        where: { externalId: teamId },
-      });
+      const team = await this.resolveTeamByAnyId(teamId);
       if (!team?.fdoExternalId) return [];
       const today = new Date().toISOString().slice(0, 10);
       const ninetyDaysAgo = new Date(Date.now() - 90 * 86400000)

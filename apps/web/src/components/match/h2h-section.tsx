@@ -1,4 +1,5 @@
 /* eslint-disable jsx-a11y/role-has-required-aria-props */
+import Image from 'next/image';
 import { cn } from '@/lib/utils';
 import type { H2HStats, Match } from '@/lib/types';
 
@@ -27,6 +28,21 @@ function ResultPill({ result }: { result: 'W' | 'D' | 'L' }) {
     >
       {result}
     </span>
+  );
+}
+
+function TeamLogo({ logo, name }: { logo?: string; name: string }) {
+  if (!logo) return <span className="size-4 shrink-0" />;
+  return (
+    <Image
+      src={logo}
+      alt=""
+      width={16}
+      height={16}
+      className="size-4 shrink-0 object-contain"
+      unoptimized
+      aria-hidden
+    />
   );
 }
 
@@ -72,11 +88,14 @@ export function H2HSection({ h2h, match }: Props) {
             homeTeamScore > awayTeamScore ? 'W' : homeTeamScore < awayTeamScore ? 'L' : 'D';
 
           return (
-            <div key={m.id} className="grid grid-cols-[auto_1fr_auto_1fr_auto] items-center gap-2 py-2.5 text-sm">
+            <div key={m.id} className="grid grid-cols-[auto_auto_1fr_auto_1fr_auto_auto] items-center gap-2 py-2.5 text-sm">
               {/* Date */}
-              <span className="w-16 shrink-0 text-[0.68rem] tabular text-muted-foreground">
+              <span className="w-14 shrink-0 text-[0.68rem] tabular text-muted-foreground">
                 {formatH2HDate(m.date)}
               </span>
+
+              {/* Home logo */}
+              <TeamLogo logo={m.homeTeamLogo} name={m.homeTeamName} />
 
               {/* Home team */}
               <span
@@ -104,6 +123,9 @@ export function H2HSection({ h2h, match }: Props) {
               >
                 {m.awayTeamName}
               </span>
+
+              {/* Away logo */}
+              <TeamLogo logo={m.awayTeamLogo} name={m.awayTeamName} />
 
               {/* Result pill relative to match.home */}
               <ResultPill result={result} />

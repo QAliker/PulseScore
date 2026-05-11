@@ -7,8 +7,9 @@ export async function apiFetch<T>(
   path: string,
   init?: RequestInit & { next?: { revalidate?: number } },
 ): Promise<T> {
+  const defaults = init?.cache ? {} : { next: { revalidate: 300 } };
   const res = await fetch(`${API_BASE}${path}`, {
-    next: { revalidate: 300 },
+    ...defaults,
     ...init,
   });
   if (!res.ok) {

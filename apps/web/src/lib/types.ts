@@ -133,6 +133,8 @@ export type H2HMatch = {
   awayTeamName: string;
   homeTeamId: string;
   awayTeamId: string;
+  homeTeamLogo?: string;
+  awayTeamLogo?: string;
   homeScore: number;
   awayScore: number;
 };
