@@ -15,6 +15,10 @@ const nextConfig: NextConfig = {
         protocol: 'https',
         hostname: '*.api-sports.io',
       },
+      {
+        protocol: 'https',
+        hostname: 'crests.football-data.org',
+      },
     ],
   },
 };
