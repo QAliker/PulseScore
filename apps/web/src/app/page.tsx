@@ -97,7 +97,7 @@ export default async function HomePage() {
   const hasStandings = standingGroups.some((g) => g.standings.length > 0);
 
   return (
-    <div className="mx-auto flex max-w-[1180px] flex-col gap-10 px-4 py-6 lg:px-8 lg:py-8">
+    <div className="mx-auto flex max-w-295 flex-col gap-10 px-4 py-6 lg:px-8 lg:py-8">
       <LiveFeed initial={initial} />
 
       <div className="grid gap-10 lg:grid-cols-[1fr_320px]">

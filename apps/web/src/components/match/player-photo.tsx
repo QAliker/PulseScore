@@ -37,6 +37,7 @@ export function PlayerPhoto({ photo, name, number, side, size = 'md', className 
       )}
     >
       {showPhoto ? (
+        // eslint-disable-next-line @next/next/no-img-element
         <img
           src={photo}
           alt={name}
