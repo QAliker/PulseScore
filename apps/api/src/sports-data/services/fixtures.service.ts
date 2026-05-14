@@ -21,6 +21,7 @@ import {
   LEAGUE_MAP,
 } from '../constants/season.constants';
 import { EspnService } from './espn.service';
+import { PlayerPhotoService } from './player-photo.service';
 
 const LEAGUE_IDS = ['39', '140', '78', '135', '61']; // PL, La Liga, Bundesliga, Serie A, Ligue 1
 
@@ -36,6 +37,7 @@ export class FixturesService {
     private readonly cacheService: SportsDataCacheService,
     private readonly prisma: PrismaService,
     private readonly espnService: EspnService,
+    private readonly playerPhotoService: PlayerPhotoService,
   ) {}
 
   private async resolveTeamByAnyId(teamId: string) {
@@ -132,7 +134,30 @@ export class FixturesService {
       });
       if (!raw.length) return null;
       match = this.rafNormalizer.normalizeFixture(raw[0]);
-      await this.enrichLineupPhotos(match);
+      if (
+        !match.lineups &&
+        match.homeTeam &&
+        match.awayTeam &&
+        match.league?.externalId
+      ) {
+        match.lineups = await this.espnService.getLineups(
+          matchId,
+          match.league.externalId,
+          match.homeTeam.name,
+          match.awayTeam.name,
+          match.startTime,
+        );
+      }
+    }
+
+    if (match.lineups) {
+      const allPlayers = [
+        ...match.lineups.home.starting,
+        ...match.lineups.home.bench,
+        ...match.lineups.away.starting,
+        ...match.lineups.away.bench,
+      ];
+      await this.playerPhotoService.enrichPhotos(allPlayers);
     }
 
     const ttl =
@@ -339,26 +364,6 @@ export class FixturesService {
 
     await this.cacheService.setCached(cacheKey, results, TTL_FIXTURES);
     return results;
-  }
-
-  private async enrichLineupPhotos(match: MatchDto): Promise<void> {
-    if (!match.lineups) return;
-    const allPlayers = [
-      ...match.lineups.home.starting,
-      ...match.lineups.home.bench,
-      ...match.lineups.away.starting,
-      ...match.lineups.away.bench,
-    ];
-    const ids = allPlayers.map((p) => p.id).filter(Boolean);
-    if (ids.length === 0) return;
-    const rows = await this.prisma.player.findMany({
-      where: { externalId: { in: ids } },
-      select: { externalId: true, image: true },
-    });
-    const photoMap = new Map(rows.map((r) => [r.externalId, r.image]));
-    for (const p of allPlayers) {
-      p.photo = photoMap.get(p.id) ?? null;
-    }
   }
 
   @Cron('0 */12 * * *')

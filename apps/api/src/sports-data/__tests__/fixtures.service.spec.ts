@@ -70,7 +70,6 @@ describe('FixturesService', () => {
       setCached: jest.fn().mockResolvedValue(undefined),
     };
     mockPrisma = {
-      player: { findMany: jest.fn().mockResolvedValue([]) },
       team: { findFirst: jest.fn().mockResolvedValue(null) },
       league: { findFirst: jest.fn().mockResolvedValue(null) },
     };
@@ -82,6 +81,7 @@ describe('FixturesService', () => {
       mockCache,
       mockPrisma,
       { getLineups: jest.fn().mockResolvedValue(null) } as any,
+      { enrichPhotos: jest.fn().mockResolvedValue(undefined) } as any,
     );
   });
 

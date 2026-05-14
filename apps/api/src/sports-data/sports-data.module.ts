@@ -27,6 +27,7 @@ import { VenuesService } from './services/venues.service';
 import { LeaguesService } from './services/leagues.service';
 import { EspnService } from './services/espn.service';
 import { WarmupService } from './services/warmup.service';
+import { PlayerPhotoService } from './services/player-photo.service';
 
 // Controllers
 import {
@@ -99,6 +100,7 @@ import {
     VenuesService,
     LeaguesService,
     WarmupService,
+    PlayerPhotoService,
   ],
   exports: [
     LivescoreService,
