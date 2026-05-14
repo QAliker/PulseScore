@@ -12,7 +12,7 @@ import type { MatchLineups, TeamLineup, MatchEventEntry, MatchEventType, Match, 
 import { TeamCrest } from '@/components/feed/team-crest';
 import { MatchMinute } from '@/components/feed/match-minute';
 import { SectionNav } from '@/components/match/section-nav';
-import { PitchFormation } from '@/components/match/pitch-formation';
+import { LineupCards } from '@/components/match/lineup-cards';
 import { LiveEventsSection } from '@/components/match/live-events-section';
 import { H2HSection } from '@/components/match/h2h-section';
 import { InjuriesSection } from '@/components/match/injuries-section';
@@ -213,12 +213,10 @@ export default async function MatchDetailPage({
         <SectionHeading>Lineups</SectionHeading>
         <div className="rounded-xl border border-border/60 bg-card p-4 sm:p-6">
           {lineups ? (
-            <PitchFormation lineups={lineups} match={match} />
+            <LineupCards lineups={lineups} match={match} />
           ) : (
             <div className="flex flex-col items-center gap-3 py-12 text-muted-foreground">
-              <div className="text-3xl opacity-40">📋</div>
               <p className="text-sm">Lineups not available yet.</p>
-              <pre>{JSON.stringify(lineups, null, 2)}</pre>
             </div>
           )}
         </div>

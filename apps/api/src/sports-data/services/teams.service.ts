@@ -14,12 +14,13 @@ import {
 } from '../interfaces/api-football.interfaces';
 import { TeamStatisticsDto } from '../dto/team-statistics.dto';
 
-const LEAGUE_IDS = ['40', '61']; // Championship, Ligue 2
+const LEAGUE_IDS = ['39', '40', '61', '78', '135', '140']; // PL, Championship, Ligue 1, Bundesliga, Serie A, La Liga
 const SEASON = 2024;
 
 @Injectable()
 export class TeamsService implements OnModuleInit {
   private readonly logger = new Logger(TeamsService.name);
+  private readonly syncingTeams = new Set<string>();
 
   constructor(
     private readonly client: ApiFootballClient,
@@ -29,10 +30,12 @@ export class TeamsService implements OnModuleInit {
   ) {}
 
   async onModuleInit(): Promise<void> {
-    const teamCount = await this.prismaService.team.count();
-    if (teamCount === 0) {
-      this.logger.log('DB missing teams — seeding on startup');
-      void this.refreshTeams();
+    const plTeam = await this.prismaService.team.findFirst({
+      where: { externalId: '33' }, // Man Utd — present iff PL was synced
+    });
+    if (!plTeam) {
+      this.logger.log('Major league teams missing — seeding on startup');
+      await this.refreshTeams();
     }
   }
 
@@ -68,11 +71,13 @@ export class TeamsService implements OnModuleInit {
   }
 
   async fetchPlayersForTeam(teamId: string): Promise<void> {
+    if (this.syncingTeams.has(teamId)) return;
     const playerCount = await this.prismaService.player.count({
       where: { team: { externalId: teamId } },
     });
     if (playerCount > 0) return;
 
+    this.syncingTeams.add(teamId);
     try {
       let page = 1;
       let totalPages = 1;
@@ -136,6 +141,8 @@ export class TeamsService implements OnModuleInit {
       this.logger.error(
         `Failed to fetch players for team ${teamId}: ${String(err)}`,
       );
+    } finally {
+      this.syncingTeams.delete(teamId);
     }
   }
 
