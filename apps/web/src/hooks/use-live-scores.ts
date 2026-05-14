@@ -18,6 +18,7 @@ export function useLiveScores(initial: Match[]): UseLiveScoresResult {
   const [matches, setMatches] = useState<Match[]>(initial);
   const [flashes, setFlashes] = useState<FlashEntry[]>([]);
   const prevRef = useRef<Match[]>(initial);
+  const status: SocketStatus = 'offline';
   // const { status, subscribe } = useSocket();
 
   // useEffect(() => {

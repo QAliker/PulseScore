@@ -42,9 +42,10 @@ export default function RootLayout({
       suppressHydrationWarning
       className={`${workSans.variable} ${bigShoulders.variable}`}
     >
-      <head />
-      <body className="min-h-screen antialiased">
+      <head>
         <ThemeScript />
+      </head>
+      <body className="min-h-screen antialiased">
         <ThemeProvider>
           <TooltipProvider delayDuration={200}>
             <AppShell>{children}</AppShell>
