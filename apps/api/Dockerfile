@@ -9,7 +9,7 @@ FROM base AS dev
 EXPOSE 3001
 CMD ["sleep", "infinity"]
 
-FROM base AS prod
-RUN npm run build
-EXPOSE 3001
-CMD ["sh", "-c", "npx prisma migrate deploy && node dist/src/main.js"]
+# FROM base AS prod
+# RUN npm run build
+# EXPOSE 3001
+# CMD ["sh", "-c", "npx prisma migrate deploy && node dist/src/main.js"]

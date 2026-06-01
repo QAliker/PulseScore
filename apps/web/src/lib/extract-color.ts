@@ -1,6 +1,5 @@
-import sharp from 'sharp';
+import Jimp from 'jimp';
 
-// Convert RGB to HSL
 function rgbToHsl(r: number, g: number, b: number): [number, number, number] {
   const rn = r / 255, gn = g / 255, bn = b / 255;
   const max = Math.max(rn, gn, bn), min = Math.min(rn, gn, bn);
@@ -19,17 +18,15 @@ function hslToHex(h: number, s: number, l: number): string {
   const a = s * Math.min(l, 1 - l);
   const f = (n: number) => {
     const k = (n + h / 30) % 12;
-    const color = l - a * Math.max(Math.min(k - 3, 9 - k, 1), -1);
-    return Math.round(255 * color).toString(16).padStart(2, '0');
+    return Math.round(255 * (l - a * Math.max(Math.min(k - 3, 9 - k, 1), -1)))
+      .toString(16).padStart(2, '0');
   };
   return `#${f(0)}${f(8)}${f(4)}`;
 }
 
-// Bucket hue into 36 bins (10° each) and return the most saturated bin's centroid
 function dominantHue(pixels: { h: number; s: number; l: number }[]): { h: number; s: number; l: number } | null {
   if (pixels.length === 0) return null;
-
-  const bins = new Array(36).fill(null).map(() => ({ count: 0, hSum: 0, sSum: 0, lSum: 0 }));
+  const bins = Array.from({ length: 36 }, () => ({ count: 0, hSum: 0, sSum: 0, lSum: 0 }));
   for (const { h, s, l } of pixels) {
     const bin = Math.floor(h / 10) % 36;
     bins[bin].count++;
@@ -37,8 +34,6 @@ function dominantHue(pixels: { h: number; s: number; l: number }[]): { h: number
     bins[bin].sSum += s;
     bins[bin].lSum += l;
   }
-
-  // Score = count * avg_saturation (prefer vivid, common colors)
   let best = -1, bestScore = -1;
   for (let i = 0; i < 36; i++) {
     if (bins[i].count === 0) continue;
@@ -46,12 +41,11 @@ function dominantHue(pixels: { h: number; s: number; l: number }[]): { h: number
     if (score > bestScore) { bestScore = score; best = i; }
   }
   if (best === -1) return null;
-
   const b = bins[best];
   return {
     h: b.hSum / b.count,
-    s: Math.min(b.sSum / b.count, 0.85), // cap saturation slightly for readability
-    l: Math.min(Math.max(b.lSum / b.count, 0.35), 0.55), // clamp lightness to readable range
+    s: Math.min(b.sSum / b.count, 0.85),
+    l: Math.min(Math.max(b.lSum / b.count, 0.35), 0.55),
   };
 }
 
@@ -61,23 +55,22 @@ export async function extractLogoColor(logoUrl: string): Promise<string | null> 
     if (!res.ok) return null;
     const buffer = Buffer.from(await res.arrayBuffer());
 
-    const { data, info } = await sharp(buffer)
-      .resize(80, 80, { fit: 'contain', background: { r: 255, g: 255, b: 255 } })
-      .ensureAlpha()
-      .raw()
-      .toBuffer({ resolveWithObject: true });
+    const image = await Jimp.read(buffer);
+    image.resize(80, 80);
 
     const colorPixels: { h: number; s: number; l: number }[] = [];
-    for (let i = 0; i < data.length; i += 4) {
-      const r = data[i], g = data[i + 1], b = data[i + 2], a = data[i + 3];
-      if (a < 80) continue; // skip transparent
-      if (r > 230 && g > 230 && b > 230) continue; // skip near-white
-      if (r < 25 && g < 25 && b < 25) continue; // skip near-black (often outlines)
-
+    image.scan(0, 0, image.bitmap.width, image.bitmap.height, (_x, _y, idx) => {
+      const r = image.bitmap.data[idx];
+      const g = image.bitmap.data[idx + 1];
+      const b = image.bitmap.data[idx + 2];
+      const a = image.bitmap.data[idx + 3];
+      if (a < 80) return;
+      if (r > 230 && g > 230 && b > 230) return;
+      if (r < 25 && g < 25 && b < 25) return;
       const [h, s, l] = rgbToHsl(r, g, b);
-      if (s < 0.15) continue; // skip near-gray (no hue info)
+      if (s < 0.15) return;
       colorPixels.push({ h, s, l });
-    }
+    });
 
     const dominant = dominantHue(colorPixels);
     if (!dominant) return null;
