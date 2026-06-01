@@ -17,7 +17,7 @@ type Props = {
 
 function CountryFlag({ code, className }: { code: string; className?: string }) {
   const key = code.replace('-', '_') as keyof typeof Flags;
-  const Flag = Flags[key];
+  const Flag = Flags[key] as React.ComponentType<{ className?: string }> | undefined;
   if (!Flag) return null;
   return <Flag className={className} />;
 }

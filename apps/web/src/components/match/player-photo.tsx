@@ -8,7 +8,7 @@ type Props = {
   name: string;
   number?: number;
   side: 'home' | 'away';
-  size?: 'sm' | 'md' | 'lg';
+  size?: 'sm' | 'md' | 'lg' | 'xl';
   className?: string;
 };
 
@@ -16,6 +16,7 @@ const sizeMap = {
   sm: { outer: 'size-6', text: 'text-[0.55rem]' },
   md: { outer: 'size-9', text: 'text-[0.65rem]' },
   lg: { outer: 'size-11', text: 'text-xs' },
+  xl: { outer: 'size-14', text: 'text-sm' },
 };
 
 export function PlayerPhoto({ photo, name, number, side, size = 'md', className }: Props) {

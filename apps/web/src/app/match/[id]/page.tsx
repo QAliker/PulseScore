@@ -7,13 +7,13 @@ import { getLeagueBySlug } from '@/lib/leagues';
 import { formatDate, formatKickoff, formatMinute } from '@/lib/format';
 import { apiFetch } from '@/lib/api';
 import { apiMatchToMatch } from '@/lib/api-match-map';
+import { extractLogoColor } from '@/lib/extract-color';
 import type { ApiMatch, ApiMatchLineups, ApiInjury, ApiPrediction, ApiH2h } from '@/lib/api-types';
-import type { MatchLineups, TeamLineup, MatchEventEntry, MatchEventType, Match, H2HStats } from '@/lib/types';
+import type { MatchLineups, TeamLineup, Match, H2HStats } from '@/lib/types';
 import { TeamCrest } from '@/components/feed/team-crest';
 import { MatchMinute } from '@/components/feed/match-minute';
 import { SectionNav } from '@/components/match/section-nav';
 import { LineupCards } from '@/components/match/lineup-cards';
-import { LiveEventsSection } from '@/components/match/live-events-section';
 import { H2HSection } from '@/components/match/h2h-section';
 import { InjuriesSection } from '@/components/match/injuries-section';
 import { PredictionSection } from '@/components/match/prediction-section';
@@ -31,36 +31,6 @@ function convertApiLineups(apiLineups: ApiMatchLineups | null): MatchLineups | n
   return { home: convertSide(apiLineups.home), away: convertSide(apiLineups.away) };
 }
 
-function buildEvents(match: Match, photoMap: Map<string, string | null>): MatchEventEntry[] {
-  const events: MatchEventEntry[] = [];
-
-  match.goalscorers.forEach((g, i) => {
-    const minute = parseInt(g.time) || 0;
-    const isOwn = g.info === 'own goal';
-    if (g.homeScorer) {
-      events.push({ id: `g-h-${i}`, minute, type: isOwn ? 'owngoal' : 'goal', team: 'home', playerName: g.homeScorer, playerPhoto: photoMap.get(g.homeScorer) });
-    }
-    if (g.awayScorer) {
-      events.push({ id: `g-a-${i}`, minute, type: isOwn ? 'owngoal' : 'goal', team: 'away', playerName: g.awayScorer, playerPhoto: photoMap.get(g.awayScorer) });
-    }
-  });
-
-  match.cards.forEach((c, i) => {
-    const minute = parseInt(c.time) || 0;
-    const type: MatchEventType = c.card === 'red card' ? 'red' : c.card === 'yellow-red card' ? 'yellowred' : 'yellow';
-    if (c.homeFault) events.push({ id: `c-h-${i}`, minute, type, team: 'home', playerName: c.homeFault, playerPhoto: photoMap.get(c.homeFault) });
-    if (c.awayFault) events.push({ id: `c-a-${i}`, minute, type, team: 'away', playerName: c.awayFault, playerPhoto: photoMap.get(c.awayFault) });
-  });
-
-  match.substitutions.forEach((s, i) => {
-    const minute = parseInt(s.time) || 0;
-    if (s.playerIn) {
-      events.push({ id: `s-${s.team}-${i}`, minute, type: 'sub', team: s.team, playerName: s.playerIn, detail: s.playerOut ?? undefined, playerPhoto: photoMap.get(s.playerIn) });
-    }
-  });
-
-  return events.sort((a, b) => a.minute - b.minute);
-}
 
 function apiH2hToStats(data: ApiH2h, homeId: string, awayId: string): H2HStats {
   const matches = data.headToHead
@@ -110,20 +80,14 @@ export default async function MatchDetailPage({
   const homeExternalId = apiMatch.homeTeam.externalId;
   const awayExternalId = apiMatch.awayTeam.externalId;
 
-  const [injuries, prediction, h2hData] = await Promise.all([
+  const [injuries, prediction, h2hData, homeColor, awayColor] = await Promise.all([
     apiFetch<ApiInjury[]>(`/fixtures/${externalId}/injuries`).catch(() => [] as ApiInjury[]),
     apiFetch<ApiPrediction>(`/fixtures/${externalId}/predictions`).catch(() => null),
     apiFetch<ApiH2h>(`/h2h/${homeExternalId}/${awayExternalId}`).catch(() => null),
+    match.home.logo ? extractLogoColor(match.home.logo) : Promise.resolve(null),
+    match.away.logo ? extractLogoColor(match.away.logo) : Promise.resolve(null),
   ]);
 
-  const photoMap = new Map<string, string | null>();
-  if (lineups) {
-    for (const p of [...lineups.home.starting, ...lineups.home.bench, ...lineups.away.starting, ...lineups.away.bench]) {
-      if (p.photo) photoMap.set(p.name, p.photo);
-    }
-  }
-
-  const events = buildEvents(match, photoMap);
   const statistics = apiMatch.statistics ?? [];
   const h2hStats = h2hData
     ? apiH2hToStats(h2hData, homeExternalId, awayExternalId)
@@ -131,15 +95,19 @@ export default async function MatchDetailPage({
 
   const visibleSections = [
     'lineups',
-    'events',
     ...(statistics.length > 0 ? ['stats'] : []),
     ...(injuries.length > 0 ? ['injuries'] : []),
     ...(prediction ? ['prediction'] : []),
     'h2h',
   ];
 
+  const teamColorStyle = {
+    ...(homeColor && { '--home': homeColor }),
+    ...(awayColor && { '--away': awayColor }),
+  } as React.CSSProperties;
+
   return (
-    <div className="mx-auto flex max-w-225 flex-col gap-6 px-4 py-6 lg:px-8 lg:py-8">
+    <div className="mx-auto flex max-w-225 flex-col gap-6 px-4 py-6 lg:px-8 lg:py-8" style={teamColorStyle}>
       <Link
         href="/"
         className="inline-flex w-fit items-center gap-1.5 rounded-md px-2 py-1 text-sm font-medium text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
@@ -219,13 +187,6 @@ export default async function MatchDetailPage({
               <p className="text-sm">Lineups not available yet.</p>
             </div>
           )}
-        </div>
-      </section>
-
-      <section id="events" className="scroll-mt-28 flex flex-col gap-3">
-        <SectionHeading>Timeline</SectionHeading>
-        <div className="rounded-xl border border-border/60 bg-card p-4 sm:p-6">
-          <LiveEventsSection initialEvents={events} match={match} />
         </div>
       </section>
 

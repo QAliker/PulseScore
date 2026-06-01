@@ -1,3 +1,5 @@
+'use client';
+
 import type { LineupPlayer, TeamLineup, Match } from '@/lib/types';
 import { PlayerPhoto } from './player-photo';
 
@@ -28,14 +30,19 @@ function PlayerDot({
       className="group flex flex-col items-center gap-1 transition-transform duration-150 hover:scale-110"
       title={`#${player.number} ${player.name} · ${player.positionLabel}`}
     >
-      <PlayerPhoto
-        photo={player.photo}
-        name={player.name}
-        number={player.number}
-        side={side}
-        size="lg"
-      />
-      <span className="w-14 truncate text-center text-[0.58rem] font-medium leading-tight text-pitch-foreground/80">
+      <div className="relative">
+        <PlayerPhoto
+          photo={player.photo}
+          name={player.name}
+          number={player.number}
+          side={side}
+          size="lg"
+        />
+        <span className="absolute -bottom-0.5 -right-0.5 flex size-4 items-center justify-center rounded-full bg-black/70 text-[0.5rem] font-black tabular text-white ring-1 ring-black/20">
+          {player.number}
+        </span>
+      </div>
+      <span className="w-16 truncate rounded px-1 text-center text-[0.62rem] font-bold leading-tight text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)]">
         {player.name.split(' ').pop()}
       </span>
     </div>
