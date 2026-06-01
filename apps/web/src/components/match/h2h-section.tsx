@@ -31,7 +31,7 @@ function ResultPill({ result }: { result: 'W' | 'D' | 'L' }) {
   );
 }
 
-function TeamLogo({ logo, name }: { logo?: string; name: string }) {
+function TeamLogo({ logo }: { logo?: string; name: string }) {
   if (!logo) return <span className="size-4 shrink-0" />;
   return (
     <Image

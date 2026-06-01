@@ -44,7 +44,12 @@ describe('H2hService', () => {
       getCached: jest.fn().mockResolvedValue(null),
       setCached: jest.fn().mockResolvedValue(undefined),
     };
-    service = new H2hService(mockFdoClient, mockFdoNormalizer, mockPrisma, mockCache);
+    service = new H2hService(
+      mockFdoClient,
+      mockFdoNormalizer,
+      mockPrisma,
+      mockCache,
+    );
   });
 
   it('should fetch H2H from FDO when team IDs are fdo: prefixed', async () => {
@@ -62,7 +67,11 @@ describe('H2hService', () => {
   });
 
   it('should return cached H2H without calling FDO', async () => {
-    const cached = { headToHead: [], firstTeamResults: [], secondTeamResults: [] };
+    const cached = {
+      headToHead: [],
+      firstTeamResults: [],
+      secondTeamResults: [],
+    };
     mockCache.getCached.mockResolvedValue(cached);
     const result = await service.getH2H('fdo:57', 'fdo:65');
     expect(mockFdoClient.get).not.toHaveBeenCalled();

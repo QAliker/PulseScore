@@ -38,13 +38,14 @@ export class WarmupService implements OnApplicationBootstrap {
       }
     }
     this.logger.log('Cache warmup complete.');
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     void this.fixtures.prewarmTeamFixtures();
   }
 
   async seedFdoIds(): Promise<void> {
     this.logger.log('Seeding FDO external IDs...');
 
-    for (const [rafId, { fdoCode, name }] of Object.entries(LEAGUE_MAP)) {
+    for (const [rafId, { fdoCode }] of Object.entries(LEAGUE_MAP)) {
       try {
         await this.prisma.league.updateMany({
           where: { externalId: rafId, fdoExternalId: null },

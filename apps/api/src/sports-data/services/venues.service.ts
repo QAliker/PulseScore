@@ -10,8 +10,6 @@ import {
 } from '../interfaces/api-football.interfaces';
 import { VenueDto } from '../dto/venue.dto';
 
-const SEASON = 2024;
-
 @Injectable()
 export class VenuesService {
   constructor(

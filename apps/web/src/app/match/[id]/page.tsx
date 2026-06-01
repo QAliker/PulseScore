@@ -9,7 +9,7 @@ import { apiFetch } from '@/lib/api';
 import { apiMatchToMatch } from '@/lib/api-match-map';
 import { extractLogoColor } from '@/lib/extract-color';
 import type { ApiMatch, ApiMatchLineups, ApiInjury, ApiPrediction, ApiH2h } from '@/lib/api-types';
-import type { MatchLineups, TeamLineup, Match, H2HStats } from '@/lib/types';
+import type { MatchLineups, TeamLineup, H2HStats } from '@/lib/types';
 import { TeamCrest } from '@/components/feed/team-crest';
 import { MatchMinute } from '@/components/feed/match-minute';
 import { SectionNav } from '@/components/match/section-nav';
@@ -32,7 +32,8 @@ function convertApiLineups(apiLineups: ApiMatchLineups | null): MatchLineups | n
 }
 
 
-function apiH2hToStats(data: ApiH2h, homeId: string, awayId: string): H2HStats {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function apiH2hToStats(data: ApiH2h, homeId: string, _awayId: string): H2HStats {
   const matches = data.headToHead
     .filter((m) => m.status === 'FINISHED')
     .slice(0, 10)

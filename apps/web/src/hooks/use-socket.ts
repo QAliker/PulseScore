@@ -29,29 +29,29 @@ export function useSocket(enabled = true): UseSocketResult {
   useEffect(() => {
     if (!enabled) return;
 
-    function connect() {
-      const es = new EventSource(`${API_URL}/livescore/stream`);
-      esRef.current = es;
+    // function connect() {
+    //   const es = new EventSource(`${API_URL}/livescore/stream`);
+    //   esRef.current = es;
 
-      es.onopen = () => setStatus('live');
+    //   es.onopen = () => setStatus('live');
 
-      es.onmessage = (event: MessageEvent<string>) => {
-        try {
-          const raw = JSON.parse(event.data) as ApiMatch[];
-          const matches = apiMatchesToMatches(raw);
-          listenersRef.current.forEach((l) => l(matches));
-        } catch {
-          // malformed frame — ignore
-        }
-      };
+    //   es.onmessage = (event: MessageEvent<string>) => {
+    //     try {
+    //       const raw = JSON.parse(event.data) as ApiMatch[];
+    //       const matches = apiMatchesToMatches(raw);
+    //       listenersRef.current.forEach((l) => l(matches));
+    //     } catch {
+    //       // malformed frame — ignore
+    //     }
+    //   };
 
-      es.onerror = () => {
-        setStatus('reconnecting');
-        es.close();
-        esRef.current = null;
-        setTimeout(connect, 3000);
-      };
-    }
+    //   es.onerror = () => {
+    //     setStatus('reconnecting');
+    //     es.close();
+    //     esRef.current = null;
+    //     setTimeout(connect, 3000);
+    //   };
+    // }
 
     // connect();
 

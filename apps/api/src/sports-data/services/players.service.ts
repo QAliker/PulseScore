@@ -104,9 +104,7 @@ export class PlayersService {
             (1000 * 60 * 60 * 24 * 365.25),
         )
       : null;
-    dto.teamId = person.currentTeam
-      ? `fdo:${person.currentTeam.id}`
-      : null;
+    dto.teamId = person.currentTeam ? `fdo:${person.currentTeam.id}` : null;
     dto.goals = 0;
     dto.assists = 0;
     dto.yellowCards = 0;

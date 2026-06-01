@@ -3,7 +3,10 @@ import { FootballDataOrgClient } from '../client/football-data-org.client';
 import { FootballDataOrgNormalizer } from '../normalizer/football-data-org.normalizer';
 import { PrismaService } from '../../prisma/prisma.service';
 import { SportsDataCacheService, TTL_H2H } from '../sports-data-cache.service';
-import type { FdoH2hResponse, FdoMatch } from '../interfaces/football-data-org.interfaces';
+import type {
+  FdoH2hResponse,
+  FdoMatch,
+} from '../interfaces/football-data-org.interfaces';
 import { H2hDto } from '../dto/h2h.dto';
 import { MatchDto } from '../dto/match.dto';
 
@@ -91,7 +94,9 @@ export class H2hService {
     return this.fdoNormalizer.normalizeMatch(raw, homeId, awayId, leagueId);
   }
 
-  private async resolveTeamExternalId(fdoTeamId: number): Promise<string | null> {
+  private async resolveTeamExternalId(
+    fdoTeamId: number,
+  ): Promise<string | null> {
     const team = await this.prisma.team.findFirst({
       where: { fdoExternalId: String(fdoTeamId) },
     });
