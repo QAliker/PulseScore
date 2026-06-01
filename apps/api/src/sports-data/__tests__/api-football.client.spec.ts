@@ -33,9 +33,7 @@ describe('ApiFootballClient', () => {
       expect(globalThis.fetch).toHaveBeenCalledTimes(1);
       const [calledUrl, calledInit] = (globalThis.fetch as jest.Mock).mock
         .calls[0];
-      expect(calledUrl).toContain(
-        'https://v3.football.api-sports.io/fixtures',
-      );
+      expect(calledUrl).toContain('https://v3.football.api-sports.io/fixtures');
       expect(calledUrl).toContain('league=40');
       expect(calledUrl).toContain('season=2025');
       expect(calledInit.headers['x-apisports-key']).toBe('test-api-key');

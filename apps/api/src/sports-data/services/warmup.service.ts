@@ -19,8 +19,11 @@ export class WarmupService implements OnApplicationBootstrap {
     private readonly prisma: PrismaService,
   ) {}
 
-  async onApplicationBootstrap(): Promise<void> {
-    if (process.env.NODE_ENV === 'development') return;
+  onApplicationBootstrap(): void {
+    void this.runWarmup();
+  }
+
+  private async runWarmup(): Promise<void> {
     await this.seedFdoIds();
     this.logger.log('Warming up cache for all leagues...');
     for (const leagueId of LEAGUE_IDS) {
@@ -35,6 +38,7 @@ export class WarmupService implements OnApplicationBootstrap {
       }
     }
     this.logger.log('Cache warmup complete.');
+    void this.fixtures.prewarmTeamFixtures();
   }
 
   async seedFdoIds(): Promise<void> {
@@ -65,9 +69,16 @@ export class WarmupService implements OnApplicationBootstrap {
             data: { fdoExternalId: String(fdoTeam.id) },
           });
           if (updated.count === 0) {
-            this.logger.warn(
-              `No DB match for FDO team "${fdoTeam.name}" (id=${fdoTeam.id}) in ${name}`,
-            );
+            await this.prisma.team.upsert({
+              where: { fdoExternalId: String(fdoTeam.id) },
+              create: {
+                externalId: `fdo:${fdoTeam.id}`,
+                fdoExternalId: String(fdoTeam.id),
+                name: fdoTeam.name,
+                logo: fdoTeam.crest || null,
+              },
+              update: { name: fdoTeam.name, logo: fdoTeam.crest || null },
+            });
           }
         }
       } catch (err) {

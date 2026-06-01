@@ -22,19 +22,7 @@ export class VenuesService {
   async getByTeam(teamId: string): Promise<VenueDto[]> {
     const cacheKey = `sports:venues:team:${teamId}`;
     const cached = await this.cacheService.getCached<VenueDto[]>(cacheKey);
-    if (cached) return cached;
-
-    const raw = await this.client.get<RafTeamResponse>('teams', {
-      team: teamId,
-      season: SEASON,
-    });
-
-    const venues = raw
-      .map((r) => this.teamVenueToDto(r))
-      .filter((v): v is VenueDto => v !== null);
-
-    await this.cacheService.setCached(cacheKey, venues, TTL_TEAMS);
-    return venues;
+    return cached ?? [];
   }
 
   async getByLeague(leagueId: string, season: number): Promise<VenueDto[]> {

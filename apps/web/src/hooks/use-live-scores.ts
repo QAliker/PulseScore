@@ -57,6 +57,19 @@ export function useLiveScores(initial: Match[]): UseLiveScoresResult {
   //   return () => clearTimeout(t);
   // }, [flashes]);
 
+  useEffect(() => {
+    const t = setInterval(() => {
+      setMatches((prev) =>
+        prev.map((m) =>
+          m.status === 'live' || m.status === 'halftime'
+            ? { ...m, minute: (m.minute ?? 0) + 1 }
+            : m,
+        ),
+      );
+    }, 60_000);
+    return () => clearInterval(t);
+  }, []);
+
   const matchesByLeague = useMemo(() => {
     const map: MatchesByLeague = {};
     for (const m of matches) {

@@ -3,6 +3,13 @@ const API_BASE =
   process.env.NEXT_PUBLIC_API_URL ??
   'http://localhost:3001';
 
+export class RateLimitError extends Error {
+  constructor(path: string) {
+    super(`Rate limited: ${path}`);
+    this.name = 'RateLimitError';
+  }
+}
+
 export async function apiFetch<T>(
   path: string,
   init?: RequestInit & { next?: { revalidate?: number } },
@@ -12,6 +19,9 @@ export async function apiFetch<T>(
     ...defaults,
     ...init,
   });
+  if (res.status === 429) {
+    throw new RateLimitError(path);
+  }
   if (!res.ok) {
     throw new Error(`API ${res.status} ${res.statusText}: ${path}`);
   }

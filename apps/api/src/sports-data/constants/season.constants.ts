@@ -13,5 +13,4 @@ export const LEAGUE_MAP: Record<string, { fdoCode: string; name: string }> = {
   '78': { fdoCode: 'BL1', name: 'Bundesliga' },
   '135': { fdoCode: 'SA', name: 'Serie A' },
   '61': { fdoCode: 'FL1', name: 'Ligue 1' },
-  '40': { fdoCode: 'ELC', name: 'Championship' },
 };

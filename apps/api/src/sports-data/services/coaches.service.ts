@@ -1,10 +1,13 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ApiFootballClient } from '../client/api-football.client';
+import { FootballDataOrgClient } from '../client/football-data-org.client';
+import { PrismaService } from '../../prisma/prisma.service';
 import {
   SportsDataCacheService,
   TTL_TEAMS,
 } from '../sports-data-cache.service';
 import { RafCoachResponse } from '../interfaces/api-football.interfaces';
+import type { FdoTeamDetail } from '../interfaces/football-data-org.interfaces';
 import { CoachDto, CoachCareerDto } from '../dto/coach.dto';
 
 @Injectable()
@@ -13,6 +16,8 @@ export class CoachesService {
 
   constructor(
     private readonly client: ApiFootballClient,
+    private readonly fdoClient: FootballDataOrgClient,
+    private readonly prisma: PrismaService,
     private readonly cacheService: SportsDataCacheService,
   ) {}
 
@@ -21,11 +26,41 @@ export class CoachesService {
     const cached = await this.cacheService.getCached<CoachDto[]>(cacheKey);
     if (cached) return cached;
 
-    const raw = await this.client.get<RafCoachResponse>('coachs', {
-      team: teamId,
+    const rawFdoId = teamId.startsWith('fdo:') ? teamId.slice(4) : null;
+    const team = await this.prisma.team.findFirst({
+      where: rawFdoId
+        ? { fdoExternalId: rawFdoId }
+        : { OR: [{ externalId: teamId }, { fdoExternalId: teamId }] },
+      select: { fdoExternalId: true, externalId: true },
     });
 
-    const coaches = raw.map((r) => this.toDto(r));
+    const fdoId = team?.fdoExternalId;
+    if (!fdoId) return [];
+
+    const detail = await this.fdoClient
+      .get<FdoTeamDetail>(`teams/${fdoId}`)
+      .catch(() => null);
+    if (!detail?.coach) return [];
+
+    const c = detail.coach;
+    const dto = new CoachDto();
+    dto.id = c.id;
+    dto.name = c.name;
+    dto.firstname = c.firstName ?? '';
+    dto.lastname = c.lastName ?? '';
+    dto.age = c.dateOfBirth
+      ? Math.floor(
+          (Date.now() - new Date(c.dateOfBirth).getTime()) /
+            (1000 * 60 * 60 * 24 * 365.25),
+        )
+      : null;
+    dto.nationality = c.nationality ?? null;
+    dto.photo = '';
+    dto.teamId = null;
+    dto.teamName = null;
+    dto.teamLogo = null;
+    dto.career = [];
+    const coaches = [dto];
     await this.cacheService.setCached(cacheKey, coaches, TTL_TEAMS);
     return coaches;
   }

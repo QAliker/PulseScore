@@ -60,3 +60,51 @@ export interface FdoH2hResponse {
     matches: FdoMatch[];
   };
 }
+
+export interface FdoSquadPlayer {
+  id: number;
+  name: string;
+  position: string | null;
+  dateOfBirth: string | null;
+  nationality: string | null;
+  shirtNumber: number | null;
+}
+
+export interface FdoCoachDetail {
+  id: number;
+  firstName: string | null;
+  lastName: string | null;
+  name: string;
+  dateOfBirth: string | null;
+  nationality: string | null;
+  contract?: { start: string | null; until: string | null } | null;
+}
+
+export interface FdoTeamDetail {
+  id: number;
+  name: string;
+  shortName: string | null;
+  tla: string | null;
+  crest: string;
+  venue: string | null;
+  founded: number | null;
+  clubColors: string | null;
+  squad: FdoSquadPlayer[];
+  coach: FdoCoachDetail | null;
+}
+
+export interface FdoPersonDetail {
+  id: number;
+  name: string;
+  firstName: string | null;
+  lastName: string | null;
+  dateOfBirth: string | null;
+  nationality: string | null;
+  position: string | null;
+  shirtNumber: number | null;
+  currentTeam?: {
+    id: number;
+    name: string;
+    crest: string;
+  } | null;
+}

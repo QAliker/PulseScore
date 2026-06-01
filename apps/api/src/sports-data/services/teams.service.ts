@@ -1,6 +1,7 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 import { ApiFootballClient } from '../client/api-football.client';
+import { FootballDataOrgClient } from '../client/football-data-org.client';
 import { ApiFootballNormalizer } from '../normalizer/api-football.normalizer';
 import {
   SportsDataCacheService,
@@ -12,9 +13,10 @@ import {
   RafPlayerResponse,
   RafTeamStatisticsResponse,
 } from '../interfaces/api-football.interfaces';
+import type { FdoTeamDetail } from '../interfaces/football-data-org.interfaces';
 import { TeamStatisticsDto } from '../dto/team-statistics.dto';
 
-const LEAGUE_IDS = ['39', '40', '61', '78', '135', '140']; // PL, Championship, Ligue 1, Bundesliga, Serie A, La Liga
+const LEAGUE_IDS = ['39', '61', '78', '135', '140']; // PL, Ligue 1, Bundesliga, Serie A, La Liga
 const SEASON = 2024;
 
 @Injectable()
@@ -24,6 +26,7 @@ export class TeamsService implements OnModuleInit {
 
   constructor(
     private readonly client: ApiFootballClient,
+    private readonly fdoClient: FootballDataOrgClient,
     private readonly normalizer: ApiFootballNormalizer,
     private readonly cacheService: SportsDataCacheService,
     private readonly prismaService: PrismaService,
@@ -63,11 +66,41 @@ export class TeamsService implements OnModuleInit {
     country: string | null;
   } | null> {
     const rawFdoId = teamId.startsWith('fdo:') ? teamId.slice(4) : null;
-    return this.prismaService.team.findFirst({
+    const team = await this.prismaService.team.findFirst({
       where: rawFdoId
         ? { fdoExternalId: rawFdoId }
         : { OR: [{ externalId: teamId }, { fdoExternalId: teamId }] },
     });
+    if (team) return team;
+
+    if (!rawFdoId) return null;
+
+    const cacheKey = `sports:team:fdo:${rawFdoId}`;
+    const cached = await this.cacheService.getCached<{
+      id: string;
+      externalId: string;
+      name: string;
+      logo: string | null;
+      shortName: string | null;
+      country: string | null;
+    }>(cacheKey);
+    if (cached) return cached;
+
+    const detail = await this.fdoClient
+      .get<FdoTeamDetail>(`teams/${rawFdoId}`)
+      .catch(() => null);
+    if (!detail) return null;
+
+    const dto = {
+      id: teamId,
+      externalId: teamId,
+      name: detail.name,
+      logo: detail.crest || null,
+      shortName: detail.shortName ?? null,
+      country: null,
+    };
+    await this.cacheService.setCached(cacheKey, dto, TTL_TEAMS);
+    return dto;
   }
 
   async fetchPlayersForTeam(teamId: string): Promise<void> {

@@ -366,6 +366,32 @@ export class FixturesService {
     return results;
   }
 
+  @Cron('0 */6 * * *')
+  async prewarmTeamFixtures(): Promise<void> {
+    const teams = await this.prisma.team.findMany({
+      where: { fdoExternalId: { not: null } },
+      select: { externalId: true },
+    });
+    this.logger.log(`Pre-warming fixtures for ${teams.length} teams`);
+    for (const team of teams) {
+      try {
+        await this.cacheService.invalidate(
+          SportsDataCacheService.teamFixturesKey(team.externalId),
+        );
+        await this.cacheService.invalidate(
+          SportsDataCacheService.teamResultsKey(team.externalId),
+        );
+        await this.getTeamFixtures(team.externalId);
+        await this.getTeamResults(team.externalId);
+      } catch (err) {
+        this.logger.error(
+          `Team prewarm failed for ${team.externalId}: ${String(err)}`,
+        );
+      }
+    }
+    this.logger.log('Team fixture pre-warm complete');
+  }
+
   @Cron('0 */12 * * *')
   async refreshFixtures(): Promise<void> {
     const today = new Date().toISOString().slice(0, 10);

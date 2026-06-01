@@ -3,6 +3,7 @@ import { TeamsService } from '../services/teams.service';
 describe('TeamsService', () => {
   let service: TeamsService;
   let mockClient: any;
+  let mockFdoClient: any;
   let mockNormalizer: any;
   let mockCache: any;
   let mockPrisma: any;
@@ -30,6 +31,7 @@ describe('TeamsService', () => {
 
   beforeEach(() => {
     mockClient = { get: jest.fn() };
+    mockFdoClient = { get: jest.fn() };
     mockNormalizer = {
       normalizePlayer: jest.fn(),
     };
@@ -42,6 +44,7 @@ describe('TeamsService', () => {
         count: jest.fn().mockResolvedValue(1),
         upsert: jest.fn().mockResolvedValue({ id: 'db-team-1' }),
         findUnique: jest.fn().mockResolvedValue(null),
+        findFirst: jest.fn().mockResolvedValue(null),
       },
       player: {
         count: jest.fn().mockResolvedValue(0),
@@ -50,6 +53,7 @@ describe('TeamsService', () => {
     };
     service = new TeamsService(
       mockClient,
+      mockFdoClient,
       mockNormalizer,
       mockCache,
       mockPrisma,

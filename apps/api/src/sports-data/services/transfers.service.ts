@@ -34,15 +34,7 @@ export class TransfersService {
   async getByTeam(teamId: string): Promise<TransferDto[]> {
     const cacheKey = `sports:transfers:team:${teamId}`;
     const cached = await this.cacheService.getCached<TransferDto[]>(cacheKey);
-    if (cached) return cached;
-
-    const raw = await this.client.get<RafTransferResponse>('transfers', {
-      team: teamId,
-    });
-
-    const transfers = raw.map((r) => this.toDto(r));
-    await this.cacheService.setCached(cacheKey, transfers, TTL_TEAMS);
-    return transfers;
+    return cached ?? [];
   }
 
   private toDto(r: RafTransferResponse): TransferDto {

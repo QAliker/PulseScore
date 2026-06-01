@@ -33,16 +33,7 @@ export class InjuriesService {
   async getByTeam(teamId: string, season: number): Promise<InjuryDto[]> {
     const cacheKey = `sports:injuries:team:${teamId}:${season}`;
     const cached = await this.cacheService.getCached<InjuryDto[]>(cacheKey);
-    if (cached) return cached;
-
-    const raw = await this.client.get<RafInjuryResponse>('injuries', {
-      team: teamId,
-      season,
-    });
-
-    const injuries = raw.map((r) => this.toDto(r));
-    await this.cacheService.setCached(cacheKey, injuries, TTL_FIXTURES);
-    return injuries;
+    return cached ?? [];
   }
 
   private toDto(r: RafInjuryResponse): InjuryDto {

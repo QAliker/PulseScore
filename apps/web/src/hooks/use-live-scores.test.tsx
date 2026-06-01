@@ -45,8 +45,7 @@ describe('useLiveScores', () => {
     const { result } = renderHook(() => useLiveScores([makeMatch({ minute: 42 })]));
 
     await act(async () => {
-      await vi.advanceTimersByTimeAsync(500); // connect
-      await vi.advanceTimersByTimeAsync(8_500); // one tick
+      await vi.advanceTimersByTimeAsync(61_000); // one 60s tick
     });
 
     expect(result.current.all[0].minute).toBeGreaterThan(42);

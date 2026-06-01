@@ -8,9 +8,11 @@ import {
 import { TeamsService } from '../services/teams.service';
 import { PlayersService } from '../services/players.service';
 import { FixturesService } from '../services/fixtures.service';
+import { PrismaService } from '../../prisma/prisma.service';
 import { PlayerDto } from '../dto/player.dto';
 import { MatchDto } from '../dto/match.dto';
 import { TeamStatisticsDto } from '../dto/team-statistics.dto';
+import { getCurrentSeason } from '../constants/season.constants';
 
 @Controller('teams')
 export class TeamsController {
@@ -18,6 +20,7 @@ export class TeamsController {
     private readonly teamsService: TeamsService,
     private readonly playersService: PlayersService,
     private readonly fixturesService: FixturesService,
+    private readonly prisma: PrismaService,
   ) {}
 
   @Get(':teamId')
@@ -25,6 +28,38 @@ export class TeamsController {
     const team = await this.teamsService.getTeamByExternalId(teamId);
     if (!team) throw new NotFoundException(`Team ${teamId} not found`);
     return team;
+  }
+
+  @Get(':teamId/standing')
+  async getStanding(@Param('teamId') teamId: string) {
+    const team = await this.prisma.team.findFirst({
+      where: {
+        OR: [{ externalId: teamId }, { fdoExternalId: teamId }],
+      },
+    });
+    if (!team) throw new NotFoundException(`Team ${teamId} not found`);
+
+    const season = String(getCurrentSeason());
+    const standing = await this.prisma.standing.findFirst({
+      where: { teamId: team.id, season },
+      include: { league: true },
+      orderBy: { updatedAt: 'desc' },
+    });
+
+    if (!standing) return null;
+
+    return {
+      position: standing.position,
+      points: standing.points,
+      played: standing.played,
+      won: standing.won,
+      drawn: standing.drawn,
+      lost: standing.lost,
+      goalsFor: standing.goalsFor,
+      goalsAgainst: standing.goalsAgainst,
+      leagueName: standing.league.name,
+      leagueId: standing.league.externalId,
+    };
   }
 
   @Get(':teamId/players')

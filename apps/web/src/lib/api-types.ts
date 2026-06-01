@@ -214,6 +214,19 @@ export type ApiSidelined = {
   end: string | null;
 };
 
+export type ApiTeamStanding = {
+  position: number;
+  points: number;
+  played: number;
+  won: number;
+  drawn: number;
+  lost: number;
+  goalsFor: number;
+  goalsAgainst: number;
+  leagueName: string;
+  leagueId: string;
+};
+
 export type ApiVenue = {
   id: number;
   name: string;
