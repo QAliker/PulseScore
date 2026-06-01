@@ -81,3 +81,6 @@ jobs:
           DATABASE_URL: postgresql://pulsescore:pulsescore@localhost:5432/pulsescore
           REDIS_URL: redis://localhost:6379
           NODE_ENV: test
+
+      - name: Test Web
+        run: npm run -w apps/web test

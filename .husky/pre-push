@@ -1,0 +1,24 @@
+#!/bin/sh
+
+echo "🔍 pre-push: lint..."
+npm run lint || exit 1
+
+echo "🏗️  pre-push: build..."
+npm run -w apps/api build || exit 1
+npm run -w apps/web build:webpack || exit 1
+
+# Check if DB and Redis are up
+DB_UP=false
+REDIS_UP=false
+
+nc -z localhost 5432 2>/dev/null && DB_UP=true
+nc -z localhost 6379 2>/dev/null && REDIS_UP=true
+
+if $DB_UP && $REDIS_UP; then
+  echo "🧪 pre-push: tests..."
+  npm run test || exit 1
+else
+  echo "⚠️  pre-push: DB/Redis not running — tests skipped (CI will check)"
+fi
+
+echo "✅ pre-push: all checks passed"
