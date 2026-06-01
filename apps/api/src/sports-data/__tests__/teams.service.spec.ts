@@ -61,7 +61,7 @@ describe('TeamsService', () => {
     const result = await service.getTeams('40');
     expect(mockClient.get).toHaveBeenCalledWith('teams', {
       league: '40',
-      season: 2025,
+      season: 2024,
     });
     expect(result).toHaveLength(1);
     expect(result[0].team.name).toBe('Leeds United');

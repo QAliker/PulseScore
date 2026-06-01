@@ -7,7 +7,7 @@ describe('ApiFootballClient', () => {
   beforeEach(() => {
     const mockConfigService: Partial<ConfigService> = {
       get: jest.fn((key: string) => {
-        if (key === 'RAPIDAPI_KEY') return 'test-rapidapi-key';
+        if (key === 'API_FOOTBALL_KEY') return 'test-api-key';
         return undefined;
       }),
     };
@@ -34,14 +34,11 @@ describe('ApiFootballClient', () => {
       const [calledUrl, calledInit] = (globalThis.fetch as jest.Mock).mock
         .calls[0];
       expect(calledUrl).toContain(
-        'https://api-football-v1.p.rapidapi.com/v3/fixtures',
+        'https://v3.football.api-sports.io/fixtures',
       );
       expect(calledUrl).toContain('league=40');
       expect(calledUrl).toContain('season=2025');
-      expect(calledInit.headers['x-rapidapi-key']).toBe('test-rapidapi-key');
-      expect(calledInit.headers['x-rapidapi-host']).toBe(
-        'api-football-v1.p.rapidapi.com',
-      );
+      expect(calledInit.headers['x-apisports-key']).toBe('test-api-key');
       expect(result).toHaveLength(1);
     });
 
