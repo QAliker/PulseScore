@@ -38,7 +38,7 @@ export class WarmupService implements OnApplicationBootstrap {
       }
     }
     this.logger.log('Cache warmup complete.');
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+
     void this.fixtures.prewarmTeamFixtures();
   }
 

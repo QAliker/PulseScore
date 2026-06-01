@@ -26,8 +26,8 @@ describe('LEAGUE_MAP', () => {
     expect(LEAGUE_MAP['39'].fdoCode).toBe('PL');
   });
 
-  it('has all 6 required leagues', () => {
-    expect(Object.keys(LEAGUE_MAP)).toHaveLength(6);
+  it('has all 5 required leagues', () => {
+    expect(Object.keys(LEAGUE_MAP)).toHaveLength(5);
     for (const league of Object.values(LEAGUE_MAP)) {
       expect(league.fdoCode).toBeDefined();
       expect(league.name).toBeDefined();

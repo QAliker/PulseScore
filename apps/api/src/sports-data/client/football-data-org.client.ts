@@ -1,4 +1,4 @@
-import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
 @Injectable()
@@ -32,10 +32,6 @@ export class FootballDataOrgClient {
 
     if (response.status === 429) {
       this.logger.warn(`FDO rate limit hit: ${url}`);
-      throw new HttpException(
-        'Too Many Requests',
-        HttpStatus.TOO_MANY_REQUESTS,
-      );
     }
 
     if (!response.ok) {
