@@ -20,6 +20,7 @@ export class WarmupService implements OnApplicationBootstrap {
   ) {}
 
   async onApplicationBootstrap(): Promise<void> {
+    if (process.env.NODE_ENV === 'development') return;
     await this.seedFdoIds();
     this.logger.log('Warming up cache for all leagues...');
     for (const leagueId of LEAGUE_IDS) {
