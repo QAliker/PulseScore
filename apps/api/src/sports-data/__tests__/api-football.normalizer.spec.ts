@@ -67,8 +67,8 @@ describe('ApiFootballNormalizer', () => {
         status: { long: 'Match Finished', short: 'FT', elapsed: 90 },
       },
       league: {
-        id: 40,
-        name: 'Championship',
+        id: 39,
+        name: 'Premier League',
         country: 'England',
         logo: 'https://example.com/logo.png',
         flag: 'https://example.com/flag.png',
@@ -175,8 +175,8 @@ describe('ApiFootballNormalizer', () => {
 
     it('should set league info', () => {
       const dto = normalizer.normalizeFixture(mockFixture);
-      expect(dto.league?.externalId).toBe('40');
-      expect(dto.league?.name).toBe('Championship');
+      expect(dto.league?.externalId).toBe('39');
+      expect(dto.league?.name).toBe('Premier League');
       expect(dto.league?.country).toBe('England');
     });
 
@@ -216,7 +216,7 @@ describe('ApiFootballNormalizer', () => {
       },
       points: 83,
       goalsDiff: 40,
-      group: 'Championship',
+      group: 'Premier League',
       form: 'WWWDW',
       status: 'same',
       description: 'Promotion - Premier League',
@@ -245,12 +245,12 @@ describe('ApiFootballNormalizer', () => {
     };
 
     it('should map position from rank', () => {
-      const dto = normalizer.normalizeStanding(mockEntry, '40', 'Championship');
+      const dto = normalizer.normalizeStanding(mockEntry, '39', 'Premier League');
       expect(dto.position).toBe(1);
     });
 
     it('should map all stats', () => {
-      const dto = normalizer.normalizeStanding(mockEntry, '40', 'Championship');
+      const dto = normalizer.normalizeStanding(mockEntry, '39', 'Premier League');
       expect(dto.played).toBe(38);
       expect(dto.won).toBe(25);
       expect(dto.drawn).toBe(8);
@@ -261,19 +261,19 @@ describe('ApiFootballNormalizer', () => {
     });
 
     it('should set team badge', () => {
-      const dto = normalizer.normalizeStanding(mockEntry, '40', 'Championship');
+      const dto = normalizer.normalizeStanding(mockEntry, '39', 'Premier League');
       expect(dto.teamBadge).toBe('https://example.com/leeds.png');
     });
 
     it('should set promotion from description', () => {
-      const dto = normalizer.normalizeStanding(mockEntry, '40', 'Championship');
+      const dto = normalizer.normalizeStanding(mockEntry, '39', 'Premier League');
       expect(dto.promotion).toBe('Promotion - Premier League');
     });
 
     it('should set leagueId and leagueName', () => {
-      const dto = normalizer.normalizeStanding(mockEntry, '40', 'Championship');
-      expect(dto.leagueId).toBe('40');
-      expect(dto.leagueName).toBe('Championship');
+      const dto = normalizer.normalizeStanding(mockEntry, '39', 'Premier League');
+      expect(dto.leagueId).toBe('39');
+      expect(dto.leagueName).toBe('Premier League');
     });
   });
 
@@ -296,8 +296,8 @@ describe('ApiFootballNormalizer', () => {
         {
           team: { id: 2627, name: 'Leeds United', logo: '' },
           league: {
-            id: 40,
-            name: 'Championship',
+            id: 39,
+            name: 'Premier League',
             country: 'England',
             logo: '',
             flag: '',

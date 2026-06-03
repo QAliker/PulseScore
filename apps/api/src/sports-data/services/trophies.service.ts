@@ -17,6 +17,7 @@ export class TrophiesService {
   ) {}
 
   async getByPlayer(playerId: string): Promise<TrophyDto[]> {
+    if (playerId.startsWith('fdo:')) return [];
     const cacheKey = `sports:trophies:player:${playerId}`;
     const cached = await this.cacheService.getCached<TrophyDto[]>(cacheKey);
     if (cached) return cached;

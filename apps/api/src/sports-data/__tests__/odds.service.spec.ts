@@ -7,8 +7,8 @@ describe('OddsService', () => {
 
   const makeRawOdds = (fixtureId: string) => ({
     league: {
-      id: 40,
-      name: 'Championship',
+      id: 39,
+      name: 'Premier League',
       country: 'England',
       logo: '',
       flag: '',

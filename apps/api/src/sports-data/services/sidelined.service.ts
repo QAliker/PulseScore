@@ -17,6 +17,7 @@ export class SidelinedService {
   ) {}
 
   async getByPlayer(playerId: string): Promise<SidelinedDto[]> {
+    if (playerId.startsWith('fdo:')) return [];
     const cacheKey = `sports:sidelined:player:${playerId}`;
     const cached = await this.cacheService.getCached<SidelinedDto[]>(cacheKey);
     if (cached) return cached;

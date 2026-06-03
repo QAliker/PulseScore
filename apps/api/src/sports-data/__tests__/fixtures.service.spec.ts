@@ -6,7 +6,6 @@ jest.mock('../constants/season.constants', () => ({
   HISTORY_SEASON_RAF: 2024,
   LEAGUE_MAP: {
     '39': { fdoCode: 'PL', name: 'Premier League' },
-    '40': { fdoCode: 'ELC', name: 'Championship' },
   },
 }));
 
@@ -27,8 +26,8 @@ describe('FixturesService', () => {
       venue: { name: 'Stadium' },
     },
     league: {
-      id: 40,
-      name: 'Championship',
+      id: 39,
+      name: 'Premier League',
       country: 'England',
       logo: '',
       flag: '',
@@ -82,14 +81,15 @@ describe('FixturesService', () => {
       mockPrisma,
       { getLineups: jest.fn().mockResolvedValue(null) } as any,
       { enrichPhotos: jest.fn().mockResolvedValue(undefined) } as any,
+      { getByTeam: jest.fn().mockResolvedValue([]) } as any,
     );
   });
 
   it('should fetch fixtures from RAF API when cache is empty (historical season)', async () => {
     mockRafClient.get.mockResolvedValue([makeRawFixture('1')]);
-    const result = await service.getFixtures('40', '2026-04-10', '2026-04-10');
+    const result = await service.getFixtures('39', '2026-04-10', '2026-04-10');
     expect(mockRafClient.get).toHaveBeenCalledWith('fixtures', {
-      league: '40',
+      league: '39',
       season: 2024,
       from: '2026-04-10',
       to: '2026-04-10',
@@ -100,7 +100,7 @@ describe('FixturesService', () => {
   it('should return cached data when available', async () => {
     const cached = [{ externalId: '1' }];
     mockCache.getCached.mockResolvedValue(cached);
-    const result = await service.getFixtures('40', '2026-04-10', '2026-04-10');
+    const result = await service.getFixtures('39', '2026-04-10', '2026-04-10');
     expect(mockRafClient.get).not.toHaveBeenCalled();
     expect(result).toEqual(cached);
   });

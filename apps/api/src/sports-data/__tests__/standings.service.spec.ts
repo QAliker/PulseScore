@@ -15,8 +15,8 @@ describe('StandingsService', () => {
 
   const makeRawStandingsResponse = () => ({
     league: {
-      id: 40,
-      name: 'Championship',
+      id: 39,
+      name: 'Premier League',
       country: 'England',
       logo: '',
       flag: '',
@@ -28,7 +28,7 @@ describe('StandingsService', () => {
             team: { id: 2627, name: 'Leeds United', logo: '' },
             points: 83,
             goalsDiff: 40,
-            group: 'Championship',
+            group: 'Premier League',
             form: 'WWWDW',
             status: 'same',
             description: 'Promotion - Premier League',
@@ -113,9 +113,9 @@ describe('StandingsService', () => {
 
   it('should fetch standings from RAF API when season < 2025', async () => {
     mockRafClient.get.mockResolvedValue([makeRawStandingsResponse()]);
-    const result = await service.getStandings('40');
+    const result = await service.getStandings('39');
     expect(mockRafClient.get).toHaveBeenCalledWith('standings', {
-      league: '40',
+      league: '39',
       season: 2024,
     });
     expect(result).toHaveLength(1);
@@ -125,14 +125,14 @@ describe('StandingsService', () => {
   it('should return cached standings when available', async () => {
     const cached = [{ position: 1, teamName: 'Leeds' }];
     mockCache.getCached.mockResolvedValue(cached);
-    const result = await service.getStandings('40');
+    const result = await service.getStandings('39');
     expect(mockRafClient.get).not.toHaveBeenCalled();
     expect(result).toEqual(cached);
   });
 
   it('should return empty array when RAF API returns empty response', async () => {
     mockRafClient.get.mockResolvedValue([]);
-    const result = await service.getStandings('40');
+    const result = await service.getStandings('39');
     expect(result).toEqual([]);
   });
 });

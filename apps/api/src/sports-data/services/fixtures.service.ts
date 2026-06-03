@@ -22,12 +22,14 @@ import {
 } from '../constants/season.constants';
 import { EspnService } from './espn.service';
 import { PlayerPhotoService } from './player-photo.service';
+import { PlayersService } from './players.service';
 
 const LEAGUE_IDS = ['39', '140', '78', '135', '61']; // PL, La Liga, Bundesliga, Serie A, Ligue 1
 
 @Injectable()
 export class FixturesService {
   private readonly logger = new Logger(FixturesService.name);
+  private isPrewarming = false;
 
   constructor(
     private readonly rafClient: ApiFootballClient,
@@ -38,7 +40,12 @@ export class FixturesService {
     private readonly prisma: PrismaService,
     private readonly espnService: EspnService,
     private readonly playerPhotoService: PlayerPhotoService,
+    private readonly playersService: PlayersService,
   ) {}
+
+  private sleep(ms: number): Promise<void> {
+    return new Promise((r) => setTimeout(r, ms));
+  }
 
   private async resolveTeamByAnyId(teamId: string) {
     const rawFdoId = teamId.startsWith('fdo:') ? teamId.slice(4) : null;
@@ -366,30 +373,135 @@ export class FixturesService {
     return results;
   }
 
+  // FDO free tier: 10 calls/min → 6 s between each call
+  private static readonly FDO_CALL_INTERVAL_MS = 6000;
+  // Teams returning 403 are outside FDO free-tier competitions — skip for 24 h
+  private static readonly FDO_FORBIDDEN_TTL = 24 * 60 * 60;
+
+  private forbiddenKey(teamId: string): string {
+    return `sports:prewarm:forbidden:${teamId}`;
+  }
+
+  private async fetchWithThrottle(
+    fn: () => Promise<unknown>,
+    teamId: string,
+    label: string,
+  ): Promise<'ok' | 'forbidden' | 'error'> {
+    try {
+      await fn();
+      await this.sleep(FixturesService.FDO_CALL_INTERVAL_MS);
+      return 'ok';
+    } catch (err) {
+      const msg = String(err);
+      if (msg.includes('403')) {
+        this.logger.debug(
+          `${label} for ${teamId}: not in FDO free tier, marking forbidden`,
+        );
+        await this.cacheService.setCached(
+          this.forbiddenKey(teamId),
+          true,
+          FixturesService.FDO_FORBIDDEN_TTL,
+        );
+        return 'forbidden';
+      }
+      this.logger.error(`${label} failed for ${teamId}: ${msg}`);
+      await this.sleep(FixturesService.FDO_CALL_INTERVAL_MS);
+      return 'error';
+    }
+  }
+
   @Cron('0 */6 * * *')
   async prewarmTeamFixtures(): Promise<void> {
-    const teams = await this.prisma.team.findMany({
-      where: { fdoExternalId: { not: null } },
-      select: { externalId: true },
-    });
-    this.logger.log(`Pre-warming fixtures for ${teams.length} teams`);
-    for (const team of teams) {
-      try {
-        await this.cacheService.invalidate(
-          SportsDataCacheService.teamFixturesKey(team.externalId),
-        );
-        await this.cacheService.invalidate(
-          SportsDataCacheService.teamResultsKey(team.externalId),
-        );
-        await this.getTeamFixtures(team.externalId);
-        await this.getTeamResults(team.externalId);
-      } catch (err) {
-        this.logger.error(
-          `Team prewarm failed for ${team.externalId}: ${String(err)}`,
-        );
-      }
+    if (this.isPrewarming) {
+      this.logger.warn('Prewarm already running, skipping');
+      return;
     }
-    this.logger.log('Team fixture pre-warm complete');
+    this.isPrewarming = true;
+
+    const teams = await this.prisma.team.findMany({
+      where: {
+        fdoExternalId: { not: null },
+        standings: {
+          some: { league: { externalId: { in: LEAGUE_IDS } } },
+        },
+      },
+      select: { externalId: true, fdoExternalId: true },
+    });
+
+    this.logger.log(`Prewarm starting for ${teams.length} teams`);
+    let warmed = 0;
+    let skipped = 0;
+    let forbidden = 0;
+
+    try {
+      for (const team of teams) {
+        const [fixturesCached, resultsCached, squadCached, isForbidden] =
+          await Promise.all([
+            this.cacheService.getCached(
+              SportsDataCacheService.teamFixturesKey(team.externalId),
+            ),
+            this.cacheService.getCached(
+              SportsDataCacheService.teamResultsKey(team.externalId),
+            ),
+            this.cacheService.getCached(
+              `sports:squad:fdo:${team.fdoExternalId}`,
+            ),
+            this.cacheService.getCached(this.forbiddenKey(team.externalId)),
+          ]);
+
+        if (isForbidden) {
+          forbidden++;
+          continue;
+        }
+
+        if (fixturesCached && resultsCached && squadCached) {
+          skipped++;
+          continue;
+        }
+
+        let teamForbidden = false;
+
+        if (!fixturesCached) {
+          const r = await this.fetchWithThrottle(
+            () => this.getTeamFixtures(team.externalId),
+            team.externalId,
+            'fixtures',
+          );
+          if (r === 'forbidden') {
+            teamForbidden = true;
+          }
+        }
+
+        if (!teamForbidden && !resultsCached) {
+          const r = await this.fetchWithThrottle(
+            () => this.getTeamResults(team.externalId),
+            team.externalId,
+            'results',
+          );
+          if (r === 'forbidden') teamForbidden = true;
+        }
+
+        if (!teamForbidden && !squadCached) {
+          await this.fetchWithThrottle(
+            () => this.playersService.getByTeam(team.externalId),
+            team.externalId,
+            'squad',
+          );
+        }
+
+        if (teamForbidden) {
+          forbidden++;
+        } else {
+          warmed++;
+        }
+      }
+    } finally {
+      this.isPrewarming = false;
+    }
+
+    this.logger.log(
+      `Prewarm complete: ${warmed} warmed, ${skipped} already cached, ${forbidden} forbidden (FDO paywall)`,
+    );
   }
 
   @Cron('0 */12 * * *')

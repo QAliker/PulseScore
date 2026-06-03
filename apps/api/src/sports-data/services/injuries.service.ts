@@ -17,6 +17,7 @@ export class InjuriesService {
   ) {}
 
   async getByFixture(fixtureId: string): Promise<InjuryDto[]> {
+    if (fixtureId.startsWith('fdo:')) return [];
     const cacheKey = `sports:injuries:fixture:${fixtureId}`;
     const cached = await this.cacheService.getCached<InjuryDto[]>(cacheKey);
     if (cached) return cached;

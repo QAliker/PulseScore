@@ -52,7 +52,7 @@ export class H2hService {
     }
 
     const allMatches = await Promise.all(
-      data.head2head.matches.map((m) => this.normalizeMatch(m)),
+      data.matches.map((m) => this.normalizeMatch(m)),
     );
 
     const dto = new H2hDto();

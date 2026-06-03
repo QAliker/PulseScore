@@ -55,10 +55,10 @@ export interface FdoCompetitionTeamsResponse {
 }
 
 export interface FdoH2hResponse {
-  head2head: {
+  aggregates: {
     numberOfMatches: number;
-    matches: FdoMatch[];
   };
+  matches: FdoMatch[];
 }
 
 export interface FdoSquadPlayer {

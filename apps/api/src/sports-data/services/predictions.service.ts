@@ -17,6 +17,7 @@ export class PredictionsService {
   ) {}
 
   async getByFixture(fixtureId: string): Promise<PredictionDto | null> {
+    if (fixtureId.startsWith('fdo:')) return null;
     const cacheKey = `sports:predictions:${fixtureId}`;
     const cached = await this.cacheService.getCached<PredictionDto>(cacheKey);
     if (cached) return cached;

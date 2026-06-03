@@ -17,6 +17,7 @@ export class TransfersService {
   ) {}
 
   async getByPlayer(playerId: string): Promise<TransferDto | null> {
+    if (playerId.startsWith('fdo:')) return null;
     const cacheKey = `sports:transfers:player:${playerId}`;
     const cached = await this.cacheService.getCached<TransferDto>(cacheKey);
     if (cached) return cached;

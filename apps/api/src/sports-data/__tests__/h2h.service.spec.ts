@@ -54,10 +54,8 @@ describe('H2hService', () => {
 
   it('should fetch H2H from FDO when team IDs are fdo: prefixed', async () => {
     mockFdoClient.get.mockResolvedValue({
-      head2head: {
-        numberOfMatches: 2,
-        matches: [makeFdoMatch(1, 57, 65), makeFdoMatch(2, 65, 57)],
-      },
+      aggregates: { numberOfMatches: 2 },
+      matches: [makeFdoMatch(1, 57, 65), makeFdoMatch(2, 65, 57)],
     });
     const result = await service.getH2H('fdo:57', 'fdo:65');
     expect(mockFdoClient.get).toHaveBeenCalledWith('matches', {
