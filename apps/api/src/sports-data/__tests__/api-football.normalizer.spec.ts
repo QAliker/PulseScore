@@ -245,12 +245,20 @@ describe('ApiFootballNormalizer', () => {
     };
 
     it('should map position from rank', () => {
-      const dto = normalizer.normalizeStanding(mockEntry, '39', 'Premier League');
+      const dto = normalizer.normalizeStanding(
+        mockEntry,
+        '39',
+        'Premier League',
+      );
       expect(dto.position).toBe(1);
     });
 
     it('should map all stats', () => {
-      const dto = normalizer.normalizeStanding(mockEntry, '39', 'Premier League');
+      const dto = normalizer.normalizeStanding(
+        mockEntry,
+        '39',
+        'Premier League',
+      );
       expect(dto.played).toBe(38);
       expect(dto.won).toBe(25);
       expect(dto.drawn).toBe(8);
@@ -261,17 +269,29 @@ describe('ApiFootballNormalizer', () => {
     });
 
     it('should set team badge', () => {
-      const dto = normalizer.normalizeStanding(mockEntry, '39', 'Premier League');
+      const dto = normalizer.normalizeStanding(
+        mockEntry,
+        '39',
+        'Premier League',
+      );
       expect(dto.teamBadge).toBe('https://example.com/leeds.png');
     });
 
     it('should set promotion from description', () => {
-      const dto = normalizer.normalizeStanding(mockEntry, '39', 'Premier League');
+      const dto = normalizer.normalizeStanding(
+        mockEntry,
+        '39',
+        'Premier League',
+      );
       expect(dto.promotion).toBe('Promotion - Premier League');
     });
 
     it('should set leagueId and leagueName', () => {
-      const dto = normalizer.normalizeStanding(mockEntry, '39', 'Premier League');
+      const dto = normalizer.normalizeStanding(
+        mockEntry,
+        '39',
+        'Premier League',
+      );
       expect(dto.leagueId).toBe('39');
       expect(dto.leagueName).toBe('Premier League');
     });
