@@ -93,9 +93,13 @@ export class PlayersService {
       .catch(() => null);
     if (!person) return null;
 
+    const ct = person.currentTeam ?? null;
+
     const dto = new PlayerDto();
     dto.externalId = `fdo:${person.id}`;
     dto.name = person.name;
+    dto.firstName = person.firstName ?? null;
+    dto.lastName = person.lastName ?? null;
     dto.image = await this.photoService.fetchPhoto(person.name);
     dto.number = person.shirtNumber ?? null;
     dto.position = person.position
@@ -107,18 +111,39 @@ export class PlayersService {
             (1000 * 60 * 60 * 24 * 365.25),
         )
       : null;
-    dto.teamId = person.currentTeam ? `fdo:${person.currentTeam.id}` : null;
+    dto.nationality = person.nationality ?? null;
+    dto.teamId = ct ? `fdo:${ct.id}` : null;
     dto.goals = 0;
     dto.assists = 0;
     dto.yellowCards = 0;
     dto.redCards = 0;
     dto.matchesPlayed = 0;
     dto.rating = null;
+    dto.contractStart = ct?.contract?.start ?? null;
+    dto.contractUntil = ct?.contract?.until ?? null;
+    dto.teamName = ct?.name ?? null;
+    dto.teamShortName = ct?.shortName ?? null;
+    dto.teamTla = ct?.tla ?? null;
+    dto.teamCrest = ct?.crest ?? null;
+    dto.teamAddress = ct?.address ?? null;
+    dto.teamWebsite = ct?.website ?? null;
+    dto.teamVenue = ct?.venue ?? null;
+    dto.teamFounded = ct?.founded ?? null;
+    dto.teamColors = ct?.clubColors ?? null;
+    dto.teamArea = ct?.area?.name ?? null;
+    dto.teamAreaFlag = ct?.area?.flag ?? null;
+    dto.teamCompetitions =
+      ct?.runningCompetitions?.map((c) => ({
+        name: c.name,
+        code: c.code,
+        type: c.type,
+        emblem: c.emblem ?? null,
+      })) ?? null;
 
     const result = {
       ...dto,
-      teamName: person.currentTeam?.name ?? null,
-      teamLogo: person.currentTeam?.crest ?? null,
+      teamName: ct?.name ?? null,
+      teamLogo: ct?.crest ?? null,
     };
     await this.cacheService.setCached(cacheKey, result, TTL_TEAMS);
     return result;
@@ -236,6 +261,8 @@ export class PlayersService {
       const dto = new PlayerDto();
       dto.externalId = `fdo:${p.id}`;
       dto.name = p.name;
+      dto.firstName = null;
+      dto.lastName = null;
       dto.image = null;
       dto.number = p.shirtNumber ?? null;
       dto.position = p.position
@@ -247,6 +274,7 @@ export class PlayersService {
               (1000 * 60 * 60 * 24 * 365.25),
           )
         : null;
+      dto.nationality = p.nationality ?? null;
       dto.teamId = null;
       dto.goals = 0;
       dto.assists = 0;
@@ -254,6 +282,20 @@ export class PlayersService {
       dto.redCards = 0;
       dto.matchesPlayed = 0;
       dto.rating = null;
+      dto.contractStart = null;
+      dto.contractUntil = null;
+      dto.teamName = null;
+      dto.teamShortName = null;
+      dto.teamTla = null;
+      dto.teamCrest = null;
+      dto.teamAddress = null;
+      dto.teamWebsite = null;
+      dto.teamVenue = null;
+      dto.teamFounded = null;
+      dto.teamColors = null;
+      dto.teamArea = null;
+      dto.teamAreaFlag = null;
+      dto.teamCompetitions = null;
       return dto;
     });
 
@@ -325,10 +367,13 @@ export class PlayersService {
     const dto = new PlayerDto();
     dto.externalId = p.externalId;
     dto.name = p.name;
+    dto.firstName = null;
+    dto.lastName = null;
     dto.image = p.image;
     dto.number = p.number;
     dto.position = p.position;
     dto.age = p.age;
+    dto.nationality = null;
     dto.teamId = p.teamId;
     dto.goals = p.goals;
     dto.assists = p.assists;
@@ -336,6 +381,20 @@ export class PlayersService {
     dto.redCards = p.redCards;
     dto.matchesPlayed = p.matchesPlayed;
     dto.rating = p.rating;
+    dto.contractStart = null;
+    dto.contractUntil = null;
+    dto.teamName = null;
+    dto.teamShortName = null;
+    dto.teamTla = null;
+    dto.teamCrest = null;
+    dto.teamAddress = null;
+    dto.teamWebsite = null;
+    dto.teamVenue = null;
+    dto.teamFounded = null;
+    dto.teamColors = null;
+    dto.teamArea = null;
+    dto.teamAreaFlag = null;
+    dto.teamCompetitions = null;
     return dto;
   }
 }

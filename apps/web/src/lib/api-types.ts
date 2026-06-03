@@ -7,13 +7,23 @@ export type ApiTeam = {
   country: string | null;
 };
 
+export type ApiPlayerCompetition = {
+  name: string;
+  code: string;
+  type: string;
+  emblem: string | null;
+};
+
 export type ApiPlayer = {
   externalId: string;
   name: string;
+  firstName: string | null;
+  lastName: string | null;
   image: string | null;
   number: number | null;
   position: string | null;
   age: number | null;
+  nationality: string | null;
   teamId: string | null;
   goals: number;
   assists: number;
@@ -21,10 +31,23 @@ export type ApiPlayer = {
   redCards: number;
   matchesPlayed: number;
   rating: string | null;
+  contractStart: string | null;
+  contractUntil: string | null;
+  teamName: string | null;
+  teamShortName: string | null;
+  teamTla: string | null;
+  teamCrest: string | null;
+  teamAddress: string | null;
+  teamWebsite: string | null;
+  teamVenue: string | null;
+  teamFounded: number | null;
+  teamColors: string | null;
+  teamArea: string | null;
+  teamAreaFlag: string | null;
+  teamCompetitions: ApiPlayerCompetition[] | null;
 };
 
 export type ApiPlayerDetail = ApiPlayer & {
-  teamName: string | null;
   teamLogo: string | null;
 };
 

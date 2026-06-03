@@ -109,6 +109,22 @@ export interface FdoPersonDetail {
   currentTeam?: {
     id: number;
     name: string;
+    shortName: string | null;
+    tla: string | null;
     crest: string;
+    address: string | null;
+    website: string | null;
+    venue: string | null;
+    founded: number | null;
+    clubColors: string | null;
+    area?: { id: number; name: string; code: string; flag: string | null } | null;
+    runningCompetitions?: Array<{
+      id: number;
+      name: string;
+      code: string;
+      type: string;
+      emblem: string | null;
+    }> | null;
+    contract: { start: string | null; until: string | null } | null;
   } | null;
 }

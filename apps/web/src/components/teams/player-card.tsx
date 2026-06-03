@@ -22,10 +22,12 @@ export function PlayerCard({ player }: Props) {
     >
       <div className="relative size-10 shrink-0 overflow-hidden rounded-full bg-muted">
         {player.image ? (
-          <Image src={player.image} alt={player.name} className="size-full object-cover" loading="lazy" width={30} height={30}/>
+          <Image src={player.image} alt={player.name} className="size-full object-cover" loading="lazy" width={40} height={40}/>
         ) : (
           <span className="flex size-full items-center justify-center text-xs font-bold text-muted-foreground">
-            {player.number ?? '?'}
+            {player.number != null
+              ? `#${player.number}`
+              : player.name.split(' ').map((w) => w[0]).filter(Boolean).slice(0, 2).join('').toUpperCase()}
           </span>
         )}
       </div>
@@ -41,12 +43,10 @@ export function PlayerCard({ player }: Props) {
           {player.number && (
             <span className="text-[0.68rem] text-muted-foreground">#{player.number}</span>
           )}
+          {player.nationality && (
+            <span className="text-[0.68rem] text-muted-foreground">{player.nationality}</span>
+          )}
         </div>
-      </div>
-
-      <div className="flex shrink-0 flex-col items-end gap-0.5 text-right">
-        <span className="text-xs font-bold">{player.goals}G</span>
-        <span className="text-[0.65rem] text-muted-foreground">{player.assists}A</span>
       </div>
     </Link>
   );

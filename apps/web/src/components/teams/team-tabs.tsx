@@ -109,7 +109,6 @@ export function TeamTabs({
     },
     [] as { pos: string; players: ApiPlayer[] }[],
   );
-  const others = players.filter((p) => !p.position || !POSITION_ORDER.includes(p.position));
 
   return (
     <div className="flex flex-col gap-5">
@@ -179,17 +178,6 @@ export function TeamTabs({
                   </div>
                 </div>
               ))}
-
-              {others.length > 0 && (
-                <div className="flex flex-col gap-2">
-                  <GroupHeading>Autres</GroupHeading>
-                  <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-                    {others.map((p) => (
-                      <PlayerCard key={p.externalId} player={p} />
-                    ))}
-                  </div>
-                </div>
-              )}
 
               {players.length === 0 && (
                 <p className="py-8 text-center text-sm text-muted-foreground">

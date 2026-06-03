@@ -248,10 +248,13 @@ export class ApiFootballNormalizer {
 
     dto.externalId = String(raw.player.id);
     dto.name = raw.player.name;
+    dto.firstName = raw.player.firstname ?? null;
+    dto.lastName = raw.player.lastname ?? null;
     dto.image = raw.player.photo || null;
     dto.number = stats?.games.number ?? null;
     dto.position = stats?.games.position ?? null;
     dto.age = raw.player.age ?? null;
+    dto.nationality = raw.player.nationality ?? null;
     dto.teamId = stats ? String(stats.team.id) : null;
     dto.goals = stats?.goals.total ?? 0;
     dto.assists = stats?.goals.assists ?? 0;
@@ -259,6 +262,20 @@ export class ApiFootballNormalizer {
     dto.redCards = stats?.cards.red ?? 0;
     dto.matchesPlayed = stats?.games.appearences ?? 0;
     dto.rating = stats?.games.rating ?? null;
+    dto.contractStart = null;
+    dto.contractUntil = null;
+    dto.teamName = stats ? stats.team.name : null;
+    dto.teamShortName = null;
+    dto.teamTla = null;
+    dto.teamCrest = stats ? stats.team.logo : null;
+    dto.teamAddress = null;
+    dto.teamWebsite = null;
+    dto.teamVenue = null;
+    dto.teamFounded = null;
+    dto.teamColors = null;
+    dto.teamArea = null;
+    dto.teamAreaFlag = null;
+    dto.teamCompetitions = null;
     return dto;
   }
 }

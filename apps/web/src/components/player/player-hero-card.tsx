@@ -24,6 +24,109 @@ const POSITION_ABBREV: Record<string, string> = {
 
 type Props = { player: ApiPlayerDetail };
 
+function FdoInfoSections({ player }: Props) {
+  const statItems: { v: string; l: string }[] = [];
+  if (player.nationality) statItems.push({ v: player.nationality, l: 'Nationalité' });
+  if (player.contractStart && player.contractUntil) {
+    statItems.push({ v: player.contractStart, l: 'Contrat début' });
+    statItems.push({ v: player.contractUntil, l: 'Contrat fin' });
+  } else if (player.contractUntil) {
+    statItems.push({ v: player.contractUntil, l: 'Fin de contrat' });
+  }
+  if (player.teamVenue) statItems.push({ v: player.teamVenue, l: 'Stade' });
+  if (player.teamFounded) statItems.push({ v: String(player.teamFounded), l: 'Fondé en' });
+  if (player.teamColors) statItems.push({ v: player.teamColors, l: 'Couleurs' });
+
+  const hasClub = player.teamName || player.teamCrest || player.teamAddress || player.teamWebsite || player.teamArea;
+  const hasCompetitions = player.teamCompetitions && player.teamCompetitions.length > 0;
+
+  if (statItems.length === 0 && !hasClub && !hasCompetitions) return null;
+
+  const cols = Math.min(statItems.length, 3);
+  const gridClass = cols === 1 ? 'grid-cols-1' : cols === 2 ? 'grid-cols-2' : 'grid-cols-3';
+
+  return (
+    <>
+      {statItems.length > 0 && (
+        <div className={`grid ${gridClass} divide-x divide-border/50 border-t border-border/50 bg-card`}>
+          {statItems.map(({ v, l }) => (
+            <div key={l} className="px-3 py-3 text-center">
+              <div className="truncate text-sm font-bold leading-none">{v}</div>
+              <div className="mt-1 text-[0.6rem] font-semibold uppercase tracking-[.1em] text-muted-foreground">{l}</div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {hasClub && (
+        <div className="border-t border-border/50 bg-card px-4 py-4 sm:px-6">
+          <p className="mb-3 text-[0.62rem] font-bold uppercase tracking-[.15em] text-muted-foreground">Club</p>
+          <div className="flex items-start gap-4">
+            {player.teamCrest && (
+              <Image
+                src={player.teamCrest}
+                alt={player.teamName ?? 'club'}
+                width={48}
+                height={48}
+                className="size-12 shrink-0 object-contain"
+                unoptimized
+              />
+            )}
+            <div className="flex flex-col gap-1 min-w-0">
+              {player.teamName && (
+                <div className="flex items-baseline gap-2">
+                  <span className="font-bold text-sm">{player.teamName}</span>
+                  {player.teamTla && (
+                    <span className="text-[0.65rem] font-semibold text-muted-foreground">{player.teamTla}</span>
+                  )}
+                </div>
+              )}
+              {player.teamArea && (
+                <span className="text-[0.72rem] text-muted-foreground">
+                  {player.teamAreaFlag && (
+                    <Image src={player.teamAreaFlag} alt={player.teamArea} width={14} height={10} className="mr-1 inline-block object-contain" unoptimized />
+                  )}
+                  {player.teamArea}
+                </span>
+              )}
+              {player.teamAddress && (
+                <span className="text-[0.72rem] text-muted-foreground truncate">{player.teamAddress}</span>
+              )}
+              {player.teamWebsite && (
+                <a
+                  href={player.teamWebsite}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-[0.72rem] text-primary hover:underline truncate"
+                >
+                  {player.teamWebsite.replace(/^https?:\/\//, '')}
+                </a>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {hasCompetitions && (
+        <div className="border-t border-border/50 bg-card px-4 py-4 sm:px-6">
+          <p className="mb-3 text-[0.62rem] font-bold uppercase tracking-[.15em] text-muted-foreground">Compétitions en cours</p>
+          <div className="flex flex-wrap gap-2">
+            {player.teamCompetitions!.map((c) => (
+              <div key={c.code} className="flex items-center gap-1.5 rounded-full border border-border/60 bg-muted/30 px-2.5 py-1">
+                {c.emblem && (
+                  <Image src={c.emblem} alt={c.name} width={16} height={16} className="size-4 object-contain" unoptimized />
+                )}
+                <span className="text-[0.72rem] font-semibold">{c.name}</span>
+                <span className="text-[0.62rem] text-muted-foreground">{c.type === 'LEAGUE' ? 'Ligue' : 'Coupe'}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
+
 export function PlayerHeroCard({ player }: Props) {
   const baseColor = player.position ? (POSITION_HEX[player.position] ?? '#4a4a8a') : '#4a4a8a';
 
@@ -35,13 +138,21 @@ export function PlayerHeroCard({ player }: Props) {
     background: `radial-gradient(ellipse 65% 90% at 12% 55%, color-mix(in srgb, ${baseColor} 35%, transparent) 0%, transparent 70%)`,
   };
 
-  const chips = [
-    { v: String(player.goals), l: 'Buts' },
-    { v: String(player.assists), l: 'Passes D.' },
-    { v: String(player.matchesPlayed), l: 'Matchs' },
-    ...(player.age != null ? [{ v: String(player.age), l: 'Âge' }] : []),
-    ...(player.number != null ? [{ v: `#${player.number}`, l: 'Numéro' }] : []),
-  ];
+  const isFdo = player.externalId.startsWith('fdo:');
+
+  const chips = isFdo
+    ? [
+        ...(player.age != null ? [{ v: String(player.age), l: 'Âge' }] : []),
+        ...(player.number != null ? [{ v: `#${player.number}`, l: 'Numéro' }] : []),
+        ...(player.nationality ? [{ v: player.nationality, l: 'Nationalité' }] : []),
+      ]
+    : [
+        { v: String(player.goals), l: 'Buts' },
+        { v: String(player.assists), l: 'Passes D.' },
+        { v: String(player.matchesPlayed), l: 'Matchs' },
+        ...(player.age != null ? [{ v: String(player.age), l: 'Âge' }] : []),
+        ...(player.number != null ? [{ v: `#${player.number}`, l: 'Numéro' }] : []),
+      ];
 
   return (
     <div className="overflow-hidden rounded-2xl border border-border/60">
@@ -115,23 +226,27 @@ export function PlayerHeroCard({ player }: Props) {
       </div>
 
       {/* Stats strip */}
-      <div className="grid grid-cols-3 divide-x divide-border/50 border-t border-border/50 bg-card sm:grid-cols-6">
-        {[
-          { v: String(player.goals), l: 'Buts' },
-          { v: String(player.assists), l: 'Passes D.' },
-          { v: String(player.matchesPlayed), l: 'Matchs' },
-          { v: String(player.yellowCards), l: 'Jaune' },
-          { v: String(player.redCards), l: 'Rouge' },
-          { v: player.rating ?? '—', l: 'Note' },
-        ].map(({ v, l }) => (
-          <div key={l} className="px-3 py-3.5 text-center">
-            <div className="font-display text-xl font-black tabular leading-none">{v}</div>
-            <div className="mt-1 text-[0.6rem] font-semibold uppercase tracking-[.1em] text-muted-foreground">
-              {l}
+      {isFdo ? (
+        <FdoInfoSections player={player} />
+      ) : (
+        <div className="grid grid-cols-3 divide-x divide-border/50 border-t border-border/50 bg-card sm:grid-cols-6">
+          {[
+            { v: String(player.goals), l: 'Buts' },
+            { v: String(player.assists), l: 'Passes D.' },
+            { v: String(player.matchesPlayed), l: 'Matchs' },
+            { v: String(player.yellowCards), l: 'Jaune' },
+            { v: String(player.redCards), l: 'Rouge' },
+            { v: player.rating ?? '—', l: 'Note' },
+          ].map(({ v, l }) => (
+            <div key={l} className="px-3 py-3.5 text-center">
+              <div className="font-display text-xl font-black tabular leading-none">{v}</div>
+              <div className="mt-1 text-[0.6rem] font-semibold uppercase tracking-[.1em] text-muted-foreground">
+                {l}
+              </div>
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
