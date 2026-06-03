@@ -41,7 +41,7 @@ describe('FootballDataOrgClient', () => {
     });
 
     await expect(client.get('competitions/PL/matches')).rejects.toThrow(
-      'football-data.org request failed: 429 Too Many Requests',
+      'Rate limit exceeded (football-data.org: 10 req/min)',
     );
   });
 });

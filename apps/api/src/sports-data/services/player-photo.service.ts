@@ -24,6 +24,10 @@ export class PlayerPhotoService {
     await Promise.all(players.map((p) => this.applyPhoto(p)));
   }
 
+  async fetchPhoto(name: string): Promise<string | null> {
+    return this.getPhoto(name);
+  }
+
   private async applyPhoto(player: LineupPlayerDto): Promise<void> {
     const photo = await this.getPhoto(player.name);
     if (photo) player.photo = photo;

@@ -8,6 +8,7 @@ import {
   SportsDataCacheService,
   TTL_TEAMS,
 } from '../sports-data-cache.service';
+import { PlayerPhotoService } from './player-photo.service';
 import { RafPlayerResponse } from '../interfaces/api-football.interfaces';
 import type {
   FdoSquadPlayer,
@@ -53,6 +54,7 @@ export class PlayersService {
     private readonly fdoClient: FootballDataOrgClient,
     private readonly normalizer: ApiFootballNormalizer,
     private readonly cacheService: SportsDataCacheService,
+    private readonly photoService: PlayerPhotoService,
   ) {}
 
   async getByExternalId(
@@ -94,7 +96,7 @@ export class PlayersService {
     const dto = new PlayerDto();
     dto.externalId = `fdo:${person.id}`;
     dto.name = person.name;
-    dto.image = null;
+    dto.image = await this.photoService.fetchPhoto(person.name);
     dto.number = person.shirtNumber ?? null;
     dto.position = person.position
       ? (FDO_POSITION_MAP[person.position] ?? person.position)
@@ -262,6 +264,12 @@ export class PlayersService {
       if (ai !== bi) return (ai === -1 ? 99 : ai) - (bi === -1 ? 99 : bi);
       return (a.number ?? 99) - (b.number ?? 99);
     });
+
+    await Promise.all(
+      players.map(async (p) => {
+        p.image = await this.photoService.fetchPhoto(p.name);
+      }),
+    );
 
     await this.cacheService.setCached(cacheKey, players, TTL_TEAMS);
     return players;
