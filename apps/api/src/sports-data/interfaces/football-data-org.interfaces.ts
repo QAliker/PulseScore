@@ -49,9 +49,13 @@ export interface FdoMatchesResponse {
   matches: FdoMatch[];
 }
 
+export interface FdoCompetitionTeam extends FdoTeam {
+  squad?: FdoSquadPlayer[];
+}
+
 export interface FdoCompetitionTeamsResponse {
   competition: { id: number; name: string; code: string };
-  teams: FdoTeam[];
+  teams: FdoCompetitionTeam[];
 }
 
 export interface FdoH2hResponse {

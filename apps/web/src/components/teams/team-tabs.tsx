@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Clock } from 'lucide-react';
+import { Clock, Gauge } from 'lucide-react';
 import type { ApiPlayer, ApiMatch, ApiCoach, ApiVenue, ApiInjury, ApiTransfers } from '@/lib/api-types';
 import { PlayerCard } from './player-card';
 import { MatchHistory } from '@/components/matches/match-history';
@@ -21,6 +21,7 @@ type Props = {
   teamTransfers: ApiTransfers[];
   teamId: string;
   squadUnavailable?: boolean;
+  squadRateLimited?: boolean;
   matchesUnavailable?: boolean;
   coachUnavailable?: boolean;
   transfersUnavailable?: boolean;
@@ -58,6 +59,22 @@ function UnavailableCard() {
   );
 }
 
+function RateLimitCard() {
+  return (
+    <div className="flex flex-col items-center gap-3 rounded-xl border border-amber-500/30 bg-amber-500/5 px-6 py-10 text-center">
+      <div className="flex size-10 items-center justify-center rounded-full bg-amber-500/15">
+        <Gauge className="size-5 text-amber-500" />
+      </div>
+      <div className="flex flex-col gap-1">
+        <p className="text-sm font-medium text-foreground">Limite de requêtes atteinte</p>
+        <p className="text-xs text-muted-foreground">
+          L&apos;API autorise 10 requêtes par minute. Patientez quelques secondes puis rechargez la page.
+        </p>
+      </div>
+    </div>
+  );
+}
+
 export function TeamTabs({
   players,
   results,
@@ -68,6 +85,7 @@ export function TeamTabs({
   teamTransfers,
   teamId,
   squadUnavailable = false,
+  squadRateLimited = false,
   matchesUnavailable = false,
   coachUnavailable = false,
   transfersUnavailable = false,
@@ -129,7 +147,9 @@ export function TeamTabs({
       {/* Effectif */}
       {active === 'squad' && (
         <div className="flex flex-col gap-5">
-          {squadUnavailable ? (
+          {squadRateLimited ? (
+            <RateLimitCard />
+          ) : squadUnavailable ? (
             <UnavailableCard />
           ) : (
             <>

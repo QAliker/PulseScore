@@ -1,6 +1,5 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger, HttpException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
-import { TeamsService } from './teams.service';
 import { PlayerDto } from '../dto/player.dto';
 import { ApiFootballClient } from '../client/api-football.client';
 import { FootballDataOrgClient } from '../client/football-data-org.client';
@@ -11,10 +10,11 @@ import {
 } from '../sports-data-cache.service';
 import { RafPlayerResponse } from '../interfaces/api-football.interfaces';
 import type {
-  FdoTeamDetail,
   FdoSquadPlayer,
   FdoPersonDetail,
+  FdoCompetitionTeamsResponse,
 } from '../interfaces/football-data-org.interfaces';
+import { LEAGUE_MAP } from '../constants/season.constants';
 
 const FDO_POSITION_MAP: Record<string, string> = {
   Goalkeeper: 'Goalkeeper',
@@ -45,9 +45,10 @@ type PrismaPlayer = {
 
 @Injectable()
 export class PlayersService {
+  private readonly logger = new Logger(PlayersService.name);
+
   constructor(
     private readonly prisma: PrismaService,
-    private readonly teamsService: TeamsService,
     private readonly client: ApiFootballClient,
     private readonly fdoClient: FootballDataOrgClient,
     private readonly normalizer: ApiFootballNormalizer,
@@ -122,6 +123,7 @@ export class PlayersService {
   }
 
   async getByTeam(teamExternalId: string): Promise<PlayerDto[]> {
+    this.logger.log(`[getByTeam] called with teamExternalId=${teamExternalId}`);
     const rawFdoId = teamExternalId.startsWith('fdo:')
       ? teamExternalId.slice(4)
       : null;
@@ -135,38 +137,100 @@ export class PlayersService {
             ],
           },
     });
-    if (!team) return [];
+    if (!team) {
+      this.logger.warn(
+        `[getByTeam] team not found for teamExternalId=${teamExternalId}`,
+      );
+      return [];
+    }
+    this.logger.log(
+      `[getByTeam] team found: id=${team.id} name=${team.name} externalId=${team.externalId} fdoExternalId=${team.fdoExternalId}`,
+    );
 
     if (team.fdoExternalId) {
-      return this.getSquadFromFdo(team.fdoExternalId);
+      return this.getSquadFromFdo(team.fdoExternalId, team.id);
     }
 
+    this.logger.log(
+      `[getByTeam] no fdoExternalId → using prisma players for teamId=${team.id}`,
+    );
     const players = await this.prisma.player.findMany({
       where: { team: { id: team.id } },
       orderBy: [{ number: 'asc' }, { name: 'asc' }],
     });
-    if (players.length === 0) {
-      await this.teamsService.fetchPlayersForTeam(team.externalId);
-      const fresh = await this.prisma.player.findMany({
-        where: { team: { id: team.id } },
-        orderBy: [{ number: 'asc' }, { name: 'asc' }],
-      });
-      return fresh.map((p) => this.toDto(p));
-    }
+    this.logger.log(
+      `[getByTeam] prisma returned ${players.length} players for teamId=${team.id}`,
+    );
     return players.map((p) => this.toDto(p));
   }
 
-  private async getSquadFromFdo(fdoTeamId: string): Promise<PlayerDto[]> {
+  private async getSquadFromFdo(
+    fdoTeamId: string,
+    teamId: string,
+  ): Promise<PlayerDto[]> {
     const cacheKey = `sports:squad:fdo:${fdoTeamId}`;
     const cached = await this.cacheService.getCached<PlayerDto[]>(cacheKey);
-    if (cached) return cached;
+    if (cached) {
+      this.logger.log(`[squad] cache hit for fdoTeamId=${fdoTeamId}`);
+      return cached;
+    }
 
-    const detail = await this.fdoClient
-      .get<FdoTeamDetail>(`teams/${fdoTeamId}`)
-      .catch(() => null);
-    if (!detail) return [];
+    const standing = await this.prisma.standing.findFirst({
+      where: { teamId },
+      include: { league: { select: { fdoExternalId: true, name: true } } },
+      orderBy: { season: 'desc' },
+    });
+    this.logger.log(
+      `[squad] fdoTeamId=${fdoTeamId} teamId=${teamId} standing=${JSON.stringify(standing ? { season: standing.season, leagueName: standing.league?.name, fdoCode: standing.league?.fdoExternalId } : null)}`,
+    );
 
-    const players = (detail.squad ?? []).map((p: FdoSquadPlayer) => {
+    const fdoCodes = standing?.league?.fdoExternalId
+      ? [standing.league.fdoExternalId]
+      : Object.values(LEAGUE_MAP).map((l) => l.fdoCode);
+
+    if (!standing) {
+      this.logger.warn(
+        `[squad] no standing for teamId=${teamId} — trying all FDO codes: [${fdoCodes.join(', ')}]`,
+      );
+    }
+
+    let teamData: FdoCompetitionTeamsResponse['teams'][number] | undefined;
+    for (const fdoCode of fdoCodes) {
+      const response = await this.fdoClient
+        .get<FdoCompetitionTeamsResponse>(`competitions/${fdoCode}/teams`)
+        .catch((err: unknown) => {
+          if (err instanceof HttpException && err.getStatus() === 429)
+            throw err;
+          this.logger.error(
+            `[squad] FDO competitions/${fdoCode}/teams failed: ${String(err)}`,
+          );
+          return null;
+        });
+      if (!response) continue;
+      const found = response.teams.find((t) => String(t.id) === fdoTeamId);
+      if (found) {
+        this.logger.log(
+          `[squad] found fdoTeamId=${fdoTeamId} in competition=${fdoCode} squadLen=${found.squad?.length ?? 0}`,
+        );
+        teamData = found;
+        break;
+      }
+    }
+
+    if (!teamData) {
+      this.logger.warn(
+        `[squad] fdoTeamId=${fdoTeamId} NOT found in any FDO competition`,
+      );
+      return [];
+    }
+    if (!teamData.squad?.length) {
+      this.logger.warn(
+        `[squad] fdoTeamId=${fdoTeamId} found but squad is EMPTY in FDO response`,
+      );
+      return [];
+    }
+
+    const players = teamData.squad.map((p: FdoSquadPlayer) => {
       const dto = new PlayerDto();
       dto.externalId = `fdo:${p.id}`;
       dto.name = p.name;

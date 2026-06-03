@@ -28,7 +28,8 @@ export class WarmupService implements OnApplicationBootstrap {
     this.logger.log('Warming up cache for all leagues...');
     for (const leagueId of LEAGUE_IDS) {
       try {
-        await this.standings.getStandings(leagueId);
+        const standingDtos = await this.standings.getStandings(leagueId);
+        await this.standings.persistStandings(leagueId, standingDtos);
         await this.fixtures.getLeagueFixtures(leagueId);
         await this.fixtures.getLeagueResults(leagueId);
       } catch (err) {
@@ -56,25 +57,48 @@ export class WarmupService implements OnApplicationBootstrap {
           `competitions/${fdoCode}/teams`,
         );
 
+        const unmatchedTeams = await this.prisma.team.findMany({
+          where: { fdoExternalId: null },
+          select: { id: true, name: true },
+        });
+
         for (const fdoTeam of data.teams) {
-          const updated = await this.prisma.team.updateMany({
-            where: {
-              name: {
-                contains: fdoTeam.name
-                  .replace(' FC', '')
-                  .replace(' CF', '')
-                  .trim(),
-              },
-              fdoExternalId: null,
-            },
-            data: { fdoExternalId: String(fdoTeam.id) },
+          const fdoId = String(fdoTeam.id);
+          const stripped = fdoTeam.name
+            .replace(/ FC$/i, '')
+            .replace(/ CF$/i, '')
+            .trim();
+
+          const match = unmatchedTeams.find((t) => {
+            const tStripped = t.name
+              .replace(/ FC$/i, '')
+              .replace(/ CF$/i, '')
+              .trim();
+            return (
+              t.name.includes(stripped) ||
+              fdoTeam.name.includes(t.name) ||
+              stripped.includes(tStripped) ||
+              tStripped.includes(stripped)
+            );
           });
-          if (updated.count === 0) {
+
+          if (match) {
+            const updated = await this.prisma.team
+              .update({
+                where: { id: match.id },
+                data: { fdoExternalId: fdoId },
+              })
+              .catch(() => null);
+            if (updated) {
+              const idx = unmatchedTeams.findIndex((t) => t.id === match.id);
+              if (idx !== -1) unmatchedTeams.splice(idx, 1);
+            }
+          } else {
             await this.prisma.team.upsert({
-              where: { fdoExternalId: String(fdoTeam.id) },
+              where: { fdoExternalId: fdoId },
               create: {
                 externalId: `fdo:${fdoTeam.id}`,
-                fdoExternalId: String(fdoTeam.id),
+                fdoExternalId: fdoId,
                 name: fdoTeam.name,
                 logo: fdoTeam.crest || null,
               },

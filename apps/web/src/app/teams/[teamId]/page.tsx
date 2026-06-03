@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { ArrowLeft } from 'lucide-react';
 import type { Metadata } from 'next';
-import { apiFetch } from '@/lib/api';
+import { apiFetch, RateLimitError } from '@/lib/api';
 import type {
   ApiTeam,
   ApiPlayer,
@@ -50,6 +50,7 @@ export default async function TeamPage({
   let teamTransfers: ApiTransfers[] = [];
   let standing: ApiTeamStanding | null = null;
   let squadUnavailable = false;
+  let squadRateLimited = false;
   let matchesUnavailable = false;
   let coachUnavailable = false;
   let transfersUnavailable = false;
@@ -57,10 +58,17 @@ export default async function TeamPage({
   const safe = <T,>(promise: Promise<T[]>) =>
     promise.catch((): T[] | null => null);
 
+  const playersPromise = apiFetch<ApiPlayer[]>(`/teams/${teamId}/players`)
+    .then((data): { data: ApiPlayer[]; rateLimited: false } => ({ data, rateLimited: false }))
+    .catch((err: unknown): { data: null; rateLimited: boolean } => ({
+      data: null,
+      rateLimited: err instanceof RateLimitError,
+    }));
+
   try {
-    const [t, p, inj, r, f, c, v, tr, s] = await Promise.all([
+    const [t, playersResult, inj, r, f, c, v, tr, s] = await Promise.all([
       apiFetch<ApiTeam>(`/teams/${teamId}`),
-      safe(apiFetch<ApiPlayer[]>(`/teams/${teamId}/players`)),
+      playersPromise,
       safe(apiFetch<ApiInjury[]>(`/teams/${teamId}/injuries`)),
       safe(apiFetch<ApiMatch[]>(`/teams/${teamId}/results?limit=10`)),
       safe(apiFetch<ApiMatch[]>(`/teams/${teamId}/fixtures`)),
@@ -70,6 +78,8 @@ export default async function TeamPage({
       apiFetch<ApiTeamStanding>(`/teams/${teamId}/standing`).catch(() => null),
     ]);
     team = t;
+    squadRateLimited = playersResult.rateLimited;
+    const p = playersResult.data;
     squadUnavailable = p === null || inj === null;
     matchesUnavailable = r === null || f === null;
     coachUnavailable = c === null || v === null;
@@ -118,6 +128,7 @@ export default async function TeamPage({
         teamTransfers={teamTransfers}
         teamId={teamId}
         squadUnavailable={squadUnavailable}
+        squadRateLimited={squadRateLimited}
         matchesUnavailable={matchesUnavailable}
         coachUnavailable={coachUnavailable}
         transfersUnavailable={transfersUnavailable}

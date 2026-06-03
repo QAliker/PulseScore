@@ -50,10 +50,17 @@ export class FixturesService {
   private async resolveTeamByAnyId(teamId: string) {
     const rawFdoId = teamId.startsWith('fdo:') ? teamId.slice(4) : null;
     return this.prisma.team.findFirst({
-      where: rawFdoId
-        ? { fdoExternalId: rawFdoId }
-        : { OR: [{ externalId: teamId }, { fdoExternalId: teamId }] },
+      where: rawFdoId ? { fdoExternalId: rawFdoId } : { externalId: teamId },
     });
+  }
+
+  private async resolveTeamFdoCode(teamId: string): Promise<string | null> {
+    const standing = await this.prisma.standing.findFirst({
+      where: { teamId },
+      include: { league: { select: { fdoExternalId: true } } },
+      orderBy: { season: 'desc' },
+    });
+    return standing?.league?.fdoExternalId ?? null;
   }
 
   private async resolveTeamId(fdoTeamId: number): Promise<string | null> {
@@ -184,13 +191,20 @@ export class FixturesService {
     if (season >= 2025) {
       const team = await this.resolveTeamByAnyId(teamId);
       if (!team?.fdoExternalId) return [];
+      const fdoCode = await this.resolveTeamFdoCode(team.id);
+      if (!fdoCode) return [];
       const today = new Date().toISOString().slice(0, 10);
       const thirtyDaysAhead = new Date(Date.now() + 30 * 86400000)
         .toISOString()
         .slice(0, 10);
       const data = await this.fdoClient.get<FdoMatchesResponse>(
-        `teams/${team.fdoExternalId}/matches`,
-        { dateFrom: today, dateTo: thirtyDaysAhead, status: 'SCHEDULED' },
+        `competitions/${fdoCode}/matches`,
+        {
+          team: team.fdoExternalId,
+          dateFrom: today,
+          dateTo: thirtyDaysAhead,
+          status: 'SCHEDULED',
+        },
       );
       fixtures = (
         await Promise.all(data.matches.map((m) => this.normalizeFdoMatch(m)))
@@ -237,13 +251,20 @@ export class FixturesService {
     if (season >= 2025) {
       const team = await this.resolveTeamByAnyId(teamId);
       if (!team?.fdoExternalId) return [];
+      const fdoCode = await this.resolveTeamFdoCode(team.id);
+      if (!fdoCode) return [];
       const today = new Date().toISOString().slice(0, 10);
       const ninetyDaysAgo = new Date(Date.now() - 90 * 86400000)
         .toISOString()
         .slice(0, 10);
       const data = await this.fdoClient.get<FdoMatchesResponse>(
-        `teams/${team.fdoExternalId}/matches`,
-        { dateFrom: ninetyDaysAgo, dateTo: today, status: 'FINISHED' },
+        `competitions/${fdoCode}/matches`,
+        {
+          team: team.fdoExternalId,
+          dateFrom: ninetyDaysAgo,
+          dateTo: today,
+          status: 'FINISHED',
+        },
       );
       results = (
         await Promise.all(data.matches.map((m) => this.normalizeFdoMatch(m)))

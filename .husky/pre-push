@@ -4,6 +4,7 @@ echo "🔍 pre-push: lint..."
 npm run lint || exit 1
 
 echo "🏗️  pre-push: build..."
+sudo chown -R quentin /home/quentin/pulseScore/apps/api/dist 2>/dev/null || true
 npm run -w apps/api build || exit 1
 npm run -w apps/web build:webpack || exit 1
 

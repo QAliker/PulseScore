@@ -67,9 +67,7 @@ export class TeamsService implements OnModuleInit {
   } | null> {
     const rawFdoId = teamId.startsWith('fdo:') ? teamId.slice(4) : null;
     const team = await this.prismaService.team.findFirst({
-      where: rawFdoId
-        ? { fdoExternalId: rawFdoId }
-        : { OR: [{ externalId: teamId }, { fdoExternalId: teamId }] },
+      where: rawFdoId ? { fdoExternalId: rawFdoId } : { externalId: teamId },
     });
     if (team) return team;
 

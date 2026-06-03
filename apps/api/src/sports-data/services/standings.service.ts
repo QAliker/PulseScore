@@ -111,7 +111,7 @@ export class StandingsService {
     }
   }
 
-  private async persistStandings(
+  async persistStandings(
     leagueId: string,
     standings: StandingDto[],
   ): Promise<void> {
