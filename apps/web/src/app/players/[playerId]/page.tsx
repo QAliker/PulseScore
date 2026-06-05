@@ -59,14 +59,14 @@ export default async function PlayerPage({
         className="inline-flex w-fit items-center gap-1.5 rounded-md px-2 py-1 text-sm font-medium text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       >
         <ArrowLeft className="size-4" />
-        {player.teamName ?? 'Retour'}
+        {player.teamName ?? 'Back'}
       </Link>
 
       <PlayerHeroCard player={player} />
 
       {recentMatches.length > 0 && (
         <section className="flex flex-col gap-3">
-          <SectionHeading>Matchs récents</SectionHeading>
+          <SectionHeading>Recent matches</SectionHeading>
           <div className="rounded-xl border border-border/60 bg-card px-4 sm:px-6">
             <MatchHistory
               matches={recentMatches}
@@ -78,7 +78,7 @@ export default async function PlayerPage({
 
       {transfers && transfers.transfers.length > 0 && (
         <section className="flex flex-col gap-3">
-          <SectionHeading>Historique des transferts</SectionHeading>
+          <SectionHeading>Transfer history</SectionHeading>
           <div className="rounded-xl border border-border/60 bg-card py-1">
             <TransfersTimeline transfers={transfers} />
           </div>
@@ -87,7 +87,7 @@ export default async function PlayerPage({
 
       {trophies.length > 0 && (
         <section className="flex flex-col gap-3">
-          <SectionHeading>Palmarès ({trophies.length})</SectionHeading>
+          <SectionHeading>Trophies ({trophies.length})</SectionHeading>
           <div className="rounded-xl border border-border/60 bg-card py-1">
             <TrophiesSection trophies={trophies} />
           </div>
@@ -96,7 +96,7 @@ export default async function PlayerPage({
 
       {sidelined.length > 0 && (
         <section className="flex flex-col gap-3">
-          <SectionHeading>Historique des blessures</SectionHeading>
+          <SectionHeading>Injury history</SectionHeading>
           <div className="rounded-xl border border-border/60 bg-card py-1">
             <SidelinedSection sidelined={sidelined} />
           </div>

@@ -95,7 +95,7 @@ export function LiveFeed({ initial }: { initial: Match[] }) {
             <button
               onClick={goPrev}
               className="absolute left-3 top-1/2 z-20 flex size-9 -translate-y-1/2 items-center justify-center rounded-full bg-black/20 text-white backdrop-blur-sm transition-colors hover:bg-black/35 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50 active:scale-95"
-              aria-label="Match précédent"
+              aria-label="Previous match"
             >
               <ChevronLeft />
             </button>
@@ -103,7 +103,7 @@ export function LiveFeed({ initial }: { initial: Match[] }) {
             <button
               onClick={goNext}
               className="absolute right-3 top-1/2 z-20 flex size-9 -translate-y-1/2 items-center justify-center rounded-full bg-black/20 text-white backdrop-blur-sm transition-colors hover:bg-black/35 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50 active:scale-95"
-              aria-label="Match suivant"
+              aria-label="Next match"
             >
               <ChevronRight />
             </button>

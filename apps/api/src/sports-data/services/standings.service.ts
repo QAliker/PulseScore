@@ -12,6 +12,7 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { RafStandingResponse } from '../interfaces/api-football.interfaces';
 import { FdoStandingsResponse } from '../interfaces/football-data-org.interfaces';
 import { StandingDto } from '../dto/standing.dto';
+import { SeasonDto } from '../dto/season.dto';
 import {
   getCurrentSeason,
   HISTORY_SEASON_RAF,
@@ -48,6 +49,35 @@ export class StandingsService {
     return standings;
   }
 
+  async getSeason(leagueId: string): Promise<SeasonDto | null> {
+    const cacheKey = SportsDataCacheService.seasonKey(leagueId);
+    const cached = await this.cacheService.getCached<SeasonDto>(cacheKey);
+    if (cached) return cached;
+
+    const mapping = LEAGUE_MAP[leagueId];
+    if (!mapping) return null;
+
+    const data = await this.fdoClient.get<FdoStandingsResponse>(
+      `competitions/${mapping.fdoCode}/standings`,
+    );
+    const season = this.toSeasonDto(leagueId, data);
+    await this.cacheService.setCached(cacheKey, season, TTL_STANDINGS);
+    return season;
+  }
+
+  private toSeasonDto(leagueId: string, data: FdoStandingsResponse): SeasonDto {
+    const dto = new SeasonDto();
+    dto.leagueId = leagueId;
+    dto.startDate = data.season.startDate;
+    dto.endDate = data.season.endDate;
+    dto.currentMatchday = data.season.currentMatchday;
+    dto.finished = data.season.endDate
+      ? new Date(data.season.endDate).getTime() < Date.now()
+      : false;
+    dto.winnerName = data.season.winner?.name ?? null;
+    return dto;
+  }
+
   private async getStandingsRaf(leagueId: string): Promise<StandingDto[]> {
     const raw = await this.rafClient.get<RafStandingResponse>('standings', {
       league: leagueId,
@@ -69,6 +99,14 @@ export class StandingsService {
     const data = await this.fdoClient.get<FdoStandingsResponse>(
       `competitions/${mapping.fdoCode}/standings`,
     );
+
+    if (data.season) {
+      await this.cacheService.setCached(
+        SportsDataCacheService.seasonKey(leagueId),
+        this.toSeasonDto(leagueId, data),
+        TTL_STANDINGS,
+      );
+    }
 
     const totalTable = data.standings.find((s) => s.type === 'TOTAL');
     if (!totalTable) return [];

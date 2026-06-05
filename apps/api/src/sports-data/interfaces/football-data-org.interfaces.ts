@@ -40,9 +40,48 @@ export interface FdoStanding {
   form: string | null;
 }
 
+export interface FdoSeason {
+  id: number;
+  startDate: string;
+  endDate: string;
+  currentMatchday: number | null;
+  winner: FdoTeam | null;
+}
+
 export interface FdoStandingsResponse {
   competition: { id: number; name: string; code: string };
+  season: FdoSeason;
   standings: Array<{ type: string; table: FdoStanding[] }>;
+}
+
+export interface FdoScorer {
+  player: {
+    id: number;
+    name: string;
+    firstName: string | null;
+    lastName: string | null;
+    dateOfBirth: string | null;
+    nationality: string | null;
+    section: string | null;
+    position: string | null;
+    shirtNumber: number | null;
+  };
+  team: FdoTeam;
+  playedMatches: number;
+  goals: number;
+  assists: number | null;
+  penalties: number | null;
+}
+
+export interface FdoScorersResponse {
+  competition: {
+    id: number;
+    name: string;
+    code: string;
+    emblem: string | null;
+  };
+  season: FdoSeason;
+  scorers: FdoScorer[];
 }
 
 export interface FdoMatchesResponse {
@@ -117,7 +156,12 @@ export interface FdoPersonDetail {
     venue: string | null;
     founded: number | null;
     clubColors: string | null;
-    area?: { id: number; name: string; code: string; flag: string | null } | null;
+    area?: {
+      id: number;
+      name: string;
+      code: string;
+      flag: string | null;
+    } | null;
     runningCompetitions?: Array<{
       id: number;
       name: string;

@@ -5,6 +5,8 @@ export type League = {
   countryCode: string;
   logo: string;
   darkInvert?: boolean;
+  /** Force the logo to solid white in dark mode (for colored crests like the PL lion). */
+  darkWhiten?: boolean;
   apiFootballId: number;
   fdoCode: string;
   season: string;
@@ -25,6 +27,7 @@ export const LEAGUES: League[] = [
     country: 'England',
     countryCode: 'GB-ENG',
     logo: 'https://media.api-sports.io/football/leagues/39.png',
+    darkWhiten: true,
     apiFootballId: 39,
     fdoCode: 'PL',
     season: getCurrentSeasonLabel(),
@@ -71,6 +74,12 @@ export const LEAGUES: League[] = [
     season: getCurrentSeasonLabel(),
   },
 ];
+
+/** Dark-mode filter classes for a league logo. */
+export const leagueDarkClass = (
+  league: Pick<League, 'darkInvert' | 'darkWhiten'>,
+): string =>
+  league.darkWhiten ? 'dark:brightness-0 dark:invert' : league.darkInvert ? 'dark:invert' : '';
 
 export const getLeagueBySlug = (slug: string) =>
   LEAGUES.find((l) => l.slug === slug);

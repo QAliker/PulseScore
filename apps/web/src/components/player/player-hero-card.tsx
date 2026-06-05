@@ -8,11 +8,11 @@ const POSITION_HEX: Record<string, string> = {
   Forward: '#dc2626',
 };
 
-const POSITION_LABEL_FR: Record<string, string> = {
-  Goalkeeper: 'Gardien',
-  Defender: 'Défenseur',
-  Midfielder: 'Milieu',
-  Forward: 'Attaquant',
+const POSITION_LABEL_EN: Record<string, string> = {
+  Goalkeeper: 'Goalkeeper',
+  Defender: 'Defender',
+  Midfielder: 'Midfielder',
+  Forward: 'Forward',
 };
 
 const POSITION_ABBREV: Record<string, string> = {
@@ -26,16 +26,16 @@ type Props = { player: ApiPlayerDetail };
 
 function FdoInfoSections({ player }: Props) {
   const statItems: { v: string; l: string }[] = [];
-  if (player.nationality) statItems.push({ v: player.nationality, l: 'Nationalité' });
+  if (player.nationality) statItems.push({ v: player.nationality, l: 'Nationality' });
   if (player.contractStart && player.contractUntil) {
-    statItems.push({ v: player.contractStart, l: 'Contrat début' });
-    statItems.push({ v: player.contractUntil, l: 'Contrat fin' });
+    statItems.push({ v: player.contractStart, l: 'Contract start' });
+    statItems.push({ v: player.contractUntil, l: 'Contract end' });
   } else if (player.contractUntil) {
-    statItems.push({ v: player.contractUntil, l: 'Fin de contrat' });
+    statItems.push({ v: player.contractUntil, l: 'Contract end' });
   }
-  if (player.teamVenue) statItems.push({ v: player.teamVenue, l: 'Stade' });
-  if (player.teamFounded) statItems.push({ v: String(player.teamFounded), l: 'Fondé en' });
-  if (player.teamColors) statItems.push({ v: player.teamColors, l: 'Couleurs' });
+  if (player.teamVenue) statItems.push({ v: player.teamVenue, l: 'Stadium' });
+  if (player.teamFounded) statItems.push({ v: String(player.teamFounded), l: 'Founded' });
+  if (player.teamColors) statItems.push({ v: player.teamColors, l: 'Colors' });
 
   const hasClub = player.teamName || player.teamCrest || player.teamAddress || player.teamWebsite || player.teamArea;
   const hasCompetitions = player.teamCompetitions && player.teamCompetitions.length > 0;
@@ -109,7 +109,7 @@ function FdoInfoSections({ player }: Props) {
 
       {hasCompetitions && (
         <div className="border-t border-border/50 bg-card px-4 py-4 sm:px-6">
-          <p className="mb-3 text-[0.62rem] font-bold uppercase tracking-[.15em] text-muted-foreground">Compétitions en cours</p>
+          <p className="mb-3 text-[0.62rem] font-bold uppercase tracking-[.15em] text-muted-foreground">Current competitions</p>
           <div className="flex flex-wrap gap-2">
             {player.teamCompetitions!.map((c) => (
               <div key={c.code} className="flex items-center gap-1.5 rounded-full border border-border/60 bg-muted/30 px-2.5 py-1">
@@ -117,7 +117,7 @@ function FdoInfoSections({ player }: Props) {
                   <Image src={c.emblem} alt={c.name} width={16} height={16} className="size-4 object-contain" unoptimized />
                 )}
                 <span className="text-[0.72rem] font-semibold">{c.name}</span>
-                <span className="text-[0.62rem] text-muted-foreground">{c.type === 'LEAGUE' ? 'Ligue' : 'Coupe'}</span>
+                <span className="text-[0.62rem] text-muted-foreground">{c.type === 'LEAGUE' ? 'League' : 'Cup'}</span>
               </div>
             ))}
           </div>
@@ -142,16 +142,16 @@ export function PlayerHeroCard({ player }: Props) {
 
   const chips = isFdo
     ? [
-        ...(player.age != null ? [{ v: String(player.age), l: 'Âge' }] : []),
-        ...(player.number != null ? [{ v: `#${player.number}`, l: 'Numéro' }] : []),
-        ...(player.nationality ? [{ v: player.nationality, l: 'Nationalité' }] : []),
+        ...(player.age != null ? [{ v: String(player.age), l: 'Age' }] : []),
+        ...(player.number != null ? [{ v: `#${player.number}`, l: 'Number' }] : []),
+        ...(player.nationality ? [{ v: player.nationality, l: 'Nationality' }] : []),
       ]
     : [
-        { v: String(player.goals), l: 'Buts' },
-        { v: String(player.assists), l: 'Passes D.' },
-        { v: String(player.matchesPlayed), l: 'Matchs' },
-        ...(player.age != null ? [{ v: String(player.age), l: 'Âge' }] : []),
-        ...(player.number != null ? [{ v: `#${player.number}`, l: 'Numéro' }] : []),
+        { v: String(player.goals), l: 'Goals' },
+        { v: String(player.assists), l: 'Assists' },
+        { v: String(player.matchesPlayed), l: 'Matches' },
+        ...(player.age != null ? [{ v: String(player.age), l: 'Age' }] : []),
+        ...(player.number != null ? [{ v: `#${player.number}`, l: 'Number' }] : []),
       ];
 
   return (
@@ -202,7 +202,7 @@ export function PlayerHeroCard({ player }: Props) {
               )}
               {player.position && (
                 <span className="rounded-full bg-white/15 px-2.5 py-0.5 text-[0.65rem] font-bold uppercase tracking-wider text-white/85">
-                  {POSITION_LABEL_FR[player.position] ?? player.position}
+                  {POSITION_LABEL_EN[player.position] ?? player.position}
                 </span>
               )}
             </div>
@@ -231,12 +231,12 @@ export function PlayerHeroCard({ player }: Props) {
       ) : (
         <div className="grid grid-cols-3 divide-x divide-border/50 border-t border-border/50 bg-card sm:grid-cols-6">
           {[
-            { v: String(player.goals), l: 'Buts' },
-            { v: String(player.assists), l: 'Passes D.' },
-            { v: String(player.matchesPlayed), l: 'Matchs' },
-            { v: String(player.yellowCards), l: 'Jaune' },
-            { v: String(player.redCards), l: 'Rouge' },
-            { v: player.rating ?? '—', l: 'Note' },
+            { v: String(player.goals), l: 'Goals' },
+            { v: String(player.assists), l: 'Assists' },
+            { v: String(player.matchesPlayed), l: 'Matches' },
+            { v: String(player.yellowCards), l: 'Yellow' },
+            { v: String(player.redCards), l: 'Red' },
+            { v: player.rating ?? '—', l: 'Rating' },
           ].map(({ v, l }) => (
             <div key={l} className="px-3 py-3.5 text-center">
               <div className="font-display text-xl font-black tabular leading-none">{v}</div>

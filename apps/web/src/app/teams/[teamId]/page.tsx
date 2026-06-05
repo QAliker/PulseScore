@@ -10,8 +10,8 @@ import type {
   ApiCoach,
   ApiVenue,
   ApiInjury,
-  ApiTransfers,
   ApiTeamStanding,
+  ApiSeason,
 } from '@/lib/api-types';
 import { extractLogoColor } from '@/lib/extract-color';
 import { TeamHeroCard } from '@/components/teams/team-hero-card';
@@ -47,13 +47,12 @@ export default async function TeamPage({
   let coaches: ApiCoach[] = [];
   let venues: ApiVenue[] = [];
   let injuries: ApiInjury[] = [];
-  let teamTransfers: ApiTransfers[] = [];
   let standing: ApiTeamStanding | null = null;
+  let season: ApiSeason | null = null;
   let squadUnavailable = false;
   let squadRateLimited = false;
   let matchesUnavailable = false;
   let coachUnavailable = false;
-  let transfersUnavailable = false;
 
   const safe = <T,>(promise: Promise<T[]>) =>
     promise.catch((): T[] | null => null);
@@ -66,7 +65,7 @@ export default async function TeamPage({
     }));
 
   try {
-    const [t, playersResult, inj, r, f, c, v, tr, s] = await Promise.all([
+    const [t, playersResult, inj, r, f, c, v, s] = await Promise.all([
       apiFetch<ApiTeam>(`/teams/${teamId}`),
       playersPromise,
       safe(apiFetch<ApiInjury[]>(`/teams/${teamId}/injuries`)),
@@ -74,7 +73,6 @@ export default async function TeamPage({
       safe(apiFetch<ApiMatch[]>(`/teams/${teamId}/fixtures`)),
       safe(apiFetch<ApiCoach[]>(`/teams/${teamId}/coach`)),
       safe(apiFetch<ApiVenue[]>(`/teams/${teamId}/venues`)),
-      safe(apiFetch<ApiTransfers[]>(`/teams/${teamId}/transfers`)),
       apiFetch<ApiTeamStanding>(`/teams/${teamId}/standing`).catch(() => null),
     ]);
     team = t;
@@ -83,15 +81,19 @@ export default async function TeamPage({
     squadUnavailable = p === null || inj === null;
     matchesUnavailable = r === null || f === null;
     coachUnavailable = c === null || v === null;
-    transfersUnavailable = tr === null;
     players = p ?? [];
     injuries = inj ?? [];
     results = r ?? [];
     fixtures = f ?? [];
     coaches = c ?? [];
     venues = v ?? [];
-    teamTransfers = tr ?? [];
     standing = s;
+
+    if (standing?.leagueId) {
+      season = await apiFetch<ApiSeason | null>(
+        `/leagues/${standing.leagueId}/season`,
+      ).catch(() => null);
+    }
   } catch {
     if (!team) notFound();
   }
@@ -108,7 +110,7 @@ export default async function TeamPage({
         className="inline-flex w-fit items-center gap-1.5 rounded-md px-2 py-1 text-sm font-medium text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       >
         <ArrowLeft className="size-4" />
-        Retour
+        Back
       </Link>
 
       <TeamHeroCard
@@ -125,13 +127,12 @@ export default async function TeamPage({
         coaches={coaches}
         venue={venue}
         injuries={injuries}
-        teamTransfers={teamTransfers}
+        season={season}
         teamId={teamId}
         squadUnavailable={squadUnavailable}
         squadRateLimited={squadRateLimited}
         matchesUnavailable={matchesUnavailable}
         coachUnavailable={coachUnavailable}
-        transfersUnavailable={transfersUnavailable}
       />
     </div>
   );

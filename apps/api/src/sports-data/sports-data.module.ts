@@ -12,6 +12,7 @@ import { SportsDataCacheService } from './sports-data-cache.service';
 import { LivescoreService } from './services/livescore.service';
 import { FixturesService } from './services/fixtures.service';
 import { StandingsService } from './services/standings.service';
+import { ScorersService } from './services/scorers.service';
 import { TeamsService } from './services/teams.service';
 import { OddsService } from './services/odds.service';
 import { H2hService } from './services/h2h.service';
@@ -86,6 +87,7 @@ import {
     LivescoreService,
     FixturesService,
     StandingsService,
+    ScorersService,
     TeamsService,
     OddsService,
     H2hService,

@@ -1,5 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ApiFootballClient } from '../client/api-football.client';
+import { FootballDataOrgClient } from '../client/football-data-org.client';
+import { PrismaService } from '../../prisma/prisma.service';
 import {
   SportsDataCacheService,
   TTL_TEAMS,
@@ -8,19 +10,57 @@ import {
   RafTeamResponse,
   RafVenueResponse,
 } from '../interfaces/api-football.interfaces';
+import type { FdoTeamDetail } from '../interfaces/football-data-org.interfaces';
 import { VenueDto } from '../dto/venue.dto';
 
 @Injectable()
 export class VenuesService {
   constructor(
     private readonly client: ApiFootballClient,
+    private readonly fdoClient: FootballDataOrgClient,
+    private readonly prisma: PrismaService,
     private readonly cacheService: SportsDataCacheService,
   ) {}
 
   async getByTeam(teamId: string): Promise<VenueDto[]> {
     const cacheKey = `sports:venues:team:${teamId}`;
     const cached = await this.cacheService.getCached<VenueDto[]>(cacheKey);
-    return cached ?? [];
+    if (cached) return cached;
+
+    const rawFdoId = teamId.startsWith('fdo:') ? teamId.slice(4) : null;
+    const team = await this.prisma.team.findFirst({
+      where: rawFdoId
+        ? { fdoExternalId: rawFdoId }
+        : { OR: [{ externalId: teamId }, { fdoExternalId: teamId }] },
+      select: { fdoExternalId: true },
+    });
+
+    const fdoId = team?.fdoExternalId;
+    if (!fdoId) return [];
+
+    const detailKey = SportsDataCacheService.fdoTeamDetailKey(fdoId);
+    let detail = await this.cacheService.getCached<FdoTeamDetail>(detailKey);
+    if (!detail) {
+      detail = await this.fdoClient
+        .get<FdoTeamDetail>(`teams/${fdoId}`)
+        .catch(() => null);
+      if (detail)
+        await this.cacheService.setCached(detailKey, detail, TTL_TEAMS);
+    }
+    if (!detail?.venue) return [];
+
+    const dto = new VenueDto();
+    dto.id = detail.id;
+    dto.name = detail.venue;
+    dto.address = null;
+    dto.city = null;
+    dto.country = null;
+    dto.capacity = null;
+    dto.surface = null;
+    dto.image = null;
+    const venues = [dto];
+    await this.cacheService.setCached(cacheKey, venues, TTL_TEAMS);
+    return venues;
   }
 
   async getByLeague(leagueId: string, season: number): Promise<VenueDto[]> {

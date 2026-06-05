@@ -4,15 +4,17 @@ import { ArrowLeft } from 'lucide-react';
 import type { Metadata } from 'next';
 import { apiFetch } from '@/lib/api';
 import { LEAGUES } from '@/lib/leagues';
-import type { ApiStanding, ApiMatch } from '@/lib/api-types';
+import type { ApiStanding, ApiMatch, ApiScorer, ApiSeason } from '@/lib/api-types';
+import { ChampionCard } from '@/components/leagues/champion-card';
 import { StandingTable } from '@/components/standings/standing-table';
 import { MatchHistory } from '@/components/matches/match-history';
 import { RoundSelector } from '@/components/feed/round-selector';
 import { LeagueLogo } from '@/components/feed/league-logo';
+import { ScorersBoard } from '@/components/scorers/scorers-board';
 
 export const dynamic = 'force-dynamic';
 
-type Tab = 'standings' | 'results' | 'fixtures';
+type Tab = 'standings' | 'results' | 'fixtures' | 'scorers';
 
 export async function generateMetadata({
   params,
@@ -38,21 +40,46 @@ export default async function LeagueSlugPage({
   if (!league) notFound();
 
   const tab: Tab =
-    rawTab === 'results' || rawTab === 'fixtures' ? rawTab : 'standings';
+    rawTab === 'results' || rawTab === 'fixtures' || rawTab === 'scorers'
+      ? rawTab
+      : 'standings';
 
-  const [standingsResult, matchesResult, fixturesResult] = await Promise.allSettled([
-    tab === 'standings'
-      ? apiFetch<ApiStanding[]>(`/leagues/${league.apiFootballId}/standings`)
-      : Promise.resolve([] as ApiStanding[]),
-    tab === 'results'
-      ? apiFetch<ApiMatch[]>(`/leagues/${league.apiFootballId}/results`)
-      : Promise.resolve([] as ApiMatch[]),
-    tab === 'fixtures'
-      ? apiFetch<ApiMatch[]>(`/leagues/${league.apiFootballId}/fixtures`)
-      : Promise.resolve([] as ApiMatch[]),
-  ]);
+  const [standingsResult, matchesResult, fixturesResult, scorersResult, seasonResult] =
+    await Promise.allSettled([
+      tab === 'standings' || tab === 'fixtures'
+        ? apiFetch<ApiStanding[]>(`/leagues/${league.apiFootballId}/standings`)
+        : Promise.resolve([] as ApiStanding[]),
+      tab === 'results'
+        ? apiFetch<ApiMatch[]>(`/leagues/${league.apiFootballId}/results`)
+        : Promise.resolve([] as ApiMatch[]),
+      tab === 'fixtures'
+        ? apiFetch<ApiMatch[]>(`/leagues/${league.apiFootballId}/fixtures`)
+        : Promise.resolve([] as ApiMatch[]),
+      tab === 'scorers'
+        ? apiFetch<ApiScorer[]>(`/leagues/${league.apiFootballId}/scorers`)
+        : Promise.resolve([] as ApiScorer[]),
+      tab === 'fixtures'
+        ? apiFetch<ApiSeason | null>(`/leagues/${league.apiFootballId}/season`)
+        : Promise.resolve(null),
+    ]);
 
   const standings = standingsResult.status === 'fulfilled' ? standingsResult.value : [];
+  const scorers = scorersResult.status === 'fulfilled' ? scorersResult.value : [];
+
+  const season =
+    seasonResult.status === 'fulfilled' ? seasonResult.value : null;
+
+  const champion = (() => {
+    if (tab !== 'fixtures' || !season?.finished) return null;
+    const byName = season.winnerName
+      ? standings.find((s) => s.teamName === season.winnerName)
+      : undefined;
+    const top = standings.find((s) => s.position === 1) ?? standings[0];
+    const src = byName ?? top;
+    const teamName = season.winnerName ?? src?.teamName ?? '';
+    if (!teamName) return null;
+    return { teamName, teamBadge: src?.teamBadge ?? null, teamId: src?.teamId };
+  })();
   const fixtureMatches = fixturesResult.status === 'fulfilled' ? fixturesResult.value : [];
   const rawMatches =
     tab === 'fixtures'
@@ -69,8 +96,9 @@ export default async function LeagueSlugPage({
     roundFilter != null ? rawMatches.filter((m) => m.round === roundFilter) : rawMatches;
 
   const tabs: { id: Tab; label: string }[] = [
-    { id: 'standings', label: 'Classement' },
-    { id: 'results', label: 'Résultats' },
+    { id: 'standings', label: 'Standings' },
+    { id: 'scorers', label: 'Scorers' },
+    { id: 'results', label: 'Results' },
     { id: 'fixtures', label: 'Fixtures' },
   ];
 
@@ -81,7 +109,7 @@ export default async function LeagueSlugPage({
         className="inline-flex w-fit items-center gap-1.5 rounded-md px-2 py-1 text-sm font-medium text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       >
         <ArrowLeft className="size-4" />
-        Toutes les ligues
+        All leagues
       </Link>
 
       <header className="flex items-center gap-4">
@@ -112,36 +140,49 @@ export default async function LeagueSlugPage({
         ))}
       </nav>
 
+      {tab === 'scorers' && <ScorersBoard scorers={scorers} league={league} />}
+
+      {tab !== 'scorers' && (
       <div className="rounded-xl border border-border/60 bg-card p-4 sm:p-6">
         {tab === 'standings' && (
           standings.length === 0 ? (
             <p className="py-8 text-center text-sm text-muted-foreground">
-              Classement indisponible — clé API requise.
+              Standings unavailable — API key required.
             </p>
           ) : (
             <StandingTable standings={standings} />
           )
         )}
         {(tab === 'results' || tab === 'fixtures') && (
-          <div className="flex flex-col gap-4">
-            <RoundSelector
-              rounds={allRounds}
-              currentRound={roundFilter}
-              extraParams={{ tab }}
-              basePath={`/leagues/${slug}`}
+          champion ? (
+            <ChampionCard
+              league={league}
+              teamName={champion.teamName}
+              teamBadge={champion.teamBadge}
+              teamId={champion.teamId}
             />
-            <MatchHistory
-              matches={matches}
-              groupByRound={roundFilter == null}
-              emptyMessage={
-                tab === 'results'
-                  ? 'Aucun résultat — clé API requise.'
-                  : 'Aucun match à venir — clé API requise.'
-              }
-            />
-          </div>
+          ) : (
+            <div className="flex flex-col gap-4">
+              <RoundSelector
+                rounds={allRounds}
+                currentRound={roundFilter}
+                extraParams={{ tab }}
+                basePath={`/leagues/${slug}`}
+              />
+              <MatchHistory
+                matches={matches}
+                groupByRound={roundFilter == null}
+                emptyMessage={
+                  tab === 'results'
+                    ? 'No results — API key required.'
+                    : 'No upcoming matches — API key required.'
+                }
+              />
+            </div>
+          )
         )}
       </div>
+      )}
     </div>
   );
 }

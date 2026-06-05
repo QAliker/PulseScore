@@ -30,13 +30,13 @@ export function RoundSelector({ rounds, currentRound, showAll = false, extraPara
   return (
     <div className="flex items-center gap-1.5 flex-wrap">
       <span className="mr-1 text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-muted-foreground/60 select-none">
-        Journée
+        Matchday
       </span>
       <Link
         href={href(basePath, null, extraParams, true)}
         className={`${pillBase} ${showAll ? active : idle}`}
       >
-        Tout
+        All
       </Link>
       {rounds.map((r) => (
         <Link

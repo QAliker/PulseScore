@@ -13,4 +13,5 @@ export class StandingDto {
   goalsAgainst: number;
   points: number;
   promotion: string | null;
+  form: string | null;
 }

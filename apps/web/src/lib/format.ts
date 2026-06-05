@@ -3,13 +3,13 @@ import type { Match } from './types';
 // Server TZ from env (defaults to Europe/Paris per project .env).
 const TZ = process.env.NEXT_PUBLIC_APP_TZ ?? 'Europe/Paris';
 
-const kickoffFmt = new Intl.DateTimeFormat('fr-FR', {
+const kickoffFmt = new Intl.DateTimeFormat('en-GB', {
   hour: '2-digit',
   minute: '2-digit',
   timeZone: TZ,
 });
 
-const dateFmt = new Intl.DateTimeFormat('fr-FR', {
+const dateFmt = new Intl.DateTimeFormat('en-GB', {
   weekday: 'short',
   day: 'numeric',
   month: 'short',

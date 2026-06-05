@@ -239,6 +239,7 @@ export class ApiFootballNormalizer {
     dto.goalsAgainst = entry.all.goals.against;
     dto.points = entry.points;
     dto.promotion = entry.description || null;
+    dto.form = null;
     return dto;
   }
 

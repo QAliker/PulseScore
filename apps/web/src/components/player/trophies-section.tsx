@@ -9,7 +9,7 @@ export function TrophiesSection({ trophies }: Props) {
   if (trophies.length === 0) {
     return (
       <p className="px-4 py-6 text-sm italic text-muted-foreground sm:px-6">
-        Aucun palmarès trouvé.
+        No trophies found.
       </p>
     );
   }

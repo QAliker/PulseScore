@@ -5,7 +5,40 @@ import Image from 'next/image';
 
 type Props = { standings: ApiStanding[] };
 
+const FORM_STYLES: Record<string, string> = {
+  W: 'bg-[oklch(0.56_0.16_145)] text-[oklch(0.99_0.01_145)]',
+  L: 'bg-red-500/85 text-white',
+  D: 'bg-muted-foreground/25 text-muted-foreground',
+};
+
+function FormStrip({ form }: { form: string | null }) {
+  if (!form) return <span className="text-muted-foreground/40">—</span>;
+  const results = form
+    .replace(/[^WDL]/g, '')
+    .split('')
+    .slice(-5);
+  if (results.length === 0)
+    return <span className="text-muted-foreground/40">—</span>;
+  return (
+    <div className="flex items-center justify-center gap-1">
+      {results.map((r, i) => (
+        <span
+          key={i}
+          title={r === 'W' ? 'Win' : r === 'L' ? 'Loss' : 'Draw'}
+          className={cn(
+            'flex size-[1.15rem] items-center justify-center rounded-[5px] text-[0.6rem] font-bold leading-none',
+            FORM_STYLES[r] ?? 'bg-muted text-muted-foreground',
+          )}
+        >
+          {r}
+        </span>
+      ))}
+    </div>
+  );
+}
+
 export function StandingTable({ standings }: Props) {
+  const hasForm = standings.some((s) => s.form);
   if (!standings.length) {
     return (
       <p className="py-8 text-center text-sm text-muted-foreground">No standings available.</p>
@@ -26,7 +59,10 @@ export function StandingTable({ standings }: Props) {
             <th className="py-2 px-2 text-center">GF</th>
             <th className="py-2 px-2 text-center">GA</th>
             <th className="py-2 px-2 text-center">GD</th>
-            <th className="py-2 pl-2 text-center font-bold">Pts</th>
+            <th className="py-2 px-2 text-center font-bold">Pts</th>
+            {hasForm && (
+              <th className="hidden py-2 pl-3 pr-3 text-center sm:table-cell">Form</th>
+            )}
           </tr>
         </thead>
         <tbody className="divide-y divide-border/40">
@@ -75,7 +111,12 @@ export function StandingTable({ standings }: Props) {
                 {row.goalsFor - row.goalsAgainst > 0 ? '+' : ''}
                 {row.goalsFor - row.goalsAgainst}
               </td>
-              <td className="py-2.5 pl-2 text-center tabular font-bold">{row.points}</td>
+              <td className="py-2.5 px-2 text-center tabular font-bold">{row.points}</td>
+              {hasForm && (
+                <td className="hidden py-2.5 pl-3 pr-3 sm:table-cell">
+                  <FormStrip form={row.form} />
+                </td>
+              )}
             </tr>
             );
           })}

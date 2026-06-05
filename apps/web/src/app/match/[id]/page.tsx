@@ -3,7 +3,7 @@ import Image from 'next/image';
 import { notFound } from 'next/navigation';
 import { ArrowLeft } from 'lucide-react';
 import { getMatchDetail } from '@/lib/mock-data';
-import { getLeagueBySlug } from '@/lib/leagues';
+import { getLeagueBySlug, leagueDarkClass } from '@/lib/leagues';
 import { formatDate, formatKickoff, formatMinute } from '@/lib/format';
 import { apiFetch } from '@/lib/api';
 import { apiMatchToMatch } from '@/lib/api-match-map';
@@ -122,7 +122,7 @@ export default async function MatchDetailPage({
         <div className="relative flex flex-col gap-6 p-6 text-pitch-foreground sm:p-10">
           <header className="flex items-center justify-between text-[0.72rem] font-semibold uppercase tracking-[0.18em] opacity-90">
             <span className="inline-flex items-center gap-1.5">
-                {league && <Image src={league.logo} alt="" width={14} height={14} className={`size-3.5 object-contain${league.darkInvert ? ' dark:invert' : ''}`} unoptimized />}
+                {league && <Image src={league.logo} alt="" width={14} height={14} className={`size-3.5 object-contain ${leagueDarkClass(league)}`.trimEnd()} unoptimized />}
                 {league?.name ?? ''}
               </span>
             <span>{formatDate(match.kickoff)} · {formatKickoff(match.kickoff)}</span>

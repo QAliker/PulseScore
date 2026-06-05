@@ -1,5 +1,5 @@
 import Image from 'next/image';
-import type { League } from '@/lib/leagues';
+import { leagueDarkClass, type League } from '@/lib/leagues';
 import { cn } from '@/lib/utils';
 
 export function LeagueLogo({
@@ -7,7 +7,7 @@ export function LeagueLogo({
   size = 28,
   className,
 }: {
-  league: Pick<League, 'logo' | 'name' | 'darkInvert'>;
+  league: Pick<League, 'logo' | 'name' | 'darkInvert' | 'darkWhiten'>;
   size?: number;
   className?: string;
 }) {
@@ -17,7 +17,7 @@ export function LeagueLogo({
       alt={league.name}
       width={size}
       height={size}
-      className={cn('object-contain', league.darkInvert && 'dark:invert', className)}
+      className={cn('object-contain', leagueDarkClass(league), className)}
       unoptimized
     />
   );

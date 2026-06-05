@@ -66,6 +66,31 @@ export type ApiStanding = {
   goalsAgainst: number;
   points: number;
   promotion: string | null;
+  form: string | null;
+};
+
+export type ApiSeason = {
+  leagueId: string;
+  startDate: string;
+  endDate: string;
+  currentMatchday: number | null;
+  finished: boolean;
+  winnerName: string | null;
+};
+
+export type ApiScorer = {
+  rank: number;
+  playerId: number;
+  playerName: string;
+  nationality: string | null;
+  position: string | null;
+  teamId: string | null;
+  teamName: string;
+  teamCrest: string | null;
+  playedMatches: number;
+  goals: number;
+  assists: number | null;
+  penalties: number | null;
 };
 
 export type ApiLeague = {

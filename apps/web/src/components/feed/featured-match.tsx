@@ -6,7 +6,7 @@ import type { Match, Goalscorer, MatchCardEvent, Substitution } from '@/lib/type
 import { formatKickoff } from '@/lib/format';
 import { MatchMinute } from './match-minute';
 import { cn } from '@/lib/utils';
-import { getLeagueBySlug } from '@/lib/leagues';
+import { getLeagueBySlug, leagueDarkClass } from '@/lib/leagues';
 
 // ─── Pitch SVG — top-down view, 1px ≈ 1m (105×68m real pitch) ──────────────
 
@@ -293,7 +293,7 @@ export function FeaturedMatch({
                   alt=""
                   width={20}
                   height={20}
-                  className={`size-5 object-contain${league.darkInvert ? ' dark:invert' : ''}`}
+                  className={`size-5 object-contain ${leagueDarkClass(league)}`.trimEnd()}
                   unoptimized
                 />
               </div>

@@ -98,6 +98,7 @@ export class FootballDataOrgNormalizer {
     dto.goalsAgainst = raw.goalsAgainst;
     dto.points = raw.points;
     dto.promotion = null;
+    dto.form = raw.form ?? null;
     return dto;
   }
 }

@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import { Search } from 'lucide-react';
 import { ThemeToggle } from '@/components/theme/theme-toggle';
 import { LiveConnectionBadge } from './live-connection-badge';
@@ -12,13 +13,14 @@ export function AppHeader() {
           href="/"
           className="group flex shrink-0 items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-md -mx-1 px-1"
         >
-          <PulseLogo />
-          <span className="font-display text-[1.35rem] font-900 leading-none tracking-tight">
-            PULSESCORE
-          </span>
-          <span className="hidden text-[0.7rem] font-medium uppercase tracking-[0.18em] text-muted-foreground lg:inline">
-            Arena
-          </span>
+          <Image
+            src="/PulseScore_Logo__2.png"
+            alt="PulseScore"
+            width={331}
+            height={146}
+            priority
+            className="h-11 w-auto rounded-md dark:brightness-0 dark:invert"
+          />
         </Link>
 
         <div className="mx-2 h-5 w-px bg-border/60 hidden md:block" aria-hidden />
@@ -37,19 +39,5 @@ export function AppHeader() {
         </div>
       </div>
     </header>
-  );
-}
-
-function PulseLogo() {
-  return (
-    <span
-      aria-hidden
-      className="relative inline-flex size-7 items-center justify-center rounded-md bg-primary text-primary-foreground"
-    >
-      <svg viewBox="0 0 24 24" className="size-4" fill="none" stroke="currentColor" strokeWidth={2.6}>
-        <path d="M3 12h3l2-6 4 12 2-6 2 3h5" strokeLinecap="round" strokeLinejoin="round" />
-      </svg>
-      <span className="absolute -bottom-0.5 -right-0.5 size-2 rounded-full bg-live ring-2 ring-background live-dot" />
-    </span>
   );
 }

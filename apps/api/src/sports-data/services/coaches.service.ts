@@ -37,9 +37,15 @@ export class CoachesService {
     const fdoId = team?.fdoExternalId;
     if (!fdoId) return [];
 
-    const detail = await this.fdoClient
-      .get<FdoTeamDetail>(`teams/${fdoId}`)
-      .catch(() => null);
+    const detailKey = SportsDataCacheService.fdoTeamDetailKey(fdoId);
+    let detail = await this.cacheService.getCached<FdoTeamDetail>(detailKey);
+    if (!detail) {
+      detail = await this.fdoClient
+        .get<FdoTeamDetail>(`teams/${fdoId}`)
+        .catch(() => null);
+      if (detail)
+        await this.cacheService.setCached(detailKey, detail, TTL_TEAMS);
+    }
     if (!detail?.coach) return [];
 
     const c = detail.coach;

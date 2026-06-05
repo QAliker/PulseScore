@@ -65,6 +65,18 @@ export class SportsDataCacheService {
     return `sports:standings:${leagueId}`;
   }
 
+  static seasonKey(leagueId: string): string {
+    return `sports:season:${leagueId}`;
+  }
+
+  static scorersKey(leagueId: string): string {
+    return `sports:scorers:${leagueId}`;
+  }
+
+  static fdoTeamDetailKey(fdoId: string): string {
+    return `sports:fdo:teamdetail:${fdoId}`;
+  }
+
   static teamsKey(leagueId: string): string {
     return `sports:teams:${leagueId}`;
   }

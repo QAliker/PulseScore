@@ -3,6 +3,9 @@ import { StandingsService } from '../services/standings.service';
 import { FixturesService } from '../services/fixtures.service';
 import { LeaguesService } from '../services/leagues.service';
 import { StandingDto } from '../dto/standing.dto';
+import { SeasonDto } from '../dto/season.dto';
+import { ScorerDto } from '../dto/scorer.dto';
+import { ScorersService } from '../services/scorers.service';
 import { MatchDto } from '../dto/match.dto';
 import { RafLeagueResponse } from '../interfaces/api-football.interfaces';
 
@@ -12,6 +15,7 @@ export class LeaguesController {
     private readonly standingsService: StandingsService,
     private readonly fixturesService: FixturesService,
     private readonly leaguesService: LeaguesService,
+    private readonly scorersService: ScorersService,
   ) {}
 
   @Get()
@@ -43,6 +47,18 @@ export class LeaguesController {
     @Param('leagueId') leagueId: string,
   ): Promise<StandingDto[]> {
     return this.standingsService.getStandings(leagueId);
+  }
+
+  @Get(':leagueId/season')
+  async getSeason(
+    @Param('leagueId') leagueId: string,
+  ): Promise<SeasonDto | null> {
+    return this.standingsService.getSeason(leagueId);
+  }
+
+  @Get(':leagueId/scorers')
+  async getScorers(@Param('leagueId') leagueId: string): Promise<ScorerDto[]> {
+    return this.scorersService.getByLeague(leagueId);
   }
 
   @Get(':leagueId/results')

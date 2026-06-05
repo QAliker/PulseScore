@@ -98,7 +98,7 @@ export function TeamHeroCard({ team, standing, results, teamColor }: Props) {
           {form.length > 0 && (
             <div className="flex items-center gap-1.5">
               <span className="text-[0.6rem] font-bold uppercase tracking-[.1em] text-white/40">
-                Forme
+                Form
               </span>
               <div className="flex gap-1">
                 {form.map((r, i) => (
@@ -122,9 +122,9 @@ export function TeamHeroCard({ team, standing, results, teamColor }: Props) {
           {standing && (
             <div className="flex gap-2">
               {[
-                { v: `${standing.position}e`, l: 'Rang' },
+                { v: `${standing.position}e`, l: 'Rank' },
                 { v: String(standing.points), l: 'Pts' },
-                { v: String(standing.won), l: 'Victoires' },
+                { v: String(standing.won), l: 'Wins' },
                 {
                   v: goalDiff != null ? (goalDiff >= 0 ? `+${goalDiff}` : String(goalDiff)) : '—',
                   l: 'Diff.',
@@ -154,9 +154,9 @@ export function TeamHeroCard({ team, standing, results, teamColor }: Props) {
       {standing && standing.played > 0 && (
         <div className="grid grid-cols-4 divide-x divide-border/50 border-t border-border/50 bg-card">
           {[
-            { v: goalsPerMatch ?? '—', l: 'Buts / Match', pct: Math.min(Number(goalsPerMatch) / 4, 1), color: 'from-primary/60 to-primary' },
-            { v: concededPerMatch ?? '—', l: 'Encaissés / M', pct: Math.min(Number(concededPerMatch) / 3, 1), color: 'from-emerald-600/60 to-emerald-500' },
-            { v: String(standing.won), l: 'Victoires', pct: standing.won / standing.played, color: 'from-primary/60 to-primary' },
+            { v: goalsPerMatch ?? '—', l: 'Goals / Match', pct: Math.min(Number(goalsPerMatch) / 4, 1), color: 'from-primary/60 to-primary' },
+            { v: concededPerMatch ?? '—', l: 'Conceded / M', pct: Math.min(Number(concededPerMatch) / 3, 1), color: 'from-emerald-600/60 to-emerald-500' },
+            { v: String(standing.won), l: 'Wins', pct: standing.won / standing.played, color: 'from-primary/60 to-primary' },
             { v: `${Math.round((standing.won / standing.played) * 100)}%`, l: 'Win Rate', pct: standing.won / standing.played, color: 'from-amber-500/60 to-amber-400' },
           ].map(({ v, l, pct, color }) => (
             <div key={l} className="px-3 py-3.5">
