@@ -57,6 +57,30 @@ export class TeamsService implements OnModuleInit {
     return raw;
   }
 
+  async searchTeams(
+    query: string,
+  ): Promise<
+    { id: string; name: string; logo: string | null; country: string | null }[]
+  > {
+    const teams = await this.prismaService.team.findMany({
+      where: { name: { contains: query, mode: 'insensitive' } },
+      select: {
+        externalId: true,
+        name: true,
+        logo: true,
+        country: true,
+      },
+      orderBy: { name: 'asc' },
+      take: 8,
+    });
+    return teams.map((t) => ({
+      id: t.externalId,
+      name: t.name,
+      logo: t.logo,
+      country: t.country,
+    }));
+  }
+
   async getTeamByExternalId(teamId: string): Promise<{
     id: string;
     externalId: string;

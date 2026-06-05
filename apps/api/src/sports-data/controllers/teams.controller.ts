@@ -23,6 +23,12 @@ export class TeamsController {
     private readonly prisma: PrismaService,
   ) {}
 
+  @Get()
+  async search(@Query('search') search?: string) {
+    if (!search || search.trim().length < 2) return [];
+    return this.teamsService.searchTeams(search.trim());
+  }
+
   @Get(':teamId')
   async getTeam(@Param('teamId') teamId: string) {
     const team = await this.teamsService.getTeamByExternalId(teamId);

@@ -10,6 +10,10 @@ export class RateLimitError extends Error {
   }
 }
 
+export function isRateLimitError(e: unknown): e is RateLimitError {
+  return e instanceof RateLimitError || (e instanceof Error && e.name === 'RateLimitError');
+}
+
 export async function apiFetch<T>(
   path: string,
   init?: RequestInit & { next?: { revalidate?: number } },

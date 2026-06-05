@@ -28,6 +28,29 @@ const FDO_POSITION_MAP: Record<string, string> = {
   Forward: 'Forward',
 };
 
+/** Normalize a player name for cross-source matching (ESPN ↔ FDO). */
+export function normalizePlayerName(name: string): string {
+  return name
+    .normalize('NFD')
+    .replace(/\p{Diacritic}/gu, '') // strip accents
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, ' ')
+    .trim();
+}
+
+/**
+ * Candidate match keys for a name, most-specific first. The "first two tokens"
+ * key bridges FDO full names (e.g. "Marc Cucurella Saseta") and ESPN short
+ * names ("Marc Cucurella").
+ */
+export function playerNameKeys(name: string): string[] {
+  const full = normalizePlayerName(name);
+  const tokens = full.split(' ').filter(Boolean);
+  const keys = [full];
+  if (tokens.length > 2) keys.push(tokens.slice(0, 2).join(' '));
+  return keys;
+}
+
 type PrismaPlayer = {
   externalId: string;
   name: string;
@@ -315,6 +338,37 @@ export class PlayersService {
 
     await this.cacheService.setCached(cacheKey, players, TTL_TEAMS);
     return players;
+  }
+
+  /**
+   * Maps a team's FDO squad to `normalizedName -> fdo:personId`.
+   * Used to make match-lineup players (ESPN ids) link to a real player page.
+   * Best-effort: returns an empty map on any failure (e.g. FDO rate limit).
+   */
+  async getFdoSquadNameMap(fdoTeamId: string): Promise<Map<string, string>> {
+    const map = new Map<string, string>();
+    try {
+      const team = await this.prisma.team.findFirst({
+        where: { fdoExternalId: fdoTeamId },
+        select: { id: true },
+      });
+      const squad = await this.getSquadFromFdo(fdoTeamId, team?.id ?? '');
+      // Pass 1: exact full-name keys (always win). Pass 2: looser fallback
+      // keys, only filling gaps so an exact match is never overwritten.
+      for (const p of squad) {
+        map.set(normalizePlayerName(p.name), p.externalId);
+      }
+      for (const p of squad) {
+        for (const key of playerNameKeys(p.name)) {
+          if (!map.has(key)) map.set(key, p.externalId);
+        }
+      }
+    } catch (err) {
+      this.logger.warn(
+        `[squadNameMap] fdoTeamId=${fdoTeamId} failed: ${String(err)}`,
+      );
+    }
+    return map;
   }
 
   async getTopscorers(league: string, season: string): Promise<PlayerDto[]> {

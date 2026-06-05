@@ -2,8 +2,9 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { ArrowLeft } from 'lucide-react';
 import type { Metadata } from 'next';
-import { apiFetch } from '@/lib/api';
+import { apiFetch, isRateLimitError } from '@/lib/api';
 import type { ApiPlayerDetail, ApiTransfers, ApiTrophy, ApiSidelined, ApiMatch } from '@/lib/api-types';
+import { RateLimitNotice } from '@/components/app/rate-limit-notice';
 import { PlayerHeroCard } from '@/components/player/player-hero-card';
 import { TransfersTimeline } from '@/components/player/transfers-timeline';
 import { TrophiesSection } from '@/components/player/trophies-section';
@@ -37,7 +38,8 @@ export default async function PlayerPage({
 
   try {
     player = await apiFetch<ApiPlayerDetail>(`/players/${playerId}`);
-  } catch {
+  } catch (e) {
+    if (isRateLimitError(e)) return <RateLimitNotice />;
     notFound();
   }
 

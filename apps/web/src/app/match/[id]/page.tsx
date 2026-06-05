@@ -5,8 +5,9 @@ import { ArrowLeft } from 'lucide-react';
 import { getMatchDetail } from '@/lib/mock-data';
 import { getLeagueBySlug, leagueDarkClass } from '@/lib/leagues';
 import { formatDate, formatKickoff, formatMinute } from '@/lib/format';
-import { apiFetch } from '@/lib/api';
+import { apiFetch, isRateLimitError } from '@/lib/api';
 import { apiMatchToMatch } from '@/lib/api-match-map';
+import { RateLimitNotice } from '@/components/app/rate-limit-notice';
 import { extractLogoColor } from '@/lib/extract-color';
 import type { ApiMatch, ApiMatchLineups, ApiInjury, ApiPrediction, ApiH2h } from '@/lib/api-types';
 import type { MatchLineups, TeamLineup, H2HStats } from '@/lib/types';
@@ -69,7 +70,13 @@ export default async function MatchDetailPage({
 }) {
   const { id } = await params;
 
-  const apiMatch = await apiFetch<ApiMatch>(`/matches/${id}`, { cache: 'no-store' }).catch(() => null);
+  let apiMatch: ApiMatch | null = null;
+  try {
+    apiMatch = await apiFetch<ApiMatch>(`/matches/${id}`, { cache: 'no-store' });
+  } catch (e) {
+    if (isRateLimitError(e)) return <RateLimitNotice />;
+    apiMatch = null;
+  }
   if (!apiMatch) notFound();
 
   const match = apiMatchToMatch(apiMatch);

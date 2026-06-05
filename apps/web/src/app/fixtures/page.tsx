@@ -4,11 +4,29 @@ import { redirect } from 'next/navigation';
 import type { Metadata } from 'next';
 import { apiFetch } from '@/lib/api';
 import { LEAGUES, type League } from '@/lib/leagues';
-import type { ApiMatch } from '@/lib/api-types';
+import type { ApiMatch, ApiSeason, ApiStanding } from '@/lib/api-types';
 import { getCurrentRound } from '@/lib/rounds';
 import { MatchHistory } from '@/components/matches/match-history';
 import { RoundSelector } from '@/components/feed/round-selector';
 import { LeagueLogo } from '@/components/feed/league-logo';
+import { ChampionCard } from '@/components/leagues/champion-card';
+
+type Champion = { teamName: string; teamBadge: string | null; teamId?: string };
+
+function computeChampion(
+  season: ApiSeason | null,
+  standings: ApiStanding[],
+): Champion | null {
+  if (!season?.finished) return null;
+  const byName = season.winnerName
+    ? standings.find((s) => s.teamName === season.winnerName)
+    : undefined;
+  const top = standings.find((s) => s.position === 1) ?? standings[0];
+  const src = byName ?? top;
+  const teamName = season.winnerName ?? src?.teamName ?? '';
+  if (!teamName) return null;
+  return { teamName, teamBadge: src?.teamBadge ?? null, teamId: src?.teamId };
+}
 
 function LeagueLabel({ league }: { league: League }) {
   return (
@@ -38,12 +56,22 @@ export default async function FixturesPage({
 
   const fixtureGroups = await Promise.all(
     leaguesToFetch.map(async (league) => {
-      try {
-        const data = await apiFetch<ApiMatch[]>(`/leagues/${league.apiFootballId}/fixtures`);
-        return { league, matches: data };
-      } catch {
-        return { league, matches: [] as ApiMatch[] };
+      const [matches, season] = await Promise.all([
+        apiFetch<ApiMatch[]>(`/leagues/${league.apiFootballId}/fixtures`).catch(
+          () => [] as ApiMatch[],
+        ),
+        apiFetch<ApiSeason | null>(`/leagues/${league.apiFootballId}/season`).catch(
+          () => null,
+        ),
+      ]);
+      let champion: Champion | null = null;
+      if (season?.finished) {
+        const standings = await apiFetch<ApiStanding[]>(
+          `/leagues/${league.apiFootballId}/standings`,
+        ).catch(() => [] as ApiStanding[]);
+        champion = computeChampion(season, standings);
       }
+      return { league, matches, champion };
     }),
   );
 
@@ -71,8 +99,9 @@ export default async function FixturesPage({
   }
 
   // Filter matches by selected round.
-  const filteredGroups = fixtureGroups.map(({ league, matches }) => ({
+  const filteredGroups = fixtureGroups.map(({ league, matches, champion }) => ({
     league,
+    champion,
     matches: roundFilter != null ? matches.filter((m) => m.round === roundFilter) : matches,
   }));
 
@@ -118,16 +147,25 @@ export default async function FixturesPage({
         />
       </div>
 
-      {filteredGroups.map(({ league, matches }) => (
+      {filteredGroups.map(({ league, matches, champion }) => (
         <section key={league.slug} className="flex flex-col gap-2">
           <LeagueLabel league={league} />
-          <div className="rounded-xl border border-border/60 bg-card px-4 sm:px-6">
-            <MatchHistory
-              matches={matches}
-              emptyMessage="No fixtures in this round."
-              groupByRound={roundFilter == null}
+          {champion ? (
+            <ChampionCard
+              league={league}
+              teamName={champion.teamName}
+              teamBadge={champion.teamBadge}
+              teamId={champion.teamId}
             />
-          </div>
+          ) : (
+            <div className="rounded-xl border border-border/60 bg-card px-4 sm:px-6">
+              <MatchHistory
+                matches={matches}
+                emptyMessage="No fixtures in this round."
+                groupByRound={roundFilter == null}
+              />
+            </div>
+          )}
         </section>
       ))}
     </div>

@@ -13,7 +13,7 @@ import {
   FdoMatch,
   FdoMatchesResponse,
 } from '../interfaces/football-data-org.interfaces';
-import { MatchDto } from '../dto/match.dto';
+import { MatchDto, LineupPlayerDto } from '../dto/match.dto';
 import { PrismaService } from '../../prisma/prisma.service';
 import {
   getCurrentSeason,
@@ -22,7 +22,7 @@ import {
 } from '../constants/season.constants';
 import { EspnService } from './espn.service';
 import { PlayerPhotoService } from './player-photo.service';
-import { PlayersService } from './players.service';
+import { PlayersService, playerNameKeys } from './players.service';
 
 const LEAGUE_IDS = ['39', '140', '78', '135', '61']; // PL, La Liga, Bundesliga, Serie A, Ligue 1
 
@@ -86,6 +86,46 @@ export class FixturesService {
     return this.fdoNormalizer.normalizeMatch(raw, homeId, awayId, leagueId);
   }
 
+  /**
+   * Rewrites match-lineup player ids (ESPN athlete ids, which have no player
+   * page) to `fdo:personId` by matching player names against each team's FDO
+   * squad. Players that can't be matched keep their original id and stay
+   * non-clickable on the frontend. Best-effort: never throws.
+   */
+  private async linkLineupPlayersToFdo(
+    match: MatchDto,
+    homeFdoTeamId: string,
+    awayFdoTeamId: string,
+  ): Promise<void> {
+    if (!match.lineups) return;
+    const [homeMap, awayMap] = await Promise.all([
+      this.playersService.getFdoSquadNameMap(homeFdoTeamId),
+      this.playersService.getFdoSquadNameMap(awayFdoTeamId),
+    ]);
+    const apply = (
+      players: LineupPlayerDto[],
+      nameMap: Map<string, string>,
+    ) => {
+      for (const p of players) {
+        for (const key of playerNameKeys(p.name)) {
+          const fdoId = nameMap.get(key);
+          if (fdoId) {
+            p.id = fdoId;
+            break;
+          }
+        }
+      }
+    };
+    apply(
+      [...match.lineups.home.starting, ...match.lineups.home.bench],
+      homeMap,
+    );
+    apply(
+      [...match.lineups.away.starting, ...match.lineups.away.bench],
+      awayMap,
+    );
+  }
+
   async getFixtures(
     leagueId: string,
     from: string,
@@ -140,6 +180,11 @@ export class FixturesService {
           match.homeTeam.name,
           match.awayTeam.name,
           match.startTime,
+        );
+        await this.linkLineupPlayersToFdo(
+          match,
+          String(raw.homeTeam.id),
+          String(raw.awayTeam.id),
         );
       }
     } else {

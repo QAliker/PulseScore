@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import type { LineupPlayer, TeamLineup, Match } from '@/lib/types';
 import { PlayerPhoto } from './player-photo';
@@ -32,8 +33,12 @@ function groupByRow(players: LineupPlayer[]): [number, LineupPlayer[]][] {
 }
 
 function PlayerRow({ player, side }: { player: LineupPlayer; side: 'home' | 'away' }) {
-  return (
-    <div className="flex items-center gap-2.5 py-1.5">
+  // Only players resolved to an FDO person id have a player page (see backend
+  // linkLineupPlayersToFdo). Others keep their ESPN id and stay non-clickable.
+  const href = player.id.startsWith('fdo:') ? `/players/${player.id}` : null;
+
+  const content = (
+    <>
       <span className="w-5 shrink-0 text-right text-[0.7rem] font-black tabular text-muted-foreground/50 leading-none">
         {player.number || '—'}
       </span>
@@ -51,8 +56,21 @@ function PlayerRow({ player, side }: { player: LineupPlayer; side: 'home' | 'awa
           {formatPosition(player.positionLabel)}
         </span>
       )}
-    </div>
+    </>
   );
+
+  if (href) {
+    return (
+      <Link
+        href={href}
+        className="-mx-2 flex items-center gap-2.5 rounded-md px-2 py-1.5 transition-colors hover:bg-accent/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      >
+        {content}
+      </Link>
+    );
+  }
+
+  return <div className="flex items-center gap-2.5 py-1.5">{content}</div>;
 }
 
 function SectionDivider({ label }: { label: string }) {

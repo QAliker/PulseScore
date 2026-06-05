@@ -1,4 +1,5 @@
 import Image from 'next/image';
+import Link from 'next/link';
 import type { ApiStanding } from '@/lib/api-types';
 
 function groupName(raw: string): string {
@@ -44,21 +45,26 @@ export function GroupStandings({ standings }: { standings: ApiStanding[] }) {
                 .sort((a, b) => a.position - b.position)
                 .map((r) => (
                   <tr key={r.teamId} className="border-t border-border/40">
-                    <td className="flex items-center gap-2 py-1.5 pl-1">
-                      <span className="w-4 text-center text-xs text-muted-foreground">
-                        {r.position}
-                      </span>
-                      {r.teamBadge && (
-                        <Image
-                          src={r.teamBadge}
-                          alt={r.teamName}
-                          width={18}
-                          height={18}
-                          className="h-[18px] w-[18px] object-contain"
-                          unoptimized
-                        />
-                      )}
-                      <span className="truncate font-medium">{r.teamName}</span>
+                    <td className="py-1.5 pl-1">
+                      <Link
+                        href={`/teams/${r.teamId}`}
+                        className="-mx-1 flex items-center gap-2 rounded px-1 py-0.5 transition-colors hover:bg-accent/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      >
+                        <span className="w-4 text-center text-xs text-muted-foreground">
+                          {r.position}
+                        </span>
+                        {r.teamBadge && (
+                          <Image
+                            src={r.teamBadge}
+                            alt={r.teamName}
+                            width={18}
+                            height={18}
+                            className="h-[18px] w-[18px] object-contain"
+                            unoptimized
+                          />
+                        )}
+                        <span className="truncate font-medium">{r.teamName}</span>
+                      </Link>
                     </td>
                     <td className="px-1 text-center tabular-nums text-muted-foreground">
                       {r.played}

@@ -1,9 +1,9 @@
 import Link from 'next/link';
 import Image from 'next/image';
-import { Search } from 'lucide-react';
 import { ThemeToggle } from '@/components/theme/theme-toggle';
 import { LiveConnectionBadge } from './live-connection-badge';
 import { SoundToggle } from './sound-toggle';
+import { SearchPalette } from './search-palette';
 
 export function AppHeader() {
   return (
@@ -26,13 +26,7 @@ export function AppHeader() {
         <div className="mx-2 h-5 w-px bg-border/60 hidden md:block" aria-hidden />
 
         <div className="ml-auto flex items-center gap-2">
-          <div className="hidden min-w-55 items-center gap-2 rounded-md border border-input bg-secondary/50 px-3 py-1.5 text-sm text-muted-foreground md:flex">
-            <Search className="size-4" aria-hidden />
-            <span>Search teams, matches, leagues</span>
-            <kbd className="ml-auto rounded bg-background/60 px-1.5 py-0.5 font-mono text-[0.65rem] text-muted-foreground">
-              ⌘K
-            </kbd>
-          </div>
+          <SearchPalette />
           <LiveConnectionBadge />
           <SoundToggle />
           <ThemeToggle />
