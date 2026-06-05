@@ -135,4 +135,82 @@ describe('StandingsService', () => {
     const result = await service.getStandings('39');
     expect(result).toEqual([]);
   });
+
+  it('getGroupStandings returns every group table labelled with its group', async () => {
+    // Override date spy to 2026 so getCurrentSeason would return 2025+ if called,
+    // but getGroupStandings is independent of season — it always uses FDO.
+    const response = {
+      competition: { id: 2000, name: 'FIFA World Cup', code: 'WC' },
+      season: {
+        id: 1,
+        startDate: '2026-06-11',
+        endDate: '2026-07-19',
+        currentMatchday: 1,
+        winner: null,
+      },
+      standings: [
+        {
+          type: 'TOTAL',
+          group: 'GROUP_A',
+          table: [
+            {
+              position: 1,
+              team: { id: 759, name: 'Brazil', crest: 'c' },
+              playedGames: 1,
+              won: 1,
+              draw: 0,
+              lost: 0,
+              goalsFor: 2,
+              goalsAgainst: 0,
+              points: 3,
+              form: null,
+            },
+          ],
+        },
+        {
+          type: 'TOTAL',
+          group: 'GROUP_B',
+          table: [
+            {
+              position: 1,
+              team: { id: 760, name: 'France', crest: 'c' },
+              playedGames: 1,
+              won: 1,
+              draw: 0,
+              lost: 0,
+              goalsFor: 3,
+              goalsAgainst: 1,
+              points: 3,
+              form: null,
+            },
+          ],
+        },
+      ],
+    };
+
+    mockCache.getCached.mockResolvedValue(null);
+    mockFdoClient.get.mockResolvedValue(response);
+    mockPrisma.league.findFirst.mockResolvedValue(null);
+    mockPrisma.team.findFirst.mockResolvedValue(null);
+
+    mockFdoNormalizer.normalizeStanding.mockImplementation(
+      (
+        entry: any,
+        _leagueId: string,
+        _leagueName: string,
+        _teamId: any,
+        group: string | null,
+      ) => ({
+        teamName: entry.team.name,
+        group,
+        position: entry.position,
+        points: entry.points,
+      }),
+    );
+
+    const result = await service.getGroupStandings('1');
+    expect(result).toHaveLength(2);
+    expect(result.map((r: any) => r.group)).toEqual(['GROUP_A', 'GROUP_B']);
+    expect(result[0].teamName).toBe('Brazil');
+  });
 });

@@ -43,6 +43,9 @@ export class MatchDto {
   progress: string | null;
   venue: string | null;
   round: number | null;
+  stage: string | null;
+  group: string | null;
+  winner: string | null;
   goalscorers: GoalscorerDto[];
   cards: CardDto[];
   substitutions: SubstitutionDto[];

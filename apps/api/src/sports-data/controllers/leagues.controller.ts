@@ -71,6 +71,16 @@ export class LeaguesController {
     return this.fixturesService.getLeagueFixtures(leagueId);
   }
 
+  @Get(':leagueId/groups')
+  async getGroups(@Param('leagueId') leagueId: string): Promise<StandingDto[]> {
+    return this.standingsService.getGroupStandings(leagueId);
+  }
+
+  @Get(':leagueId/matches')
+  async getMatches(@Param('leagueId') leagueId: string): Promise<MatchDto[]> {
+    return this.fixturesService.getAllLeagueMatches(leagueId);
+  }
+
   @Get(':leagueId/rounds')
   async getRounds(
     @Param('leagueId') leagueId: string,

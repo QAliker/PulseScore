@@ -85,6 +85,9 @@ export class ApiFootballNormalizer {
       : (raw.fixture.status.short ?? null);
     dto.venue = raw.fixture.venue.name ?? null;
     dto.round = this.parseRound(raw.league.round);
+    dto.stage = null;
+    dto.group = null;
+    dto.winner = null;
     dto.startTime = new Date(raw.fixture.date);
 
     const league = new LeagueDto();

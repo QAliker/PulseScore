@@ -113,4 +113,63 @@ describe('FootballDataOrgNormalizer', () => {
       expect(dto.leagueId).toBe('internal-pl-id');
     });
   });
+
+  describe('normalizeMatch stage/group', () => {
+    it('maps stage and group when present', () => {
+      const m = normalizer.normalizeMatch(
+        { ...fdoMatch, stage: 'LAST_16', group: null },
+        null,
+        null,
+        null,
+      );
+      expect(m.stage).toBe('LAST_16');
+      expect(m.group).toBeNull();
+    });
+
+    it('defaults stage/group to null when absent', () => {
+      const m = normalizer.normalizeMatch(fdoMatch, null, null, null);
+      expect(m.stage).toBeNull();
+      expect(m.group).toBeNull();
+    });
+  });
+
+  describe('normalizeStanding group', () => {
+    const entry: FdoStanding = {
+      position: 1,
+      team: {
+        id: 759,
+        name: 'Brazil',
+        crest: 'https://crests.football-data.org/759.png',
+      },
+      playedGames: 3,
+      won: 3,
+      draw: 0,
+      lost: 0,
+      goalsFor: 7,
+      goalsAgainst: 1,
+      points: 9,
+      form: null,
+    };
+
+    it('sets group when passed', () => {
+      const s = normalizer.normalizeStanding(
+        entry,
+        'wc',
+        'FIFA World Cup',
+        null,
+        'GROUP_A',
+      );
+      expect(s.group).toBe('GROUP_A');
+    });
+
+    it('defaults group to null', () => {
+      const s = normalizer.normalizeStanding(
+        entry,
+        'wc',
+        'FIFA World Cup',
+        null,
+      );
+      expect(s.group).toBeNull();
+    });
+  });
 });

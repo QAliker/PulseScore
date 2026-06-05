@@ -14,4 +14,5 @@ export class StandingDto {
   points: number;
   promotion: string | null;
   form: string | null;
+  group: string | null;
 }

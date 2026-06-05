@@ -21,6 +21,8 @@ export interface FdoMatch {
   utcDate: string;
   status: string;
   matchday: number | null;
+  stage?: string | null;
+  group?: string | null;
   homeTeam: FdoTeam;
   awayTeam: FdoTeam;
   score: FdoScore;
@@ -51,7 +53,11 @@ export interface FdoSeason {
 export interface FdoStandingsResponse {
   competition: { id: number; name: string; code: string };
   season: FdoSeason;
-  standings: Array<{ type: string; table: FdoStanding[] }>;
+  standings: Array<{
+    type: string;
+    group?: string | null;
+    table: FdoStanding[];
+  }>;
 }
 
 export interface FdoScorer {

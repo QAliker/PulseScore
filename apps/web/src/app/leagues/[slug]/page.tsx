@@ -11,6 +11,7 @@ import { MatchHistory } from '@/components/matches/match-history';
 import { RoundSelector } from '@/components/feed/round-selector';
 import { LeagueLogo } from '@/components/feed/league-logo';
 import { ScorersBoard } from '@/components/scorers/scorers-board';
+import { WorldCupView, type CupTab } from '@/components/world-cup/world-cup-view';
 
 export const dynamic = 'force-dynamic';
 
@@ -38,6 +39,36 @@ export default async function LeagueSlugPage({
 
   const league = LEAGUES.find((l) => l.slug === slug);
   if (!league) notFound();
+
+  if (league.isCup) {
+    const cupTab: CupTab =
+      rawTab === 'bracket' || rawTab === 'scorers' || rawTab === 'results'
+        ? rawTab
+        : 'groups';
+
+    const [groupsResult, matchesResult, scorersResult] = await Promise.allSettled([
+      cupTab === 'groups'
+        ? apiFetch<ApiStanding[]>(`/leagues/${league.apiFootballId}/groups`)
+        : Promise.resolve([] as ApiStanding[]),
+      cupTab === 'bracket' || cupTab === 'results'
+        ? apiFetch<ApiMatch[]>(`/leagues/${league.apiFootballId}/matches`)
+        : Promise.resolve([] as ApiMatch[]),
+      cupTab === 'scorers'
+        ? apiFetch<ApiScorer[]>(`/leagues/${league.apiFootballId}/scorers`)
+        : Promise.resolve([] as ApiScorer[]),
+    ]);
+
+    return (
+      <WorldCupView
+        league={league}
+        slug={slug}
+        tab={cupTab}
+        groups={groupsResult.status === 'fulfilled' ? groupsResult.value : []}
+        matches={matchesResult.status === 'fulfilled' ? matchesResult.value : []}
+        scorers={scorersResult.status === 'fulfilled' ? scorersResult.value : []}
+      />
+    );
+  }
 
   const tab: Tab =
     rawTab === 'results' || rawTab === 'fixtures' || rawTab === 'scorers'

@@ -131,6 +131,48 @@ export class StandingsService {
     );
   }
 
+  async getGroupStandings(leagueId: string): Promise<StandingDto[]> {
+    const cacheKey = SportsDataCacheService.groupsKey(leagueId);
+    const cached = await this.cacheService.getCached<StandingDto[]>(cacheKey);
+    if (cached) return cached;
+
+    const mapping = LEAGUE_MAP[leagueId];
+    if (!mapping?.isCup) return [];
+
+    const data = await this.fdoClient.get<FdoStandingsResponse>(
+      `competitions/${mapping.fdoCode}/standings`,
+    );
+
+    const league = await this.prismaService.league.findFirst({
+      where: { externalId: leagueId },
+    });
+    const leagueResolvedId = league?.id ?? leagueId;
+
+    const groupTables = data.standings.filter(
+      (s) => s.type === 'TOTAL' && s.group != null,
+    );
+    const result: StandingDto[] = [];
+    for (const gt of groupTables) {
+      for (const entry of gt.table) {
+        const team = await this.prismaService.team.findFirst({
+          where: { fdoExternalId: String(entry.team.id) },
+        });
+        result.push(
+          this.fdoNormalizer.normalizeStanding(
+            entry,
+            leagueResolvedId,
+            data.competition.name,
+            team?.externalId ?? null,
+            gt.group ?? null,
+          ),
+        );
+      }
+    }
+
+    await this.cacheService.setCached(cacheKey, result, TTL_STANDINGS);
+    return result;
+  }
+
   @Cron('0 */12 * * *')
   async refreshStandings(): Promise<void> {
     for (const leagueId of LEAGUE_IDS) {

@@ -67,6 +67,7 @@ export type ApiStanding = {
   points: number;
   promotion: string | null;
   form: string | null;
+  group: string | null;
 };
 
 export type ApiSeason = {
@@ -167,6 +168,9 @@ export type ApiMatch = {
   progress: string | null;
   venue: string | null;
   round: number | null;
+  stage: string | null;
+  group: string | null;
+  winner: string | null;
   goalscorers: ApiGoalscorer[];
   cards: ApiCard[];
   substitutions: ApiSubstitution[];

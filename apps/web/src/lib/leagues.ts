@@ -7,6 +7,7 @@ export type League = {
   darkInvert?: boolean;
   /** Force the logo to solid white in dark mode (for colored crests like the PL lion). */
   darkWhiten?: boolean;
+  isCup?: boolean;
   apiFootballId: number;
   fdoCode: string;
   season: string;
@@ -72,6 +73,17 @@ export const LEAGUES: League[] = [
     apiFootballId: 61,
     fdoCode: 'FL1',
     season: getCurrentSeasonLabel(),
+  },
+  {
+    slug: 'fifa-world-cup',
+    name: 'FIFA World Cup',
+    country: 'World',
+    countryCode: 'WORLD',
+    logo: 'https://media.api-sports.io/football/leagues/1.png',
+    isCup: true,
+    apiFootballId: 1,
+    fdoCode: 'WC',
+    season: '2026',
   },
 ];
 

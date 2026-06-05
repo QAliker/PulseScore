@@ -41,6 +41,9 @@ export class FootballDataOrgNormalizer {
     dto.sport = 'Football';
     dto.startTime = new Date(raw.utcDate);
     dto.round = raw.matchday;
+    dto.stage = raw.stage ?? null;
+    dto.group = raw.group ?? null;
+    dto.winner = raw.score?.winner ?? null;
     dto.venue = null;
     dto.progress = null;
     dto.homeScore = raw.score.fullTime.home;
@@ -82,6 +85,7 @@ export class FootballDataOrgNormalizer {
     leagueId: string,
     leagueName: string,
     teamResolvedId: string | null,
+    group: string | null = null,
   ): StandingDto {
     const dto = new StandingDto();
     dto.leagueId = leagueId;
@@ -99,6 +103,7 @@ export class FootballDataOrgNormalizer {
     dto.points = raw.points;
     dto.promotion = null;
     dto.form = raw.form ?? null;
+    dto.group = group;
     return dto;
   }
 }

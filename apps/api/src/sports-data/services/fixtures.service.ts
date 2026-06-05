@@ -345,6 +345,28 @@ export class FixturesService {
     return fixtures;
   }
 
+  async getAllLeagueMatches(leagueId: string): Promise<MatchDto[]> {
+    const cacheKey = SportsDataCacheService.leagueMatchesKey(leagueId);
+    const cached = await this.cacheService.getCached<MatchDto[]>(cacheKey);
+    if (cached) return cached;
+
+    const mapping = LEAGUE_MAP[leagueId];
+    if (!mapping?.isCup) return [];
+
+    const data = await this.fdoClient.get<FdoMatchesResponse>(
+      `competitions/${mapping.fdoCode}/matches`,
+    );
+    const matches = (
+      await Promise.all(data.matches.map((m) => this.normalizeFdoMatch(m)))
+    ).sort(
+      (a, b) =>
+        new Date(a.startTime).getTime() - new Date(b.startTime).getTime(),
+    );
+
+    await this.cacheService.setCached(cacheKey, matches, TTL_FIXTURES);
+    return matches;
+  }
+
   async getLeagueResults(leagueId: string): Promise<MatchDto[]> {
     const cacheKey = SportsDataCacheService.leagueResultsKey(leagueId);
     const cached = await this.cacheService.getCached<MatchDto[]>(cacheKey);

@@ -7,10 +7,14 @@ export function getCurrentSeason(): number {
 
 export const HISTORY_SEASON_RAF = 2024;
 
-export const LEAGUE_MAP: Record<string, { fdoCode: string; name: string }> = {
+export const LEAGUE_MAP: Record<
+  string,
+  { fdoCode: string; name: string; isCup?: boolean }
+> = {
   '39': { fdoCode: 'PL', name: 'Premier League' },
   '140': { fdoCode: 'PD', name: 'La Liga' },
   '78': { fdoCode: 'BL1', name: 'Bundesliga' },
   '135': { fdoCode: 'SA', name: 'Serie A' },
   '61': { fdoCode: 'FL1', name: 'Ligue 1' },
+  '1': { fdoCode: 'WC', name: 'FIFA World Cup', isCup: true },
 };
