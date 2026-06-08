@@ -166,7 +166,7 @@ export function MatchHistory({
 
   if (!hasRounds) {
     return (
-      <div className="divide-y divide-border/40">
+      <div className="divide-y divide-border/70">
         {matches.map((m) => (
           <MatchRow key={m.id} m={m} teamId={teamId} />
         ))}
@@ -204,7 +204,7 @@ export function MatchHistory({
               {round ?? '—'}
             </span>
           </div>
-          <div className="divide-y divide-border/40">
+          <div className="divide-y divide-border/70">
             {group.map((m) => (
               <MatchRow key={m.id} m={m} teamId={teamId} />
             ))}

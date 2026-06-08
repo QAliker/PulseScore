@@ -23,6 +23,10 @@ const nextConfig: NextConfig = {
         protocol: 'https',
         hostname: '*.thesportsdb.com',
       },
+      {
+        protocol: 'https',
+        hostname: '*.guim.co.uk',
+      },
     ],
   },
 };

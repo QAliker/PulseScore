@@ -7,8 +7,9 @@ import { PlayerCard } from './player-card';
 import { MatchHistory } from '@/components/matches/match-history';
 import { CoachCard } from './coach-card';
 import { VenueCard } from './venue-card';
+import { TeamNews } from '@/components/news/team-news';
 
-type Tab = 'squad' | 'matches' | 'coach';
+type Tab = 'squad' | 'matches' | 'coach' | 'news';
 
 type Props = {
   players: ApiPlayer[];
@@ -121,6 +122,7 @@ export function TeamTabs({
     { id: 'squad', label: 'Squad', count: players.length || undefined },
     { id: 'matches', label: 'Matches', count: results.length + fixtures.length || undefined },
     { id: 'coach', label: 'Coach & Stadium' },
+    { id: 'news', label: 'News' },
   ];
 
   const grouped = POSITION_ORDER.reduce(
@@ -289,6 +291,9 @@ export function TeamTabs({
           )}
         </div>
       )}
+
+      {/* News */}
+      {active === 'news' && <TeamNews teamId={teamId} />}
     </div>
   );
 }

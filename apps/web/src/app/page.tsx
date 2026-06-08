@@ -6,14 +6,41 @@ import { apiMatchesToMatches } from '@/lib/api-match-map';
 import { LEAGUES } from '@/lib/leagues';
 import { LiveFeed } from '@/components/feed/live-feed';
 import { MatchHistory } from '@/components/matches/match-history';
-import { StandingTable } from '@/components/standings/standing-table';
+import { StandingMini } from '@/components/standings/standing-mini';
 import { LeagueLogo } from '@/components/feed/league-logo';
+import { NewsWidget } from '@/components/news/news-widget';
 
 export const dynamic = 'force-dynamic';
 
-function SectionHeading({ children }: { children: React.ReactNode }) {
+/** Loud editorial header for primary (main-column) sections. */
+function MainHeading({
+  children,
+  href,
+  cta = 'See all',
+}: {
+  children: React.ReactNode;
+  href?: string;
+  cta?: string;
+}) {
   return (
-    <h2 className="text-[0.72rem] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+    <div className="flex items-baseline justify-between gap-4 border-b-2 border-border pb-2">
+      <h2 className="font-display text-2xl font-extrabold tracking-tight">{children}</h2>
+      {href && (
+        <Link
+          href={href}
+          className="shrink-0 text-[0.78rem] font-medium text-muted-foreground transition-colors hover:text-foreground"
+        >
+          {cta} →
+        </Link>
+      )}
+    </div>
+  );
+}
+
+/** Quiet label for rail (secondary) sections. */
+function RailHeading({ children }: { children: React.ReactNode }) {
+  return (
+    <h2 className="text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
       {children}
     </h2>
   );
@@ -89,111 +116,101 @@ export default async function HomePage() {
   const hasStandings = standingGroups.some((g) => g.standings.length > 0);
 
   return (
-    <div className="mx-auto flex max-w-295 flex-col gap-10 px-4 py-6 lg:px-8 lg:py-8">
+    <div className="mx-auto max-w-295 px-4 py-6 lg:px-8 lg:py-8">
+      {/* Hero — live feed pulls rank */}
       <LiveFeed initial={initial} />
 
-      {/* Upcoming fixtures + Recent results: full-width stacked */}
-      <div className="flex flex-col gap-10">
-        {/* Upcoming fixtures */}
-        <section className="flex flex-col gap-4">
-          <div className="flex items-baseline justify-between">
-            <SectionHeading>Upcoming</SectionHeading>
-            <Link
-              href="/fixtures"
-              className="text-[0.78rem] font-medium text-muted-foreground hover:text-foreground"
-            >
-              See all →
-            </Link>
-          </div>
+      {/* Primary matches column + secondary news/table rail */}
+      <div className="mt-10 grid grid-cols-1 gap-x-8 gap-y-12 lg:grid-cols-[minmax(0,1fr)_20.5rem]">
+        <main className="flex min-w-0 flex-col gap-12">
+          {/* Upcoming fixtures */}
+          <section className="flex flex-col gap-5">
+            <MainHeading href="/fixtures">Fixtures</MainHeading>
 
-          {hasFixtures ? (
-            <div className="flex flex-col gap-4">
-              {fixtureGroups.map(({ league, matches }) =>
-                matches.length ? (
-                  <div key={league.slug} className="flex flex-col gap-2">
-                    <LeagueLabel league={league} />
-                    <div className="rounded-xl border border-border/60 bg-card px-4 sm:px-6">
-                      <MatchHistory matches={matches} />
+            {hasFixtures ? (
+              <div className="flex flex-col gap-7">
+                {fixtureGroups.map(({ league, matches }) =>
+                  matches.length ? (
+                    <div key={league.slug} className="flex flex-col gap-2">
+                      <LeagueLabel league={league} />
+                      <div className="rounded-xl border border-border/60 bg-card px-4 sm:px-6">
+                        <MatchHistory matches={matches} />
+                      </div>
                     </div>
-                  </div>
-                ) : null,
-              )}
-            </div>
-          ) : (
-            <div className="flex flex-col gap-3">
-              <p className="text-sm text-muted-foreground">
-                No fixtures scheduled yet. Browse by league:
-              </p>
-              <div className="flex flex-col gap-2">
-                {fixtureGroups.map(({ league }) => (
-                  <LeagueCard key={league.slug} league={league} />
-                ))}
+                  ) : null,
+                )}
               </div>
-            </div>
-          )}
-        </section>
-
-        {/* Recent results */}
-        {hasResults && (
-          <section className="flex flex-col gap-4">
-            <div className="flex items-baseline justify-between">
-              <SectionHeading>Recent Results</SectionHeading>
-              <Link
-                href="/results"
-                className="text-[0.78rem] font-medium text-muted-foreground hover:text-foreground"
-              >
-                See all →
-              </Link>
-            </div>
-            <div className="flex flex-col gap-4">
-              {resultGroups.map(({ league, matches }) =>
-                matches.length ? (
-                  <div key={league.slug} className="flex flex-col gap-2">
-                    <LeagueLabel league={league} />
-                    <div className="rounded-xl border border-border/60 bg-card px-4 sm:px-6">
-                      <MatchHistory matches={matches} />
-                    </div>
-                  </div>
-                ) : null,
-              )}
-            </div>
+            ) : (
+              <div className="flex flex-col gap-3">
+                <p className="text-sm text-muted-foreground">
+                  No fixtures scheduled yet. Browse by league:
+                </p>
+                <div className="flex flex-col gap-2">
+                  {fixtureGroups.map(({ league }) => (
+                    <LeagueCard key={league.slug} league={league} />
+                  ))}
+                </div>
+              </div>
+            )}
           </section>
-        )}
+
+          {/* Recent results */}
+          {hasResults && (
+            <section className="flex flex-col gap-5">
+              <MainHeading href="/results">Results</MainHeading>
+              <div className="flex flex-col gap-7">
+                {resultGroups.map(({ league, matches }) =>
+                  matches.length ? (
+                    <div key={league.slug} className="flex flex-col gap-2">
+                      <LeagueLabel league={league} />
+                      <div className="rounded-xl border border-border/60 bg-card px-4 sm:px-6">
+                        <MatchHistory matches={matches} />
+                      </div>
+                    </div>
+                  ) : null,
+                )}
+              </div>
+            </section>
+          )}
+        </main>
+
+        {/* Rail — newspaper gutter, sticks beside the scrolling column */}
+        <aside className="flex flex-col gap-9 lg:sticky lg:top-[4.5rem] lg:self-start lg:border-l lg:border-border lg:pl-8">
+          <NewsWidget />
+
+          {hasStandings && (
+            <section className="flex flex-col gap-5">
+              <RailHeading>Table</RailHeading>
+              <div className="flex flex-col gap-6">
+                {standingGroups.map(({ league, standings }) =>
+                  standings.length > 0 ? (
+                    <div key={league.slug} className="flex flex-col gap-2.5">
+                      <div className="flex items-baseline justify-between gap-2">
+                        <h3 className="flex items-center gap-2 text-[0.7rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                          <LeagueLogo league={league} size={16} className="size-4" />
+                          {league.name}
+                        </h3>
+                        <Link
+                          href={`/leagues/${league.slug}?tab=standings`}
+                          className="shrink-0 text-[0.72rem] font-medium text-muted-foreground transition-colors hover:text-foreground"
+                        >
+                          Full table →
+                        </Link>
+                      </div>
+                      <StandingMini standings={standings} />
+                    </div>
+                  ) : null,
+                )}
+              </div>
+            </section>
+          )}
+        </aside>
       </div>
 
-      {/* Standings: full-width section, leagues in responsive 2-col grid */}
-      {hasStandings ? (
-        <section className="flex flex-col gap-4">
-          <SectionHeading>Standings</SectionHeading>
-          <div className="grid gap-6 md:grid-cols-2">
-            {standingGroups.map(({ league, standings }) =>
-              standings.length > 0 ? (
-                <div key={league.slug} className="flex flex-col gap-3">
-                  <div className="flex items-baseline justify-between">
-                    <h3 className="flex items-center gap-2 text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-                      <LeagueLogo league={league} size={14} className="size-3.5" />
-                      {league.name}
-                    </h3>
-                    <Link
-                      href={`/leagues/${league.slug}?tab=standings`}
-                      className="text-[0.78rem] font-medium text-muted-foreground hover:text-foreground"
-                    >
-                      Full table →
-                    </Link>
-                  </div>
-                  <div className="overflow-hidden rounded-xl border border-border/60 bg-card">
-                    <div className="overflow-x-auto">
-                      <StandingTable standings={standings.slice(0, 8)} />
-                    </div>
-                  </div>
-                </div>
-              ) : null,
-            )}
-          </div>
-        </section>
-      ) : (
-        <section className="flex flex-col gap-3">
-          <SectionHeading>Leagues</SectionHeading>
+      {/* No data yet — surface the league directory */}
+      {!hasFixtures && !hasStandings && (
+        <section className="mt-12 flex flex-col gap-3">
+          <RailHeading>Leagues</RailHeading>
           <div className="grid gap-2 sm:grid-cols-2">
             {LEAGUES.map((league) => (
               <LeagueCard key={league.slug} league={league} />

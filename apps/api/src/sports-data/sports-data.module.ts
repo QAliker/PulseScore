@@ -6,6 +6,7 @@ import { ApiFootballNormalizer } from './normalizer/api-football.normalizer';
 import { FootballDataOrgClient } from './client/football-data-org.client';
 import { FootballDataOrgNormalizer } from './normalizer/football-data-org.normalizer';
 import { EspnClient } from './client/espn.client';
+import { GuardianClient } from './client/guardian.client';
 import { EspnLiveNormalizer } from './normalizer/espn-live.normalizer';
 import { SportsDataCacheService } from './sports-data-cache.service';
 
@@ -31,6 +32,7 @@ import { LeaguesService } from './services/leagues.service';
 import { EspnService } from './services/espn.service';
 import { WarmupService } from './services/warmup.service';
 import { PlayerPhotoService } from './services/player-photo.service';
+import { NewsService } from './services/news.service';
 
 // Controllers
 import {
@@ -56,6 +58,7 @@ import {
   VenuesController,
   TeamVenuesController,
 } from './controllers/venues.controller';
+import { NewsController } from './controllers/news.controller';
 
 @Module({
   imports: [ScheduleModule.forRoot(), PrismaModule],
@@ -77,6 +80,7 @@ import {
     CountriesController,
     VenuesController,
     TeamVenuesController,
+    NewsController,
   ],
   providers: [
     ApiFootballClient,
@@ -84,6 +88,7 @@ import {
     FootballDataOrgClient,
     FootballDataOrgNormalizer,
     EspnClient,
+    GuardianClient,
     EspnLiveNormalizer,
     EspnService,
     SportsDataCacheService,
@@ -107,6 +112,7 @@ import {
     LeaguesService,
     WarmupService,
     PlayerPhotoService,
+    NewsService,
   ],
   exports: [
     LivescoreService,

@@ -1,4 +1,4 @@
-import { Trophy, Calendar, BarChart2 } from 'lucide-react';
+import { Trophy, Calendar, BarChart2, Newspaper } from 'lucide-react';
 import { LEAGUES } from '@/lib/leagues';
 import { SidebarLink } from './sidebar-link';
 import { LeagueLogo } from '@/components/feed/league-logo';
@@ -12,6 +12,7 @@ export function AppSidebar() {
           <SidebarLink href="/" icon={<Trophy className="size-4" />} label="Today" exact />
           <SidebarLink href="/fixtures" icon={<Calendar className="size-4" />} label="Fixtures" />
           <SidebarLink href="/results" icon={<BarChart2 className="size-4" />} label="Results" />
+          <SidebarLink href="/news" icon={<Newspaper className="size-4" />} label="News" />
         </SidebarSection>
 
         <SidebarSection label="Football">
