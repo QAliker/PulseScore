@@ -7,7 +7,7 @@ import { useLiveScores } from '@/hooks/use-live-scores';
 import { useFavorites } from '@/hooks/use-favorites';
 import { useGoalNotifications } from '@/hooks/use-goal-notifications';
 import { FeaturedMatch } from './featured-match';
-import { FeedError } from './feed-states';
+import { FeedError, FeaturedEmpty } from './feed-states';
 
 function ChevronLeft() {
   return (
@@ -26,20 +26,14 @@ function ChevronRight() {
 }
 
 function rankFeatured(matches: Match[]): Match[] {
-  const live = matches
+  return matches
     .filter((m) => m.status === 'live')
     .sort(
       (a, b) =>
         b.homeScore + b.awayScore - (a.homeScore + a.awayScore) ||
         (b.minute ?? 0) - (a.minute ?? 0),
-    );
-
-  if (live.length > 0) return live.slice(0, 6);
-
-  return matches
-    .filter((m) => m.status === 'scheduled')
-    .sort((a, b) => new Date(a.kickoff).getTime() - new Date(b.kickoff).getTime())
-    .slice(0, 5);
+    )
+    .slice(0, 6);
 }
 
 export function LiveFeed({ initial }: { initial: Match[] }) {
@@ -76,7 +70,14 @@ export function LiveFeed({ initial }: { initial: Match[] }) {
     setNavKey((k) => k + 1);
   }, [clampedIdx]);
 
-  if (!match) return null;
+  if (!match) {
+    return (
+      <div className="flex flex-col gap-6">
+        {status === 'offline' && <FeedError />}
+        <FeaturedEmpty />
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-6">

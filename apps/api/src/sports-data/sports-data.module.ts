@@ -6,8 +6,7 @@ import { ApiFootballNormalizer } from './normalizer/api-football.normalizer';
 import { FootballDataOrgClient } from './client/football-data-org.client';
 import { FootballDataOrgNormalizer } from './normalizer/football-data-org.normalizer';
 import { EspnClient } from './client/espn.client';
-import { SofascoreClient } from './client/sofascore.client';
-import { SofascoreNormalizer } from './normalizer/sofascore.normalizer';
+import { EspnLiveNormalizer } from './normalizer/espn-live.normalizer';
 import { SportsDataCacheService } from './sports-data-cache.service';
 
 // Services
@@ -85,10 +84,9 @@ import {
     FootballDataOrgClient,
     FootballDataOrgNormalizer,
     EspnClient,
+    EspnLiveNormalizer,
     EspnService,
     SportsDataCacheService,
-    SofascoreClient,
-    SofascoreNormalizer,
     LiveStreamService,
     LivescoreService,
     FixturesService,

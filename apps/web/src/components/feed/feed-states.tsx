@@ -31,6 +31,19 @@ export function EmptyLeague({ leagueName }: { leagueName: string }) {
   );
 }
 
+export function FeaturedEmpty() {
+  return (
+    <div className="flex h-44 flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-border/60 bg-card/40 px-6 text-center">
+      <PitchLines />
+      <p className="font-display text-lg font-extrabold">No live matches</p>
+      <p className="max-w-[42ch] text-sm text-muted-foreground">
+        Nothing is kicking off right now. Live scores appear here the moment a
+        match starts.
+      </p>
+    </div>
+  );
+}
+
 export function FeedError({ onRetry }: { onRetry?: () => void }) {
   return (
     <div
