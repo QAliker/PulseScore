@@ -1,29 +1,34 @@
-app = "pulsescore-api"
-primary_region = "cdg"
+# fly.toml app configuration file generated for pulsescore on 2026-06-08T14:01:30Z
+#
+# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
+#
+
+app = 'pulsescore'
+primary_region = 'cdg'
 
 [build]
-  dockerfile = "Dockerfile"
-  build-target = "prod"
+  dockerfile = 'Dockerfile'
+  build-target = 'prod'
 
 [env]
-  NODE_ENV = "production"
-  PORT = "3001"
-  APIFOOTBALL_TIMEZONE = "Europe/Paris"
+  APIFOOTBALL_TIMEZONE = 'Europe/Paris'
+  NODE_ENV = 'production'
+  PORT = '3001'
 
 [http_service]
   internal_port = 3001
   force_https = true
-  auto_stop_machines = "off"
+  auto_stop_machines = 'off'
   auto_start_machines = true
   min_machines_running = 1
 
   [[http_service.checks]]
-    method = "GET"
-    path = "/health"
-    interval = "15s"
-    timeout = "5s"
-    grace_period = "20s"
+    interval = '15s'
+    timeout = '5s'
+    grace_period = '20s'
+    method = 'GET'
+    path = '/health'
 
 [[vm]]
-  size = "shared-cpu-1x"
-  memory = "512mb"
+  size = 'shared-cpu-1x'
+  memory = '512mb'
