@@ -1,35 +1,21 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { LivescoreService } from '../services/livescore.service';
-import { FootballDataOrgClient } from '../client/football-data-org.client';
-import { FootballDataOrgNormalizer } from '../normalizer/football-data-org.normalizer';
-import { SportsDataCacheService } from '../sports-data-cache.service';
-import { PrismaService } from '../../prisma/prisma.service';
+import { LiveStreamService } from '../services/live-stream.service';
+import { MatchDto } from '../dto/match.dto';
 
 describe('LivescoreService', () => {
   let service: LivescoreService;
-  let mockFdoClient: Partial<FootballDataOrgClient>;
-  let mockNormalizer: Partial<FootballDataOrgNormalizer>;
-  let mockCacheService: Partial<SportsDataCacheService>;
-  let mockPrisma: Partial<PrismaService>;
+  let mockLiveStream: Partial<LiveStreamService>;
 
   beforeEach(async () => {
-    mockFdoClient = {
-      get: jest.fn().mockResolvedValue({ matches: [] }),
+    mockLiveStream = {
+      snapshot: jest.fn().mockResolvedValue([]),
     };
-    mockNormalizer = {};
-    mockCacheService = {
-      getCached: jest.fn().mockResolvedValue(null),
-      setCached: jest.fn().mockResolvedValue(undefined),
-    };
-    mockPrisma = {};
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         LivescoreService,
-        { provide: FootballDataOrgClient, useValue: mockFdoClient },
-        { provide: FootballDataOrgNormalizer, useValue: mockNormalizer },
-        { provide: SportsDataCacheService, useValue: mockCacheService },
-        { provide: PrismaService, useValue: mockPrisma },
+        { provide: LiveStreamService, useValue: mockLiveStream },
       ],
     }).compile();
 
@@ -40,13 +26,13 @@ describe('LivescoreService', () => {
     expect(service).toBeDefined();
   });
 
-  it('getCurrent should fetch from cache first', async () => {
-    const mockMatches: any[] = [];
+  it('getCurrent delegates to LiveStreamService.snapshot()', async () => {
+    const mockMatches: MatchDto[] = [];
     jest
-      .spyOn(mockCacheService, 'getCached' as any)
+      .spyOn(mockLiveStream, 'snapshot' as any)
       .mockResolvedValue(mockMatches);
     const result = await service.getCurrent();
     expect(result).toEqual(mockMatches);
-    expect(mockCacheService.getCached).toHaveBeenCalled();
+    expect(mockLiveStream.snapshot).toHaveBeenCalled();
   });
 });

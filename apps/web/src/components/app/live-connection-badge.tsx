@@ -1,14 +1,26 @@
 'use client';
 
 import { cn } from '@/lib/utils';
+import type { SocketStatus } from '@/lib/types';
+import { useSocket } from '@/hooks/use-socket';
 
-// Placeholder for Commit 1 — will read real state from useSocket in Commit 2.
-// Hardcoded to "live" so the visual exists during shell development.
-type Status = 'live' | 'reconnecting' | 'offline';
+export function LiveConnectionBadge({
+  status: statusProp,
+}: {
+  status?: SocketStatus;
+} = {}) {
+  // No explicit status passed → open our own stream and reflect its state.
+  const { status: liveStatus } = useSocket(statusProp === undefined);
+  const status = statusProp ?? liveStatus;
 
-export function LiveConnectionBadge({ status = 'live' }: { status?: Status } = {}) {
   const label =
-    status === 'live' ? 'Live' : status === 'reconnecting' ? 'Reconnecting' : 'Offline';
+    status === 'live'
+      ? 'Live'
+      : status === 'reconnecting'
+        ? 'Reconnecting'
+        : status === 'connecting'
+          ? 'Connecting'
+          : 'Offline';
 
   return (
     <span
@@ -23,6 +35,7 @@ export function LiveConnectionBadge({ status = 'live' }: { status?: Status } = {
         className={cn(
           'size-1.5 rounded-full',
           status === 'live' && 'bg-live live-dot',
+          status === 'connecting' && 'bg-amber-500',
           status === 'reconnecting' && 'bg-amber-500',
           status === 'offline' && 'bg-muted-foreground',
         )}
