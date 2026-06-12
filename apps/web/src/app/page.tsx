@@ -120,6 +120,11 @@ export default async function HomePage() {
       {/* Hero — live feed pulls rank */}
       <LiveFeed initial={initial} />
 
+      {/* News leads on mobile, where the rail otherwise stacks below matches. */}
+      <div className="mt-10 lg:hidden">
+        <NewsWidget />
+      </div>
+
       {/* Primary matches column + secondary news/table rail */}
       <div className="mt-10 grid grid-cols-1 gap-x-8 gap-y-12 lg:grid-cols-[minmax(0,1fr)_20.5rem]">
         <main className="flex min-w-0 flex-col gap-12">
@@ -176,7 +181,10 @@ export default async function HomePage() {
 
         {/* Rail — newspaper gutter, sticks beside the scrolling column */}
         <aside className="flex flex-col gap-9 lg:sticky lg:top-[4.5rem] lg:self-start lg:border-l lg:border-border lg:pl-8">
-          <NewsWidget />
+          {/* News already shown above the column on mobile; rail copy is desktop-only. */}
+          <div className="hidden lg:block">
+            <NewsWidget />
+          </div>
 
           {hasStandings && (
             <section className="flex flex-col gap-5">

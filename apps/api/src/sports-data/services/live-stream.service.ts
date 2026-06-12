@@ -31,6 +31,10 @@ export const LIVE_LEAGUE_SLUGS = [
   'uefa.champions',
   'uefa.europa',
   'uefa.europa.conf',
+  // World Cup — the only live football during the June/July summer window when
+  // every domestic league above is in off-season. Without it the live feed is
+  // empty for the whole tournament.
+  'fifa.world',
 ];
 
 @Injectable()

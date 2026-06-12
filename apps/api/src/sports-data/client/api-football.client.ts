@@ -14,8 +14,65 @@ export class ApiFootballClient {
   private readonly baseUrl = 'https://v3.football.api-sports.io';
   private readonly apiKey: string;
 
+  // api-sports enforces a per-minute quota. Cold page loads fan out to many
+  // endpoints at once and trip it, surfacing as "too many requests, wait a
+  // minute". We space requests slightly and retry on 429 inside the window.
+  private static readonly MIN_SPACING_MS = 110;
+  private static readonly MAX_RETRIES = 3;
+  private static readonly MAX_BACKOFF_MS = 8_000;
+  private chain: Promise<unknown> = Promise.resolve();
+
   constructor(private readonly configService: ConfigService) {
     this.apiKey = this.configService.get<string>('API_FOOTBALL_KEY') ?? '';
+  }
+
+  /** Serialize requests with a small gap so bursts stay under the quota. */
+  private schedule<T>(task: () => Promise<T>): Promise<T> {
+    const run = this.chain.then(async () => {
+      try {
+        return await task();
+      } finally {
+        await new Promise((r) =>
+          setTimeout(r, ApiFootballClient.MIN_SPACING_MS),
+        );
+      }
+    });
+    this.chain = run.then(
+      () => undefined,
+      () => undefined,
+    );
+    return run;
+  }
+
+  /** Fetch with retry/backoff on 429, honoring Retry-After when present. */
+  private async fetchJson(url: string): Promise<Response> {
+    return this.schedule(async () => {
+      for (let attempt = 0; ; attempt++) {
+        const response = await fetch(url, {
+          headers: {
+            'x-apisports-key': this.apiKey,
+            Accept: 'application/json',
+          },
+        });
+        if (
+          response.status !== 429 ||
+          attempt >= ApiFootballClient.MAX_RETRIES
+        ) {
+          return response;
+        }
+        const retryAfter = Number(response.headers.get('Retry-After'));
+        const waitMs = Math.min(
+          Number.isFinite(retryAfter) && retryAfter > 0
+            ? retryAfter * 1000
+            : 500 * 2 ** attempt,
+          ApiFootballClient.MAX_BACKOFF_MS,
+        );
+        this.logger.warn(
+          `API-Football 429, retry ${attempt + 1}/${ApiFootballClient.MAX_RETRIES} in ${waitMs}ms`,
+        );
+        await new Promise((r) => setTimeout(r, waitMs));
+      }
+    });
   }
 
   async get<T>(
@@ -30,12 +87,7 @@ export class ApiFootballClient {
     const url = `${this.baseUrl}/${endpoint}${query.toString() ? `?${query.toString()}` : ''}`;
     this.logger.debug(`GET ${url}`);
 
-    const response = await fetch(url, {
-      headers: {
-        'x-apisports-key': this.apiKey,
-        Accept: 'application/json',
-      },
-    });
+    const response = await this.fetchJson(url);
 
     if (!response.ok) {
       throw new Error(
@@ -70,12 +122,7 @@ export class ApiFootballClient {
     const url = `${this.baseUrl}/${endpoint}${query.toString() ? `?${query.toString()}` : ''}`;
     this.logger.debug(`GET ${url}`);
 
-    const response = await fetch(url, {
-      headers: {
-        'x-apisports-key': this.apiKey,
-        Accept: 'application/json',
-      },
-    });
+    const response = await this.fetchJson(url);
 
     if (!response.ok) {
       throw new Error(
@@ -113,12 +160,7 @@ export class ApiFootballClient {
     const url = `${this.baseUrl}/${endpoint}${query.toString() ? `?${query.toString()}` : ''}`;
     this.logger.debug(`GET ${url}`);
 
-    const response = await fetch(url, {
-      headers: {
-        'x-apisports-key': this.apiKey,
-        Accept: 'application/json',
-      },
-    });
+    const response = await this.fetchJson(url);
 
     if (!response.ok) {
       throw new Error(

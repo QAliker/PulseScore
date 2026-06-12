@@ -1,4 +1,5 @@
 import { Injectable, Logger, OnApplicationBootstrap } from '@nestjs/common';
+import { Interval } from '@nestjs/schedule';
 import { StandingsService } from './standings.service';
 import { FixturesService } from './fixtures.service';
 import { FootballDataOrgClient } from '../client/football-data-org.client';
@@ -6,7 +7,14 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { FdoCompetitionTeamsResponse } from '../interfaces/football-data-org.interfaces';
 import { LEAGUE_MAP } from '../constants/season.constants';
 
-const LEAGUE_IDS = ['39', '140', '78', '135', '61'];
+// Must cover every league the home page requests, or the missing ones stay
+// cold and trip the API-Football per-minute quota on each fresh visit. '1' is
+// the FIFA World Cup shown in the web LEAGUES list.
+const LEAGUE_IDS = ['39', '140', '78', '135', '61', '1'];
+
+// Cache TTL for fixtures/results/standings is 6h; re-warm well under that so a
+// visitor never lands on an expired (cold) cache.
+const REWARM_INTERVAL_MS = 4 * 60 * 60 * 1000;
 
 @Injectable()
 export class WarmupService implements OnApplicationBootstrap {
@@ -23,8 +31,20 @@ export class WarmupService implements OnApplicationBootstrap {
     void this.runWarmup();
   }
 
+  // Keep the cache warm so visitors hit Redis instead of fanning out to
+  // API-Football (and tripping the 10 req/min quota) on an expired cache.
+  @Interval('cache-rewarm', REWARM_INTERVAL_MS)
+  async rewarm(): Promise<void> {
+    await this.warmLeagues();
+  }
+
   private async runWarmup(): Promise<void> {
     await this.seedFdoIds();
+    await this.warmLeagues();
+    void this.fixtures.prewarmTeamFixtures();
+  }
+
+  private async warmLeagues(): Promise<void> {
     this.logger.log('Warming up cache for all leagues...');
     for (const leagueId of LEAGUE_IDS) {
       try {
@@ -39,8 +59,6 @@ export class WarmupService implements OnApplicationBootstrap {
       }
     }
     this.logger.log('Cache warmup complete.');
-
-    void this.fixtures.prewarmTeamFixtures();
   }
 
   async seedFdoIds(): Promise<void> {
