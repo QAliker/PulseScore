@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import type { ApiMatch, ApiStanding } from '@/lib/api-types';
+import type { ApiMatch, ApiSeason, ApiStanding } from '@/lib/api-types';
 import type { League } from '@/lib/leagues';
 import { apiFetch } from '@/lib/api';
 import { apiMatchesToMatches } from '@/lib/api-match-map';
@@ -81,6 +81,7 @@ export default async function HomePage() {
     ...LEAGUES.map((l) => apiFetch<ApiMatch[]>(`/leagues/${l.apiFootballId}/fixtures`)),
     ...LEAGUES.map((l) => apiFetch<ApiMatch[]>(`/leagues/${l.apiFootballId}/results`)),
     ...LEAGUES.map((l) => apiFetch<ApiStanding[]>(`/leagues/${l.apiFootballId}/standings`)),
+    ...LEAGUES.map((l) => apiFetch<ApiSeason | null>(`/leagues/${l.apiFootballId}/season`)),
   ]);
 
   const initial = apiMatchesToMatches(
@@ -93,9 +94,21 @@ export default async function HomePage() {
     logo: rest[i].status === 'fulfilled' ? ((rest[i].value as ApiMatch[])[0]?.league?.logo ?? null) : null,
   }));
 
+  // Server render → evaluated once per request; safe to read wall-clock here.
+  // eslint-disable-next-line react-hooks/purity
+  const now = Date.now();
   const resultGroups = LEAGUES.map((league, i) => {
     const r = rest[LEAGUES.length + i];
-    const matches = r.status === 'fulfilled' ? (r.value as ApiMatch[]).slice(0, 5) : [];
+    const s = rest[LEAGUES.length * 3 + i];
+    const season = s.status === 'fulfilled' ? (s.value as ApiSeason | null) : null;
+    // Only surface results while a season is actually in progress — hides both
+    // finished seasons and ones whose start date is still in the future.
+    const started = season?.startDate
+      ? new Date(season.startDate).getTime() <= now
+      : true;
+    const inProgress = started && !season?.finished;
+    const matches =
+      inProgress && r.status === 'fulfilled' ? (r.value as ApiMatch[]).slice(0, 5) : [];
     return {
       league,
       matches,

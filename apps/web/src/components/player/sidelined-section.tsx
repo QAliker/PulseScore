@@ -1,3 +1,4 @@
+import { APP_TZ } from '@/lib/format';
 import type { ApiSidelined } from '@/lib/api-types';
 
 type Props = { sidelined: ApiSidelined[] };
@@ -6,11 +7,13 @@ function formatDateRange(start: string, end: string | null): string {
   const s = new Date(start).toLocaleDateString('en-GB', {
     month: 'short',
     year: 'numeric',
+    timeZone: APP_TZ,
   });
   if (!end) return `${s} – present`;
   const e = new Date(end).toLocaleDateString('en-GB', {
     month: 'short',
     year: 'numeric',
+    timeZone: APP_TZ,
   });
   return `${s} – ${e}`;
 }

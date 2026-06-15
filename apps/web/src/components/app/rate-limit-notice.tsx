@@ -20,6 +20,11 @@ export function RateLimitNotice({ backHref = '/' }: { backHref?: string }) {
           La limite de l&apos;API a été atteinte. Patiente une minute, le temps
           que de nouvelles requêtes soient disponibles, puis recharge la page.
         </p>
+        <p className="text-sm text-muted-foreground">
+          PulseScore est un petit projet perso qui utilise des API gratuites — je
+          ne souhaite pas payer un abonnement, donc la limite de requêtes est vite
+          atteinte.
+        </p>
       </div>
       <Link
         href={backHref}

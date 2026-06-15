@@ -1,5 +1,6 @@
 import Image from 'next/image';
 import { cn } from '@/lib/utils';
+import { APP_TZ } from '@/lib/format';
 import type { ApiMatch } from '@/lib/api-types';
 import { KNOCKOUT_STAGES, stageLabel } from './stage-labels';
 
@@ -124,11 +125,13 @@ function MatchCard({
             {new Date(match.startTime).toLocaleDateString('en-GB', {
               day: 'numeric',
               month: 'short',
+              timeZone: APP_TZ,
             })}{' '}
             ·{' '}
             {new Date(match.startTime).toLocaleTimeString('en-GB', {
               hour: '2-digit',
               minute: '2-digit',
+              timeZone: APP_TZ,
             })}
           </span>
         </div>

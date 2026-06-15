@@ -1,7 +1,11 @@
 import type { Match } from './types';
 
-// Server TZ from env (defaults to Europe/Paris per project .env).
-const TZ = process.env.NEXT_PUBLIC_APP_TZ ?? 'Europe/Paris';
+// App display TZ from env (defaults to Europe/Paris per project .env).
+// Exported so every component formats dates/times in the SAME zone — otherwise
+// raw toLocale* calls fall back to the runtime TZ (browser, or UTC on SSR),
+// producing different hours on the home vs match pages.
+export const APP_TZ = process.env.NEXT_PUBLIC_APP_TZ ?? 'Europe/Paris';
+const TZ = APP_TZ;
 
 const kickoffFmt = new Intl.DateTimeFormat('en-GB', {
   hour: '2-digit',

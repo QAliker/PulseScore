@@ -5,6 +5,7 @@ import { Clock, Gauge, Trophy, CalendarCheck } from 'lucide-react';
 import type { ApiPlayer, ApiMatch, ApiCoach, ApiVenue, ApiInjury, ApiSeason } from '@/lib/api-types';
 import { PlayerCard } from './player-card';
 import { MatchHistory } from '@/components/matches/match-history';
+import { APP_TZ } from '@/lib/format';
 import { CoachCard } from './coach-card';
 import { VenueCard } from './venue-card';
 import { TeamNews } from '@/components/news/team-news';
@@ -76,9 +77,12 @@ function RateLimitCard() {
 
 function SeasonOverCard({ season }: { season: ApiSeason }) {
   const endLabel = season.endDate
-    ? new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }).format(
-        new Date(season.endDate),
-      )
+    ? new Intl.DateTimeFormat('en-GB', {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric',
+        timeZone: APP_TZ,
+      }).format(new Date(season.endDate))
     : null;
   return (
     <div className="flex flex-col items-center gap-3 rounded-xl border border-[oklch(0.56_0.16_145)]/25 bg-[oklch(0.56_0.16_145)]/[0.06] px-6 py-10 text-center">

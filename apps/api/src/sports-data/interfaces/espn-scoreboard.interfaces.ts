@@ -27,6 +27,7 @@ export interface EspnStatus {
 export interface EspnCompetitorTeam {
   id: string;
   displayName: string;
+  shortDisplayName?: string;
   logo?: string;
 }
 

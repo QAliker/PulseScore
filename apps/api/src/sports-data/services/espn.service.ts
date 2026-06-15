@@ -73,20 +73,6 @@ interface EspnSummaryResponse {
   };
 }
 
-interface EspnScoreboardEvent {
-  id: string;
-  competitions: Array<{
-    competitors: Array<{
-      homeAway: 'home' | 'away';
-      team: { displayName: string; shortDisplayName: string };
-    }>;
-  }>;
-}
-
-interface EspnScoreboardResponse {
-  events?: EspnScoreboardEvent[];
-}
-
 // ─────────────────────────────────────────────────────────────────────────────
 
 @Injectable()
@@ -165,10 +151,7 @@ export class EspnService {
     awayTeam: string,
     dateStr: string,
   ): Promise<string | null> {
-    const board = await this.espnClient.get<EspnScoreboardResponse>(
-      `${slug}/scoreboard`,
-      { dates: dateStr },
-    );
+    const board = await this.espnClient.getScoreboard(slug, { dates: dateStr });
     if (!board.events?.length) return null;
 
     let bestId: string | null = null;
@@ -184,11 +167,11 @@ export class EspnService {
 
       const hScore = Math.max(
         this.similarity(homeTeam, home.team.displayName),
-        this.similarity(homeTeam, home.team.shortDisplayName),
+        this.similarity(homeTeam, home.team.shortDisplayName ?? ''),
       );
       const aScore = Math.max(
         this.similarity(awayTeam, away.team.displayName),
-        this.similarity(awayTeam, away.team.shortDisplayName),
+        this.similarity(awayTeam, away.team.shortDisplayName ?? ''),
       );
       const score = (hScore + aScore) / 2;
 

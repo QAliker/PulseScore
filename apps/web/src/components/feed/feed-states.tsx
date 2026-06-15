@@ -34,13 +34,35 @@ export function EmptyLeague({ leagueName }: { leagueName: string }) {
 export function FeaturedEmpty() {
   return (
     <div className="flex h-44 flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-border/60 bg-card/40 px-6 text-center">
-      <PitchLines />
+      <LiveRadar />
       <p className="font-display text-lg font-extrabold">No live matches</p>
       <p className="max-w-[42ch] text-sm text-muted-foreground">
         Nothing is kicking off right now. Live scores appear here the moment a
         match starts.
       </p>
     </div>
+  );
+}
+
+/**
+ * Small "radar" that visually says we're listening for kickoffs: a sweeping
+ * wedge rotates over a circular pitch while rings ping outward and the centre
+ * ball pulses. All motion is disabled under prefers-reduced-motion (globals.css).
+ */
+function LiveRadar() {
+  return (
+    <span
+      className="relative flex size-12 items-center justify-center"
+      aria-hidden
+    >
+      <span className="absolute size-full rounded-full border border-live/40 empty-radar-ring" />
+      <span className="absolute size-full rounded-full border border-live/40 empty-radar-ring [animation-delay:1.3s]" />
+      <span className="absolute size-full rounded-full border border-border/50" />
+      <span className="absolute size-full overflow-hidden rounded-full">
+        <span className="absolute inset-0 empty-radar-sweep" />
+      </span>
+      <span className="relative size-2 rounded-full bg-live live-dot" />
+    </span>
   );
 }
 

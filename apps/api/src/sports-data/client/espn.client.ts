@@ -26,14 +26,25 @@ export class EspnClient {
   }
 
   /**
-   * Fetch a league scoreboard. ESPN intermittently returns a non-JSON schema
-   * doc instead of data, so parse defensively and retry a couple of times.
+   * Fetch a league scoreboard.
+   *
+   * We use the CDN core endpoint (`cdn.espn.com/core/.../scoreboard?xhr=1`)
+   * rather than `site.api.espn.com/.../scoreboard`. The site.api endpoint
+   * permanently serves an unparseable schema doc (`{ day: { date: date? } ...}`)
+   * for the `fifa.*` family — the only in-season competition during the summer
+   * World Cup window — so the live feed was always empty. The CDN endpoint
+   * returns real JSON for every slug and wraps the same `{ leagues, events }`
+   * shape under `content.sbData`.
    */
   async getScoreboard(
     leagueSlug: string,
+    opts: { dates?: string } = {},
     retries = 2,
   ): Promise<EspnScoreboardResponse> {
-    const url = `${this.baseUrl}/${leagueSlug}/scoreboard`;
+    const datesParam = opts.dates
+      ? `&dates=${encodeURIComponent(opts.dates)}`
+      : '';
+    const url = `https://cdn.espn.com/core/soccer/scoreboard?xhr=1&league=${encodeURIComponent(leagueSlug)}${datesParam}`;
     let lastErr: unknown;
 
     for (let attempt = 0; attempt <= retries; attempt++) {
@@ -44,8 +55,14 @@ export class EspnClient {
         if (!response.ok) {
           throw new Error(`ESPN ${leagueSlug}: ${response.status}`);
         }
-        const text = await response.text();
-        return JSON.parse(text) as EspnScoreboardResponse;
+        const data = (await response.json()) as {
+          content?: { sbData?: EspnScoreboardResponse };
+        };
+        const sbData = data?.content?.sbData;
+        if (!sbData) {
+          throw new Error(`ESPN ${leagueSlug}: missing content.sbData`);
+        }
+        return sbData;
       } catch (err) {
         lastErr = err;
       }

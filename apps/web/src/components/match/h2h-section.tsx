@@ -1,6 +1,7 @@
 /* eslint-disable jsx-a11y/role-has-required-aria-props */
 import Image from 'next/image';
 import { cn } from '@/lib/utils';
+import { APP_TZ } from '@/lib/format';
 import type { H2HStats, Match } from '@/lib/types';
 
 type Props = {
@@ -13,6 +14,7 @@ function formatH2HDate(dateStr: string): string {
     day: 'numeric',
     month: 'short',
     year: '2-digit',
+    timeZone: APP_TZ,
   });
 }
 

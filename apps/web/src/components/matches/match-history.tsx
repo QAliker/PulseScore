@@ -1,18 +1,23 @@
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
+import { APP_TZ } from '@/lib/format';
 import type { ApiMatch } from '@/lib/api-types';
 import Image from 'next/image';
 
 function formatShortDate(iso: string): { day: string; month: string } {
   const d = new Date(iso);
   return {
-    day: d.toLocaleDateString('en-GB', { day: 'numeric' }),
-    month: d.toLocaleDateString('en-GB', { month: 'short' }),
+    day: d.toLocaleDateString('en-GB', { day: 'numeric', timeZone: APP_TZ }),
+    month: d.toLocaleDateString('en-GB', { month: 'short', timeZone: APP_TZ }),
   };
 }
 
 function formatTime(iso: string): string {
-  return new Date(iso).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+  return new Date(iso).toLocaleTimeString('en-GB', {
+    hour: '2-digit',
+    minute: '2-digit',
+    timeZone: APP_TZ,
+  });
 }
 
 type Props = {
