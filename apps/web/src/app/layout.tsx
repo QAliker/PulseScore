@@ -3,6 +3,7 @@ import localFont from 'next/font/local';
 import { ThemeProvider } from '@/components/theme/theme-provider';
 import { ThemeScript } from '@/components/theme/theme-script';
 import { AppShell } from '@/components/app/app-shell';
+import { ChatPanel } from '@/components/app/chat-panel';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { Toaster } from '@/components/ui/sonner';
 import './globals.css';
@@ -53,6 +54,7 @@ export default function RootLayout({
         <ThemeProvider>
           <TooltipProvider delayDuration={200}>
             <AppShell>{children}</AppShell>
+            <ChatPanel />
             <Toaster position="top-right" richColors closeButton />
           </TooltipProvider>
         </ThemeProvider>
