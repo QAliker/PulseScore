@@ -15,7 +15,10 @@ export async function askAi(messages: ChatMessage[]): Promise<AiReply> {
   const res = await fetch(`${API_BASE}/ai/chat`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ messages }),
+    // Send only role + content; UI-only fields (e.g. sources) must not leak to the LLM.
+    body: JSON.stringify({
+      messages: messages.map((m) => ({ role: m.role, content: m.content })),
+    }),
   });
   if (res.status === 429) {
     throw new Error('Too many questions at once — give it a few seconds.');

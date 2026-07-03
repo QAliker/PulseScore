@@ -12,6 +12,7 @@ interface Msg extends ChatMessage {
 /** Map backend tool names to human labels for the provenance chips. */
 const TOOL_LABELS: Record<string, string> = {
   getLiveMatches: 'Live matches',
+  getUpcomingFixtures: 'Fixtures',
   searchTeams: 'Team search',
   getTeamNews: 'News',
 };
@@ -19,8 +20,8 @@ const TOOL_LABELS: Record<string, string> = {
 /** Starter prompts — each exercises one of the agent's real tools. */
 const SUGGESTIONS = [
   'Any live matches right now?',
-  'Search for Arsenal',
-  'Latest news on PSG',
+  "What are today's fixtures?",
+  'Latest news on Arsenal',
 ];
 
 function PulseMark({ className }: { className?: string }) {
