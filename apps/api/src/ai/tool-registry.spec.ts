@@ -6,11 +6,43 @@ describe('ToolRegistry', () => {
     searchTeams: jest.fn().mockResolvedValue([{ id: 't1', name: 'Arsenal' }]),
   };
   const news = { getByTeam: jest.fn().mockResolvedValue({ items: [] }) };
-  const registry = new ToolRegistry(live as any, teams as any, news as any);
+  const fixtures = {
+    getLeagueFixtures: jest.fn().mockResolvedValue([
+      {
+        homeTeam: { name: 'Home' },
+        awayTeam: { name: 'Away' },
+        startTime: '2026-07-05T14:00:00Z',
+        status: 'SCHEDULED',
+      },
+    ]),
+  };
+  const registry = new ToolRegistry(
+    live as any,
+    teams as any,
+    news as any,
+    fixtures as any,
+  );
 
   it('exposes tool schemas for all handlers', () => {
     const names = registry.tools.map((t) => t.function.name).sort();
-    expect(names).toEqual(['getLiveMatches', 'getTeamNews', 'searchTeams']);
+    expect(names).toEqual([
+      'getLiveMatches',
+      'getTeamNews',
+      'getUpcomingFixtures',
+      'searchTeams',
+    ]);
+  });
+
+  it('aggregates upcoming fixtures across leagues, trimmed to essentials', async () => {
+    const result = (await registry.execute('getUpcomingFixtures', {})) as any[];
+    expect(fixtures.getLeagueFixtures).toHaveBeenCalled();
+    expect(result[0]).toEqual({
+      league: expect.any(String),
+      home: 'Home',
+      away: 'Away',
+      kickoff: '2026-07-05T14:00:00Z',
+      status: 'SCHEDULED',
+    });
   });
 
   it('runs getLiveMatches', async () => {

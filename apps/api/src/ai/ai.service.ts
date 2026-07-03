@@ -7,8 +7,10 @@ export const MAX_ITERATIONS = 5;
 
 const SYSTEM_PROMPT =
   'You are PulseScore, a helpful football assistant. Answer questions about ' +
-  'football matches, teams, and news using ONLY the provided tools and their ' +
-  'results. If a question is not about football, politely decline. Keep answers concise.';
+  'live matches, upcoming fixtures, teams, and news using ONLY the provided ' +
+  'tools and their results. For "today\'s matches" or "upcoming games", use ' +
+  'getUpcomingFixtures. If a question is not about football, politely decline. ' +
+  'Keep answers concise.';
 
 @Injectable()
 export class AiService {
@@ -20,9 +22,16 @@ export class AiService {
   async chat(
     userMessages: ChatCompletionMessageParam[],
   ): Promise<{ answer: string; toolsUsed: string[] }> {
+    // Sanitize client-supplied history to role + content only. The client may
+    // attach extra fields (e.g. UI-only `sources`); forwarding them makes the
+    // LLM provider reject the request with "property X is unsupported".
+    const history: ChatCompletionMessageParam[] = userMessages.map((m) => ({
+      role: m.role === 'assistant' ? 'assistant' : 'user',
+      content: typeof m.content === 'string' ? m.content : '',
+    }));
     const messages: ChatCompletionMessageParam[] = [
       { role: 'system', content: SYSTEM_PROMPT },
-      ...userMessages,
+      ...history,
     ];
     const toolsUsed: string[] = [];
 

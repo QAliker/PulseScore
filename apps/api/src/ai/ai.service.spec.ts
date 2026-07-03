@@ -47,6 +47,23 @@ describe('AiService', () => {
     });
   });
 
+  it('strips client-supplied extra fields, forwarding only role + content', async () => {
+    const complete = jest
+      .fn()
+      .mockResolvedValue({ role: 'assistant', content: 'ok' });
+    await makeService(complete).chat([
+      { role: 'user', content: 'hi' },
+      { role: 'assistant', content: 'prev', sources: ['getLiveMatches'] },
+      { role: 'user', content: 'again' },
+    ] as any);
+
+    const sent = complete.mock.calls[0][0];
+    // No forwarded message carries the UI-only `sources` field.
+    expect(sent.some((m: any) => 'sources' in m)).toBe(false);
+    // The assistant history entry is reduced to role + content only.
+    expect(sent[2]).toEqual({ role: 'assistant', content: 'prev' });
+  });
+
   it('stops after MAX_ITERATIONS and returns a fallback answer', async () => {
     registry.execute.mockResolvedValue([]);
     const complete = jest.fn().mockResolvedValue({
