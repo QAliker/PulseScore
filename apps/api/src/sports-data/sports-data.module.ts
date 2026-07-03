@@ -133,6 +133,7 @@ import { NewsController } from './controllers/news.controller';
     VenuesService,
     LeaguesService,
     SportsDataCacheService,
+    NewsService,
   ],
 })
 export class SportsDataModule {}
