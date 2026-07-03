@@ -14,7 +14,10 @@ export const openAiProvider = {
   inject: [ConfigService],
   useFactory: (config: ConfigService): OpenAI =>
     new OpenAI({
-      apiKey: config.get<string>('LLM_API_KEY') ?? '',
+      // ponytail: fall back to a placeholder so an unset LLM_API_KEY doesn't
+      // throw at boot (the SDK rejects an empty key). Real calls without a key
+      // just get a clean 401 from the provider instead of crashing the API.
+      apiKey: config.get<string>('LLM_API_KEY') || 'missing-llm-api-key',
       baseURL: config.get<string>('LLM_BASE_URL'),
     }),
 };
