@@ -9,7 +9,12 @@ import { ToolRegistry } from './tool-registry';
 @Module({
   imports: [
     SportsDataModule,
-    ThrottlerModule.forRoot([{ ttl: 60_000, limit: 10 }]),
+    // Per IP. Each chat can make up to MAX_ITERATIONS LLM calls; these keep one
+    // visitor from burning the Groq free tier (~30 req/min, 1k req/day).
+    ThrottlerModule.forRoot([
+      { name: 'minute', ttl: 60_000, limit: 5 },
+      { name: 'day', ttl: 86_400_000, limit: 50 },
+    ]),
   ],
   controllers: [AiController],
   providers: [AiService, LlmClient, ToolRegistry, openAiProvider],
