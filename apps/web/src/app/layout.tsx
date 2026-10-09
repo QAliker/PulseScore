@@ -33,7 +33,7 @@ export const metadata: Metadata = {
   description:
     'Real-time football scores for England Championship and France Ligue 2. Updates the instant a goal happens.',
   icons: {
-    icon: '/PulseScore_Logo.svg',
+    icon: '/favicon.svg',
     apple: '/PulseScore_Logo__2.png',
   },
 };

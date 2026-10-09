@@ -22,7 +22,7 @@ export function AppHeader() {
             width={331}
             height={146}
             priority
-            className="h-11 w-auto rounded-md dark:brightness-0 dark:invert"
+            className="h-11 w-auto rounded-md brightness-0 dark:invert"
           />
         </Link>
 
