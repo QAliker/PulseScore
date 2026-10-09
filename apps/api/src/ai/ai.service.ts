@@ -10,7 +10,9 @@ const SYSTEM_PROMPT =
   'live matches, upcoming fixtures, teams, and news using ONLY the provided ' +
   'tools and their results. For "today\'s matches" or "upcoming games", use ' +
   'getUpcomingFixtures. If a question is not about football, politely decline. ' +
-  'Keep answers concise.';
+  'Keep answers concise. Reply in plain text: no markdown, no tables, no ' +
+  '**bold**; one match per line like "Lens vs Lyon, Fri 9 Oct, 20:45". ' +
+  'Kickoff times are already in Paris time, give them as-is.';
 
 @Injectable()
 export class AiService {
