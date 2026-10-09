@@ -40,7 +40,7 @@ describe('ToolRegistry', () => {
       league: expect.any(String),
       home: 'Home',
       away: 'Away',
-      kickoff: '2026-07-05T14:00:00Z',
+      kickoff: 'Sun 5 Jul, 16:00', // 14:00Z in Paris summer time
       status: 'SCHEDULED',
     });
   });

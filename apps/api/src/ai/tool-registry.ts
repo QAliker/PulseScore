@@ -8,6 +8,15 @@ import { LEAGUE_MAP } from '../sports-data/constants/season.constants';
 
 type Handler = (args: Record<string, unknown>) => Promise<unknown>;
 
+const PARIS_TIME = new Intl.DateTimeFormat('en-GB', {
+  timeZone: 'Europe/Paris',
+  weekday: 'short',
+  day: 'numeric',
+  month: 'short',
+  hour: '2-digit',
+  minute: '2-digit',
+});
+
 @Injectable()
 export class ToolRegistry {
   constructor(
@@ -53,7 +62,8 @@ export class ToolRegistry {
         league,
         home: match.homeTeam?.name,
         away: match.awayTeam?.name,
-        kickoff: match.startTime,
+        // Pre-formatted in Paris time so the model never converts time zones.
+        kickoff: PARIS_TIME.format(new Date(match.startTime)),
         status: match.status,
       }));
   }
