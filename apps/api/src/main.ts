@@ -1,8 +1,12 @@
 import { NestFactory } from '@nestjs/core';
+import type { NestExpressApplication } from '@nestjs/platform-express';
 import { AppModule } from './app.module';
 
 async function bootstrap(): Promise<void> {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
+  // Behind Fly's proxy: take the client IP from X-Forwarded-For so per-IP
+  // rate limits don't lump every visitor into the proxy's single address.
+  app.set('trust proxy', 1);
 
   const explicitOrigin = process.env.FRONTEND_URL;
   app.enableCors({
